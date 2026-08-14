@@ -8,22 +8,22 @@ export default function Hero() {
       <img 
         src="/newspaper-sticker.png" 
         alt="Breaking news sticker" 
-        className="absolute top-16 md:top-24 left-[5%] md:left-[15%] w-32 md:w-56 animate-float-1 z-0 drop-shadow-xl opacity-80 pointer-events-none"
+        className="absolute top-16 md:top-24 left-[5%] md:left-[15%] w-32 md:w-56 animate-float-1 z-0 sticker-shadow opacity-90 pointer-events-none"
       />
       <img 
         src="/truth-sticker-hd-cutout.png" 
         alt="Truth magnifying glass sticker" 
-        className="absolute top-[30%] md:top-[25%] right-[2%] md:right-[8%] w-32 md:w-56 animate-float-2 z-0 drop-shadow-xl opacity-80 pointer-events-none"
+        className="absolute top-[30%] md:top-[25%] right-[2%] md:right-[8%] w-32 md:w-56 animate-float-2 z-0 sticker-shadow opacity-90 pointer-events-none"
       />
       <img 
         src="/investigation-sticker.png" 
         alt="Investigation files sticker" 
-        className="absolute bottom-1/4 md:bottom-[20%] left-[8%] md:left-[5%] w-32 md:w-56 animate-float-3 z-0 drop-shadow-xl opacity-80 pointer-events-none"
+        className="absolute bottom-1/4 md:bottom-[20%] left-[8%] md:left-[5%] w-32 md:w-56 animate-float-3 z-0 sticker-shadow opacity-90 pointer-events-none"
       />
       <img 
         src="/note-sticker.png" 
         alt="Not everything you read is true sticker" 
-        className="absolute bottom-10 md:bottom-16 right-[15%] md:right-[22%] w-32 md:w-56 animate-float-4 z-0 drop-shadow-xl opacity-80 pointer-events-none"
+        className="absolute bottom-10 md:bottom-16 right-[15%] md:right-[22%] w-32 md:w-56 animate-float-4 z-0 sticker-shadow opacity-90 pointer-events-none"
       />
 
       <div className="relative z-10 text-center flex flex-col items-center max-w-4xl mx-auto space-y-stack-md">
