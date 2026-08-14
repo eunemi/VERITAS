@@ -20,6 +20,11 @@ export default function Hero() {
         alt="Investigation files sticker" 
         className="absolute left-8 md:left-[20%] bottom-8 w-32 md:w-56 animate-swing origin-top z-0 drop-shadow-xl rotate-3 opacity-80"
       />
+      <img 
+        src="/note-sticker.png" 
+        alt="Not everything you read is true sticker" 
+        className="absolute right-4 md:right-[18%] bottom-6 w-32 md:w-56 animate-swing origin-top z-0 drop-shadow-xl -rotate-6 opacity-80"
+      />
 
       <div className="relative z-10 text-center flex flex-col items-center max-w-4xl mx-auto space-y-stack-md">
         <h2 className="font-headline-md text-headline-md text-secondary italic tracking-wide">
