@@ -118,11 +118,30 @@
     --text-masthead--letter-spacing: -0.02em;
     --text-masthead--font-weight: 900;
 
-    --animate-swing: swing 4s ease-in-out infinite;
+    --animate-float-1: float-1 6s ease-in-out infinite;
+    --animate-float-2: float-2 8s ease-in-out infinite;
+    --animate-float-3: float-3 7s ease-in-out infinite;
+    --animate-float-4: float-4 9s ease-in-out infinite;
 
-    @keyframes swing {
-      0%, 100% { transform: rotate(6deg); }
-      50% { transform: rotate(-6deg); }
+    @keyframes float-1 {
+      0%, 100% { transform: translate(0px, 0px) rotate(-12deg); }
+      33% { transform: translate(15px, -10px) rotate(-8deg); }
+      66% { transform: translate(-10px, 15px) rotate(-15deg); }
+    }
+    @keyframes float-2 {
+      0%, 100% { transform: translate(0px, 0px) rotate(12deg); }
+      33% { transform: translate(-15px, -15px) rotate(16deg); }
+      66% { transform: translate(10px, 10px) rotate(8deg); }
+    }
+    @keyframes float-3 {
+      0%, 100% { transform: translate(0px, 0px) rotate(5deg); }
+      33% { transform: translate(10px, 20px) rotate(2deg); }
+      66% { transform: translate(-20px, 5px) rotate(8deg); }
+    }
+    @keyframes float-4 {
+      0%, 100% { transform: translate(0px, 0px) rotate(-6deg); }
+      33% { transform: translate(-20px, 10px) rotate(-2deg); }
+      66% { transform: translate(15px, -15px) rotate(-10deg); }
     }
 }
 
