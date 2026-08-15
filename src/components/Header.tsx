@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Header() {
   return (
-    <header className="w-full flex flex-col items-center px-margin-mobile md:px-margin-desktop py-stack-md max-w-[1440px] mx-auto border-b border-primary/20 sticky top-0 bg-parchment/90 backdrop-blur-sm z-40">
+    <header className="w-full flex flex-col items-center px-margin-mobile md:px-margin-desktop py-stack-md max-w-[1440px] mx-auto border-b border-white/40 shadow-[0_4px_30px_rgba(0,0,0,0.05)] sticky top-0 bg-parchment/40 backdrop-blur-lg z-40">
       <div className="flex justify-between items-center w-full relative">
         {/* Brand */}
         <Link href="/" className="text-4xl font-bold text-primary tracking-tighter">
