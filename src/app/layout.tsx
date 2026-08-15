@@ -40,9 +40,8 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${inter.variable} ${playfair.variable} ${jetbrainsMono.variable} bg-parchment text-ink-black font-body-lg min-h-screen relative grid-bg overflow-x-hidden selection:bg-gold-foil selection:text-ink-black`}
+        className={`${inter.variable} ${playfair.variable} ${jetbrainsMono.variable} text-ink-black font-body-lg min-h-screen relative bg-[url('/main-bg.jpg')] bg-cover bg-center bg-fixed overflow-x-hidden selection:bg-gold-foil selection:text-ink-black`}
       >
-        <div className="texture-overlay"></div>
         {children}
       </body>
     </html>
