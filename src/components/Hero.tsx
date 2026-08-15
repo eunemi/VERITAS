@@ -9,22 +9,22 @@ export default function Hero() {
         <img 
           src="/newspaper-sticker.png" 
           alt="Breaking news sticker" 
-          className="absolute -top-10 md:-top-16 -left-4 md:-left-24 w-32 md:w-56 animate-float-1 z-0 sticker-shadow opacity-90 pointer-events-none"
+          className="absolute -top-10 md:-top-12 -left-8 md:-left-40 w-28 md:w-56 animate-float-1 z-0 sticker-shadow opacity-90 pointer-events-none"
         />
         <img 
           src="/truth-sticker-hd-cutout.png" 
           alt="Truth magnifying glass sticker" 
-          className="absolute top-20 md:top-32 -right-8 md:-right-28 w-32 md:w-56 animate-float-2 z-0 sticker-shadow opacity-90 pointer-events-none"
+          className="absolute top-16 md:top-16 -right-12 md:-right-44 w-28 md:w-56 animate-float-2 z-0 sticker-shadow opacity-90 pointer-events-none"
         />
         <img 
           src="/investigation-sticker.png" 
           alt="Investigation files sticker" 
-          className="absolute bottom-24 md:bottom-32 -left-8 md:-left-28 w-32 md:w-56 animate-float-3 z-0 sticker-shadow opacity-90 pointer-events-none"
+          className="absolute bottom-20 md:bottom-16 -left-12 md:-left-44 w-28 md:w-56 animate-float-3 z-0 sticker-shadow opacity-90 pointer-events-none"
         />
         <img 
           src="/note-sticker.png" 
           alt="Not everything you read is true sticker" 
-          className="absolute -bottom-8 md:-bottom-12 -right-4 md:-right-20 w-32 md:w-56 animate-float-4 z-0 sticker-shadow opacity-90 pointer-events-none"
+          className="absolute -bottom-10 md:-bottom-20 -right-8 md:-right-40 w-28 md:w-56 animate-float-4 z-0 sticker-shadow opacity-90 pointer-events-none"
         />
 
         <h2 className="font-headline-md text-headline-md text-secondary italic tracking-wide relative z-10">
