@@ -4,37 +4,37 @@ export default function Hero() {
   return (
     <section className="min-h-[calc(100vh-100px)] flex flex-col items-center justify-center relative py-8 border-x border-primary/20 overflow-hidden">
 
-      {/* Decorative Stickers */}
-      <img 
-        src="/newspaper-sticker.png" 
-        alt="Breaking news sticker" 
-        className="absolute top-16 md:top-24 left-[5%] md:left-[15%] w-32 md:w-56 animate-float-1 z-0 sticker-shadow opacity-90 pointer-events-none"
-      />
-      <img 
-        src="/truth-sticker-hd-cutout.png" 
-        alt="Truth magnifying glass sticker" 
-        className="absolute top-[30%] md:top-[25%] right-[2%] md:right-[8%] w-32 md:w-56 animate-float-2 z-0 sticker-shadow opacity-90 pointer-events-none"
-      />
-      <img 
-        src="/investigation-sticker.png" 
-        alt="Investigation files sticker" 
-        className="absolute bottom-1/4 md:bottom-[20%] left-[8%] md:left-[5%] w-32 md:w-56 animate-float-3 z-0 sticker-shadow opacity-90 pointer-events-none"
-      />
-      <img 
-        src="/note-sticker.png" 
-        alt="Not everything you read is true sticker" 
-        className="absolute bottom-10 md:bottom-16 right-[15%] md:right-[22%] w-32 md:w-56 animate-float-4 z-0 sticker-shadow opacity-90 pointer-events-none"
-      />
+      <div className="relative z-10 text-center flex flex-col items-center max-w-4xl mx-auto space-y-stack-md w-full">
+        {/* Decorative Stickers clustered around the text */}
+        <img 
+          src="/newspaper-sticker.png" 
+          alt="Breaking news sticker" 
+          className="absolute -top-10 md:-top-16 -left-4 md:-left-24 w-32 md:w-56 animate-float-1 z-0 sticker-shadow opacity-90 pointer-events-none"
+        />
+        <img 
+          src="/truth-sticker-hd-cutout.png" 
+          alt="Truth magnifying glass sticker" 
+          className="absolute top-20 md:top-32 -right-8 md:-right-28 w-32 md:w-56 animate-float-2 z-0 sticker-shadow opacity-90 pointer-events-none"
+        />
+        <img 
+          src="/investigation-sticker.png" 
+          alt="Investigation files sticker" 
+          className="absolute bottom-24 md:bottom-32 -left-8 md:-left-28 w-32 md:w-56 animate-float-3 z-0 sticker-shadow opacity-90 pointer-events-none"
+        />
+        <img 
+          src="/note-sticker.png" 
+          alt="Not everything you read is true sticker" 
+          className="absolute -bottom-8 md:-bottom-12 -right-4 md:-right-20 w-32 md:w-56 animate-float-4 z-0 sticker-shadow opacity-90 pointer-events-none"
+        />
 
-      <div className="relative z-10 text-center flex flex-col items-center max-w-4xl mx-auto space-y-stack-md">
-        <h2 className="font-headline-md text-headline-md text-secondary italic tracking-wide">
+        <h2 className="font-headline-md text-headline-md text-secondary italic tracking-wide relative z-10">
           Truth, Verified by Intelligence
         </h2>
-        <h1 className="font-masthead text-[42px] leading-[48px] font-bold md:text-[120px] md:leading-[110px] md:font-black md:tracking-[-0.02em] text-primary uppercase text-center drop-shadow-sm">
+        <h1 className="font-masthead text-[42px] leading-[48px] font-bold md:text-[120px] md:leading-[110px] md:font-black md:tracking-[-0.02em] text-primary uppercase text-center drop-shadow-sm relative z-10">
           THE TRUTH BEHIND<br />THE STORY.
         </h1>
-        <div className="pt-stack-lg">
-          <button className="wax-seal text-parchment font-mono-label text-mono-label rounded-full w-32 h-32 flex items-center justify-center uppercase tracking-widest transition-all duration-300 cursor-pointer relative z-20 hover:scale-105 active:scale-95">
+        <div className="pt-stack-lg relative z-20">
+          <button className="wax-seal text-parchment font-mono-label text-mono-label rounded-full w-32 h-32 flex items-center justify-center uppercase tracking-widest transition-all duration-300 cursor-pointer hover:scale-105 active:scale-95">
             ANALYZE<br />NOW
           </button>
         </div>
