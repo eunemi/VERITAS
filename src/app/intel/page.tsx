@@ -1,119 +1,150 @@
-"use client";
-
-import React from "react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Band, SectionHead, Slug, Spread } from "@/components/agents/shared/layout";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { IntelligenceAgent } from "@/components/ui/IntelligenceAgent";
+import { DESK_ORDER, DESKS, type DeskDefinition } from "@/lib/desks";
+
+export const metadata: Metadata = {
+  title: "The intelligence desk",
+  description:
+    "The six examination desks, what each one reads, what it returns, and the order they work in.",
+};
+
+/**
+ * The index of the desks.
+ *
+ * This page used to be six status-pill cards ringed by decorative circles, with
+ * the desk copy retyped a third time. It is now the register: what each desk
+ * accepts, what it hands back, and — stated plainly — what it will not do. The
+ * copy comes from `@/lib/desks`, so the index cannot drift from the desks.
+ */
+
+const REPORTING = DESK_ORDER.slice(0, 5).map((id) => DESKS[id]);
+const CORE = DESKS[DESK_ORDER[5]];
+
+const MOVEMENTS = [
+  {
+    heading: "The artifact is typed",
+    body: "Whatever you hand over is read for what it is first — copy, frame, recording, footage or a single claim. Only the desks that can read that type open a file on it.",
+  },
+  {
+    heading: "Five desks read it alone",
+    body: "No desk sees another's working. Each marks what it finds on the artifact itself, by exhibit number, so every finding has a place on the page. A desk that finds nothing files that too.",
+  },
+  {
+    heading: "The core signs one record",
+    body: "Agent 06 reads the five records, weighs each by how reliably it was reached, and signs a single determination. Where the desks disagree, the disagreement is printed rather than resolved away.",
+  },
+];
+
+/**
+ * One entry in the register: the desk on the left, its method on the right.
+ *
+ * The desk number used to print separately at 38px in 20% ink — 1.4:1 on this
+ * ground, so the largest figure in the entry was also the one nobody could read.
+ * It is dropped: the eyebrow beside it already says "Agent 01", which is the same
+ * number in a place a reader is looking.
+ */
+function RegisterEntry({ desk }: { desk: DeskDefinition }) {
+  return (
+    <li className="border-t border-ink-black/25 py-stack-lg first:border-t-0 first:pt-stack-md">
+      <div className="grid gap-stack-md lg:grid-cols-12 lg:gap-gutter">
+        <div className="lg:col-span-6">
+          <Slug className="text-secondary">{desk.eyebrow}</Slug>
+          <h3 className="font-headline-md mt-stack-sm text-[24px] leading-[1.2] font-semibold text-ink-black md:text-[28px]">
+            {desk.titleLines.join(" ")}
+          </h3>
+          <p className="font-body-md text-read mt-stack-sm max-w-measure text-ink-black/70">
+            {desk.standfirst}
+          </p>
+          <Link
+            href={`/intel/${desk.id}`}
+            className="mt-stack-md inline-block border-b-2 border-secondary pb-1 text-ink-black transition-colors hover:border-ink-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black"
+          >
+            <Slug>Open the {desk.name} desk</Slug>
+          </Link>
+        </div>
+
+        {/* The keys were 40% ink at 10px. They name the four things worth knowing
+            about a desk, so they are set in full ink at label size. */}
+        <dl className="lg:col-span-6 lg:border-l lg:border-ink-black/15 lg:pl-gutter">
+          {desk.method.map((row) => (
+            <div
+              key={row.key}
+              className="grid items-baseline gap-x-gutter gap-y-1 border-b border-ink-black/15 py-stack-sm last:border-b-0 sm:grid-cols-[7rem_minmax(0,1fr)]"
+            >
+              <dt>
+                <Slug className="text-ink-black">{row.key}</Slug>
+              </dt>
+              <dd className="font-body-sm text-body-sm text-ink-black/70">{row.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </li>
+  );
+}
 
 export default function IntelPage() {
   return (
-    <main className="w-full max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
-      <PageHeader 
-        label="VERITAS INTELLIGENCE LAYER" 
-        headline={<>INTELLIGENCE<br />BEHIND INFORMATION.</>}
-        subheadline="VERITAS analyzes multimodal content using specialized AI agents to establish the truth behind the story."
+    <main className="min-h-screen bg-background">
+      <PageHeader
+        section="Intelligence desk"
+        standing="Register of desks"
+        kicker="Six desks, one record"
+        title={["How Veritas", "reads a thing."]}
+        lede="Nothing here is a verdict machine. Each desk states what it looked at, what it found, and what it could not tell you."
       />
 
-      {/* Central Visualization Area */}
-      <section className="my-stack-xl flex flex-col items-center justify-center relative">
-        <div className="w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
-          <IntelligenceAgent 
-            name="TEXT AGENT"
-            description="Analyzes articles, captions and claims for linguistic anomalies and rhetorical manipulation."
-            icon="subject"
-            delay={0.1}
-            route="/intel/text"
-          />
-          <IntelligenceAgent 
-            name="IMAGE AGENT"
-            description="Detects manipulation, synthetic imagery, and traces digital artifacts invisible to the human eye."
-            icon="image"
-            delay={0.2}
-            route="/intel/image"
-          />
-          <IntelligenceAgent 
-            name="AUDIO AGENT"
-            description="Transcribes and analyzes speech patterns, detecting voice cloning and synthetic generation."
-            icon="mic"
-            delay={0.3}
-            route="/intel/audio"
-          />
-          <IntelligenceAgent 
-            name="VIDEO AGENT"
-            description="Analyzes frames, scenes and audio-visual synchronization to detect deepfakes."
-            icon="movie"
-            delay={0.4}
-            route="/intel/video"
-          />
-          <IntelligenceAgent 
-            name="FACT-CHECKING AGENT"
-            description="Cross-checks claims against trusted evidence databases and historical records."
-            icon="fact_check"
-            delay={0.5}
-            route="/intel/fact-check"
-          />
-          <IntelligenceAgent 
-            name="DECISION AGENT"
-            description="Combines evidence and produces the final assessment and confidence score."
-            icon="gavel"
-            delay={0.6}
-            route="/intel/decision"
-          />
-        </div>
-        
-        {/* Core Visualization */}
-        <div className="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-primary/5 rounded-full items-center justify-center -z-10">
-           <div className="w-[400px] h-[400px] border border-primary/10 rounded-full flex items-center justify-center">
-             <div className="w-[200px] h-[200px] bg-ink-black rounded-full flex flex-col items-center justify-center text-center p-4">
-                <span className="material-symbols-outlined text-parchment text-4xl mb-2">memory</span>
-                <span className="font-mono-label text-mono-label text-parchment">VERITAS<br/>INTELLIGENCE<br/>CORE</span>
-             </div>
-           </div>
-        </div>
-      </section>
+      <Spread className="pb-stack-xl">
+        <SectionHead title="The order of work" note="Five report, one signs" />
+        <ol className="mt-stack-md grid gap-stack-md md:grid-cols-3 md:gap-gutter">
+          {MOVEMENTS.map((movement, index) => (
+            <li key={movement.heading} className="border-t border-ink-black/25 pt-stack-sm">
+              <Slug className="tabular text-secondary">
+                Movement {String(index + 1).padStart(2, "0")}
+              </Slug>
+              <h3 className="font-headline-md mt-2.5 text-[21px] leading-[1.3] font-semibold text-ink-black">
+                {movement.heading}
+              </h3>
+              <p className="font-body-md text-body-md mt-2.5 text-ink-black/70">{movement.body}</p>
+            </li>
+          ))}
+        </ol>
+      </Spread>
 
-      {/* How VERITAS Thinks */}
-      <section className="mb-stack-xl">
-        <div className="w-full flex justify-between items-end border-b border-primary/20 pb-4 mb-16">
-          <h2 className="font-headline-md text-3xl font-bold text-primary">HOW VERITAS THINKS</h2>
+      <Spread className="pb-stack-xl">
+        <SectionHead title="The reporting desks" note="Each works on the artifact itself" />
+        <ol className="mt-stack-md">
+          {REPORTING.map((desk) => (
+            <RegisterEntry key={desk.id} desk={desk} />
+          ))}
+        </ol>
+      </Spread>
+
+      <Spread className="pb-stack-xl">
+        <SectionHead title="Adjudication" note="Sits after the five have reported" />
+        <ol className="mt-stack-md">
+          <RegisterEntry desk={CORE} />
+        </ol>
+      </Spread>
+
+      <Band className="bg-ink-black text-parchment" inner="py-stack-lg">
+        <div className="flex flex-wrap items-end justify-between gap-stack-md">
+          <div>
+            <Slug className="text-parchment/70">All six on one artifact</Slug>
+            <p className="font-headline-md mt-2.5 max-w-[26ch] text-[24px] leading-[1.25] font-normal italic md:text-[26px]">
+              Open an investigation and let the desks report together.
+            </p>
+          </div>
+          <Link
+            href="/investigate"
+            className="border border-parchment px-6 py-3 transition-colors hover:bg-parchment hover:text-ink-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold-foil"
+          >
+            <Slug>Open the bench</Slug>
+          </Link>
         </div>
-        
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center">
-          <div className="flex flex-col items-center">
-            <span className="font-masthead text-2xl md:text-4xl text-primary font-bold">CONTENT</span>
-            <span className="material-symbols-outlined text-secondary mt-2">arrow_downward</span>
-          </div>
-          <div className="hidden md:block flex-1 h-[1px] bg-primary/20 mx-4"></div>
-          
-          <div className="flex flex-col items-center">
-            <span className="font-masthead text-2xl md:text-4xl text-primary font-bold">CLAIMS</span>
-            <span className="material-symbols-outlined text-secondary mt-2">arrow_downward</span>
-          </div>
-          <div className="hidden md:block flex-1 h-[1px] bg-primary/20 mx-4"></div>
-          
-          <div className="flex flex-col items-center">
-            <span className="font-masthead text-2xl md:text-4xl text-primary font-bold">SIGNALS</span>
-            <span className="material-symbols-outlined text-secondary mt-2">arrow_downward</span>
-          </div>
-          <div className="hidden md:block flex-1 h-[1px] bg-primary/20 mx-4"></div>
-          
-          <div className="flex flex-col items-center">
-            <span className="font-masthead text-2xl md:text-4xl text-primary font-bold">EVIDENCE</span>
-            <span className="material-symbols-outlined text-secondary mt-2">arrow_downward</span>
-          </div>
-          <div className="hidden md:block flex-1 h-[1px] bg-primary/20 mx-4"></div>
-          
-          <div className="flex flex-col items-center">
-            <span className="font-masthead text-2xl md:text-4xl text-primary font-bold">VERIFICATION</span>
-            <span className="material-symbols-outlined text-secondary mt-2">arrow_downward</span>
-          </div>
-          <div className="hidden md:block flex-1 h-[1px] bg-primary/20 mx-4"></div>
-          
-          <div className="flex flex-col items-center">
-            <span className="font-masthead text-2xl md:text-4xl text-secondary font-black">DECISION</span>
-            <span className="material-symbols-outlined text-secondary mt-2">done_all</span>
-          </div>
-        </div>
-      </section>
+      </Band>
     </main>
   );
 }
