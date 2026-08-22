@@ -1,3 +1,5 @@
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import type { Metadata } from "next";
 import { Inter, Playfair_Display, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -40,9 +42,11 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${inter.variable} ${playfair.variable} ${jetbrainsMono.variable} text-ink-black font-body-lg min-h-screen relative bg-[url('/main-bg.jpg')] bg-cover bg-center bg-fixed overflow-x-hidden selection:bg-gold-foil selection:text-ink-black`}
+        className={`${inter.variable} ${playfair.variable} ${jetbrainsMono.variable} text-ink-black font-body-lg min-h-screen relative custom-bg overflow-x-hidden selection:bg-gold-foil selection:text-ink-black`}
       >
+        <Header />
         {children}
+        <Footer />
       </body>
     </html>
   );
