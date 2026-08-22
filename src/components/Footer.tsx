@@ -1,96 +1,120 @@
-import React from "react";
-import { Hexagon } from "lucide-react"
-import { Footer as FooterUI } from "@/components/ui/footer"
+import Link from "next/link";
+import { Slug, Spread } from "@/components/agents/shared/layout";
+import { DESK_ORDER, DESKS } from "@/lib/desks";
 
-const TwitterIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
-  </svg>
-)
+/**
+ * The foot of the paper.
+ *
+ * Previously a generic kit footer: a hexagon glyph beside the wordmark, three
+ * pill icon buttons, and six links, half of which went to `#`. Everything here
+ * now resolves, and the desks are read from the register rather than retyped.
+ */
 
-const GithubIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-    <path d="M9 18c-4.51 2-5-2-7-2" />
-  </svg>
-)
+interface Column {
+  heading: string;
+  links: Array<{ href: string; label: string }>;
+}
 
-const LinkedinIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-    <rect width="4" height="12" x="2" y="9" />
-    <circle cx="4" cy="4" r="2" />
-  </svg>
-)
+const COLUMNS: Column[] = [
+  {
+    heading: "Desks",
+    links: DESK_ORDER.map((id) => ({
+      href: `/intel/${id}`,
+      label: `${DESKS[id].number} · ${DESKS[id].name}`,
+    })),
+  },
+  {
+    heading: "Sections",
+    links: [
+      { href: "/world", label: "World" },
+      { href: "/economy", label: "Economy" },
+      { href: "/tech", label: "Technology" },
+      { href: "/archive", label: "The archive" },
+    ],
+  },
+  {
+    heading: "The work",
+    links: [
+      { href: "/intel", label: "How Veritas reads" },
+      { href: "/investigate", label: "Submit an artifact" },
+      { href: "/privacy", label: "What we keep" },
+      { href: "/terms", label: "Terms of use" },
+    ],
+  },
+];
+
+/** Off-site, so each one carries `rel` alongside `target`. */
+const ELSEWHERE = [
+  { href: "https://x.com", label: "X" },
+  { href: "https://github.com", label: "GitHub" },
+  { href: "https://linkedin.com", label: "LinkedIn" },
+];
 
 export default function Footer() {
   return (
-    <FooterUI
-      logo={<Hexagon className="h-10 w-10" />}
-      brandName="VERITAS"
-      socialLinks={[
-        {
-          icon: <TwitterIcon className="h-5 w-5" />,
-          href: "https://twitter.com",
-          label: "Twitter",
-        },
-        {
-          icon: <GithubIcon className="h-5 w-5" />,
-          href: "https://github.com",
-          label: "GitHub",
-        },
-        {
-          icon: <LinkedinIcon className="h-5 w-5" />,
-          href: "https://linkedin.com",
-          label: "LinkedIn",
-        },
-      ]}
-      mainLinks={[
-        { href: "#", label: "Archival Ethics" },
-        { href: "#", label: "Chain of Custody" },
-        { href: "#", label: "Whistleblower Protocols" },
-      ]}
-      legalLinks={[
-        { href: "/privacy", label: "Privacy Policy" },
-        { href: "/terms", label: "Terms of Service" },
-      ]}
-      copyright={{
-        text: "© 2026 VERITAS AI.",
-        license: "ALL TRUTH IS TRACEABLE.",
-      }}
-    />
-  )
+    <footer className="w-full border-t-2 border-ink-black bg-parchment">
+      <Spread className="pt-stack-lg pb-stack-md">
+        <div className="grid gap-stack-lg lg:grid-cols-12 lg:gap-gutter">
+          <div className="lg:col-span-4">
+            <Link
+              href="/"
+              className="font-masthead inline-block text-[46px] leading-none font-black tracking-[-0.03em] text-ink-black transition-colors hover:text-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black"
+            >
+              VERITAS
+            </Link>
+            <p className="font-headline-md mt-4 max-w-[26ch] text-[21px] leading-tight font-normal text-ink-black/70 italic">
+              Six desks read the artifact. One of them signs.
+            </p>
+          </div>
+
+          {COLUMNS.map((column) => (
+            <nav key={column.heading} aria-labelledby={`foot-${column.heading}`} className="lg:col-span-2">
+              <Slug id={`foot-${column.heading}`} className="text-secondary">
+                {column.heading}
+              </Slug>
+              <ul className="mt-stack-sm flex flex-col gap-2">
+                {column.links.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="font-body-sm text-body-sm text-ink-black/70 underline decoration-ink-black/20 decoration-1 underline-offset-4 transition-colors hover:text-secondary hover:decoration-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+
+          <div className="lg:col-span-2">
+            <Slug className="text-secondary">Elsewhere</Slug>
+            <ul className="mt-stack-sm flex flex-col gap-2">
+              {ELSEWHERE.map((link) => (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-body-sm text-body-sm text-ink-black/70 underline decoration-ink-black/20 decoration-1 underline-offset-4 transition-colors hover:text-secondary hover:decoration-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black"
+                  >
+                    {link.label} &nearr;
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </Spread>
+
+      <Spread className="border-t border-ink-black/15 py-stack-sm">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-gutter gap-y-2">
+          <Slug className="text-ink-black/45">
+            &copy; 2026 Veritas AI · All truth is traceable
+          </Slug>
+
+        </div>
+      </Spread>
+    </footer>
+  );
 }

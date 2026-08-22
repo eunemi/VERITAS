@@ -24,8 +24,12 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VERITAS AI | The Truth Behind The Story",
-  description: "The truth behind the story.",
+  title: {
+    default: "Veritas — The truth behind the story",
+    template: "%s · Veritas",
+  },
+  description:
+    "Veritas examines text, images, audio and video at six desks, and signs a record of what it found.",
 };
 
 export default function RootLayout({
@@ -34,15 +38,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light">
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en">
+      {/* `bg-background` is the ground for the whole site. It was missing entirely:
+          html and body carried no background-colour at all, so the only thing
+          painting the page was the fixed photograph behind it, and any frame in
+          which that layer had not painted rendered the page on a transparent
+          canvas. The photograph now belongs to the front page (src/app/page.tsx). */}
       <body
-        className={`${inter.variable} ${playfair.variable} ${jetbrainsMono.variable} text-ink-black font-body-lg min-h-screen relative custom-bg overflow-x-hidden selection:bg-gold-foil selection:text-ink-black`}
+        className={`${inter.variable} ${playfair.variable} ${jetbrainsMono.variable} bg-background text-ink-black font-body-lg min-h-screen relative overflow-x-hidden selection:bg-gold-foil selection:text-ink-black`}
       >
         <Header />
         {children}

@@ -1,8 +1,19 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
+/**
+ * Every route fades up as it is set. `template.tsx` re-mounts on navigation, which
+ * is what makes the transition run again on each page — a `layout.tsx` would not.
+ *
+ * Readers who ask their system for reduced motion get the page with no transform
+ * and no fade, rather than a shorter one.
+ */
 export default function Template({ children }: { children: React.ReactNode }) {
+  const still = useReducedMotion();
+
+  if (still) return <div>{children}</div>;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
