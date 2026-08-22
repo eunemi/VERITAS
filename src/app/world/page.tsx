@@ -1,94 +1,145 @@
-import React from "react";
+import type { Metadata } from "next";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StoryCard } from "@/components/ui/StoryCard";
+import { SectionHead, Slug, Spread } from "@/components/agents/shared/layout";
+import { ARCHIVE } from "@/lib/archive";
+import { TONE_TEXT, toneOf } from "@/lib/types/agents";
+
+export const metadata: Metadata = {
+  title: "World",
+  description:
+    "Reporting from across the globe, with the desk record behind each story — and where the signed records have come from.",
+};
+
+/**
+ * Where the records come from.
+ *
+ * This block used to be a "GLOBAL INTELLIGENCE MAP · LIVE TRACKING": a 400px map
+ * glyph with three pinging dots placed by hand, tracking nothing. It is now a
+ * count of the regions the signed records actually cover, read off the archive,
+ * which is the only global picture this publication can honestly print.
+ */
+const REGIONS = Array.from(new Set(ARCHIVE.map((record) => record.region)))
+  .map((region) => {
+    const filed = ARCHIVE.filter((record) => record.region === region);
+    /* The archive is held in filing order, so the first match is the newest. */
+    return { region, count: filed.length, latest: filed[0] };
+  })
+  .sort((a, b) => b.count - a.count || a.region.localeCompare(b.region));
 
 export default function WorldPage() {
   return (
-    <main className="w-full max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
-      <PageHeader 
-        label="WORLD / GLOBAL INTELLIGENCE" 
-        headline={<>THE WORLD,<br />UNDER ANALYSIS.</>}
-        subheadline="Signals, stories and developments from across the globe — examined through evidence and intelligence."
+    <main className="min-h-screen bg-background">
+      <PageHeader
+        section="World"
+        standing="Reporting from the regions"
+        kicker={`${REGIONS.length} regions on the index`}
+        title={["The world,", "under analysis."]}
+        lede="Signals, stories and developments from across the globe, each one carrying the desk record that was signed behind it."
       />
 
-      <section className="mt-stack-lg mb-stack-xl">
-        <StoryCard 
-          featured
-          category="GEOPOLITICS"
-          location="GENEVA"
-          headline="New Treaties Questioned as Synthetic Media Clouds Negotiations"
-          description="A comprehensive analysis of the recent summit reveals overlapping inconsistencies in the official broadcast feeds. VERITAS multi-modal agents detected subtle audio-visual desyncs consistent with deepfake injection, raising questions about the authenticity of the primary accord."
-          source="REUTERS / VERITAS INTEL"
-          date="AUG 21, 2026"
-          verificationStatus="CONTESTED"
-        />
-      </section>
-
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 mb-stack-xl">
-        <StoryCard 
-          category="CLIMATE"
-          location="JAKARTA"
-          headline="Unprecedented Sea Wall Breach Attributed to Sensor Malfunction, Not Sabotage"
-          description="Initial reports suggested malicious interference, but our forensic data analysis of the structural integrity sensors points to a cascading hardware failure."
-          source="AP / VERITAS FORENSICS"
-          date="AUG 20, 2026"
-          verificationStatus="VERIFIED"
-        />
-        <StoryCard 
-          category="CONFLICT"
-          location="EASTERN EUROPE"
-          headline="Satellite Imagery Contradicts Troop Withdrawal Claims"
-          description="Analysis of 48 hours of synthetic aperture radar (SAR) data shows concealed movements contradicting the official narrative of de-escalation."
-          source="MAXAR / VERITAS VISION"
-          date="AUG 19, 2026"
-          verificationStatus="UNDER REVIEW"
-        />
-        <StoryCard 
-          category="ELECTION"
-          location="BRASÍLIA"
-          headline="Audio Leak Authenticated Despite Candidate's Denial"
-          description="The VERITAS Audio Agent has processed the leaked recording, finding continuous spectral signatures and no evidence of AI generation."
-          source="VERITAS INTEL"
-          date="AUG 18, 2026"
-          verificationStatus="VERIFIED"
-        />
-      </section>
-
-      {/* Global Intelligence Map Mock */}
-      <section className="mb-stack-xl">
-        <div className="w-full flex justify-between items-end border-b border-primary/20 pb-4 mb-8">
-          <h2 className="font-headline-md text-3xl font-bold text-primary">GLOBAL INTELLIGENCE MAP</h2>
-          <span className="font-mono-label text-mono-label text-secondary tracking-widest">LIVE TRACKING</span>
+      <Spread className="pb-stack-xl">
+        <SectionHead title="The lead" note="Examined at four desks" />
+        <div className="mt-stack-md">
+          <StoryCard
+            featured
+            category="Geopolitics"
+            location="Geneva"
+            headline="New treaties questioned as synthetic media clouds negotiations"
+            description="A comprehensive analysis of the recent summit reveals overlapping inconsistencies in the official broadcast feeds. Veritas desks detected audio-visual desyncs consistent with deepfake injection, raising questions about the authenticity of the primary accord."
+            source="Reuters / Veritas Intel"
+            date="21 Aug 2026"
+            verificationStatus="CONTESTED"
+            desk="video"
+          />
         </div>
-        <div className="w-full aspect-[21/9] bg-ink-black relative overflow-hidden flex items-center justify-center">
-          <div className="absolute inset-0 grid-bg opacity-30"></div>
-          {/* Mock Map using SVG/CSS for the vibe */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-40">
-            <span className="material-symbols-outlined text-[400px] text-parchment">map</span>
-          </div>
-          
-          {/* Signal Markers */}
-          <div className="absolute top-1/3 left-1/4 w-3 h-3 bg-secondary rounded-full animate-ping"></div>
-          <div className="absolute top-1/3 left-1/4 w-3 h-3 bg-secondary rounded-full"></div>
-          
-          <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-trust-green rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-trust-green rounded-full"></div>
+      </Spread>
 
-          <div className="absolute top-[40%] right-[30%] w-2 h-2 bg-secondary rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
-          <div className="absolute top-[40%] right-[30%] w-2 h-2 bg-secondary rounded-full"></div>
-
-          <div className="absolute bottom-8 left-8 flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-trust-green rounded-full"></div>
-              <span className="font-mono-label text-[10px] text-parchment uppercase">VERIFIED SIGNAL</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-secondary rounded-full"></div>
-              <span className="font-mono-label text-[10px] text-parchment uppercase">CONTESTED SIGNAL</span>
-            </div>
-          </div>
+      <Spread className="pb-stack-xl">
+        <SectionHead title="Also reported" note="Three records filed this week" />
+        <div className="mt-stack-md grid grid-cols-1 gap-x-gutter gap-y-stack-lg md:grid-cols-2 lg:grid-cols-3">
+          <StoryCard
+            category="Climate"
+            location="Jakarta"
+            headline="Sea wall breach attributed to sensor malfunction, not sabotage"
+            description="Initial reports suggested malicious interference, but forensic analysis of the structural integrity sensors points to a cascading hardware failure."
+            source="AP / Veritas Forensics"
+            date="20 Aug 2026"
+            verificationStatus="VERIFIED"
+            desk="fact-check"
+          />
+          <StoryCard
+            category="Conflict"
+            location="Eastern Europe"
+            headline="Satellite imagery contradicts troop withdrawal claims"
+            description="Analysis of 48 hours of synthetic aperture radar data shows concealed movements contradicting the official narrative of de-escalation."
+            source="Maxar / Veritas Vision"
+            date="19 Aug 2026"
+            verificationStatus="UNDER REVIEW"
+            desk="image"
+          />
+          <StoryCard
+            category="Election"
+            location="Brasília"
+            headline="Audio leak authenticated despite candidate's denial"
+            description="The audio desk has processed the leaked recording, finding continuous spectral signatures and no evidence of AI generation."
+            source="Veritas Intel"
+            date="18 Aug 2026"
+            verificationStatus="VERIFIED"
+            desk="audio"
+          />
         </div>
-      </section>
+      </Spread>
+
+      <Spread className="pb-stack-xl">
+        <SectionHead
+          title="Where the records come from"
+          note={`${ARCHIVE.length} signed records across ${REGIONS.length} regions`}
+        />
+
+        {/* One row used to carry seven separately-styled fragments across twelve
+            columns: a 22px italic region, a 10px count at 40% ink, a 14px headline
+            at 65%, a coloured hairline, a tone label, and a 10px date at 35%. It
+            is three columns now, at two ink levels, and the tone colour on the
+            determination is the only colour in the row. The filing date belongs to
+            the archive, which is where the whole record is. */}
+        <ol className="mt-stack-md">
+          {REGIONS.map(({ region, count, latest }) => (
+            <li
+              key={region}
+              className="grid gap-x-gutter gap-y-1 border-b border-ink-black/25 py-stack-sm sm:grid-cols-12 sm:items-baseline"
+            >
+              <span className="flex flex-wrap items-baseline gap-x-3 sm:col-span-3">
+                <span className="font-headline-md text-[19px] leading-[1.3] font-semibold text-ink-black">
+                  {region}
+                </span>
+                <Slug className="tabular text-ink-black/70">
+                  {count === 1 ? "01 record" : `${count} records`}
+                </Slug>
+              </span>
+              <span className="font-body-md text-read text-ink-black sm:col-span-6">
+                {latest.headline}
+              </span>
+              <Slug className={`${TONE_TEXT[toneOf(latest.determination)]} sm:col-span-3`}>
+                {latest.determination}
+              </Slug>
+            </li>
+          ))}
+        </ol>
+
+        <p className="font-body-md text-body-md mt-stack-md max-w-measure text-ink-black/70">
+          Counted from the records the desks have signed, not from live monitoring — Veritas watches
+          what it is handed.{" "}
+          <Link
+            href="/archive"
+            className="border-b border-secondary text-ink-black transition-colors hover:text-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black"
+          >
+            Search the whole index
+          </Link>
+          .
+        </p>
+      </Spread>
     </main>
   );
 }
