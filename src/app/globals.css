@@ -156,6 +156,13 @@
   .sticker-shadow {
     filter: drop-shadow(0 25px 25px rgba(0, 0, 0, 0.4)) drop-shadow(0 10px 10px rgba(0, 0, 0, 0.2));
   }
+  .custom-bg {
+    background-image: url('/main-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
 }
 
 @layer base {
