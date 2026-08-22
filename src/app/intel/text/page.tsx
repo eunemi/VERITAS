@@ -1,130 +1,100 @@
 "use client";
 
-import React, { useState } from "react";
-import { AgentBreadcrumb } from "@/components/agents/shared/AgentBreadcrumb";
-import { AgentHeader } from "@/components/agents/shared/AgentHeader";
-import { AgentNavigation } from "@/components/agents/shared/AgentNavigation";
-import { InputWorkspace } from "@/components/agents/shared/InputWorkspace";
-import { AnalysisProgress } from "@/components/agents/shared/AnalysisProgress";
-import { MetricGrid } from "@/components/agents/shared/MetricGrid";
-import { FindingList } from "@/components/agents/shared/FindingList";
-import { EditorialDivider } from "@/components/agents/shared/EditorialDivider";
-import { analyzeText } from "@/lib/services/agentServices";
+import { useState } from "react";
+import { GalleyProof } from "@/components/agents/instruments/GalleyProof";
+import { Determination } from "@/components/agents/shared/Determination";
+import { DeskPage } from "@/components/agents/shared/DeskPage";
+import { FindingLedger, SignalTable } from "@/components/agents/shared/FindingLedger";
+import { LedgerBand } from "@/components/agents/shared/LedgerBand";
+import { CopyField, SubmissionBench } from "@/components/agents/shared/SubmissionBench";
+import { MarkedSpread, Slug, Spread } from "@/components/agents/shared/layout";
+import type { DeskStatus } from "@/components/agents/shared/SlugBar";
+import { DESKS } from "@/lib/desks";
+import { DESK_LATENCY, examineText } from "@/lib/services/agentServices";
+import type { TextRecord } from "@/lib/types/agents";
 
-const TEXT_STAGES = [
-  "CONTENT INGESTION",
-  "LANGUAGE DETECTION",
-  "CLAIM EXTRACTION",
-  "ENTITY ANALYSIS",
-  "NARRATIVE ANALYSIS",
-  "SIGNAL DETECTION",
-  "ASSESSMENT READY"
-];
+const desk = DESKS.text;
 
-export default function TextAgentPage() {
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [currentStage, setCurrentStage] = useState(0);
-  const [results, setResults] = useState<any>(null);
+/** Enough copy for the desk to have something to mark. */
+const MINIMUM = 80;
 
-  const handleAnalyze = async (content: string) => {
-    setIsAnalyzing(true);
-    setResults(null);
-    setCurrentStage(0);
+const SAMPLE = `Officials confirmed on Tuesday that the relief fund has already reached 4.1 million households across the northern districts. The figure was first published by the state disaster authority and has since been repeated by three national outlets. A senior official said the transfers were completed within nine days of the announcement, calling the rollout the fastest in the programme's history. Independent auditors have not yet been given access to the disbursement records.`;
 
-    // Simulate progress
-    const interval = setInterval(() => {
-      setCurrentStage((prev) => {
-        if (prev >= TEXT_STAGES.length - 1) {
-          clearInterval(interval);
-          return prev;
-        }
-        return prev + 1;
-      });
-    }, 600);
+export default function TextDesk() {
+  const [copy, setCopy] = useState("");
+  const [status, setStatus] = useState<DeskStatus>("bench");
+  const [record, setRecord] = useState<TextRecord | null>(null);
 
-    const data = await analyzeText(content);
-    
-    setTimeout(() => {
-      setResults(data);
-      setCurrentStage(TEXT_STAGES.length);
-      setIsAnalyzing(false);
-    }, 1000);
-  };
+  const tooShort = copy.trim().length < MINIMUM;
+
+  async function examine() {
+    if (tooShort || status === "working") return;
+    setStatus("working");
+    const result = await examineText(copy);
+    setRecord(result);
+    setStatus("record");
+  }
 
   return (
-    <main className="w-full min-h-screen bg-parchment pb-stack-xl">
-      <AgentBreadcrumb agentNumber="AGENT_01" agentName="TEXT" />
-      
-      <div className="w-full max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop py-stack-md">
-        <AgentHeader 
-          title="TEXT\nANALYSIS"
-          label="AGENT_01 / LINGUISTIC INTELLIGENCE"
-          description="Analyze articles, captions and written claims for linguistic signals, narrative patterns and potentially misleading statements."
-        />
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter mt-stack-xl">
-          {/* Input & Progress Column */}
-          <div className="lg:col-span-7 flex flex-col gap-12">
-            <InputWorkspace 
-              type="text"
-              placeholder="Paste an article, caption, statement or news report here..."
-              buttonText="ANALYZE TEXT"
-              onAnalyze={handleAnalyze}
-              isAnalyzing={isAnalyzing}
-            />
-
-            {(isAnalyzing || results) && (
-              <AnalysisProgress 
-                stages={TEXT_STAGES} 
-                currentStage={currentStage} 
-                isAnalyzing={isAnalyzing} 
+    <DeskPage
+      desk={desk}
+      status={status}
+      latencyMs={DESK_LATENCY}
+      onReopen={() => {
+        setRecord(null);
+        setStatus("bench");
+      }}
+      bench={
+        <SubmissionBench
+          prompt={desk.prompt}
+          note="Plain text · a paragraph or more"
+          hint={
+            tooShort
+              ? "The desk needs a paragraph or two to find claims worth checking."
+              : "The desk marks the copy in place and answers each mark in the margin."
+          }
+          actionLines={["Examine", "copy"]}
+          onSubmit={examine}
+          disabled={tooShort || status === "working"}
+        >
+          <CopyField
+            value={copy}
+            onChange={setCopy}
+            scanning={status === "working"}
+            placeholder="Paste the article, statement or caption to be examined."
+          />
+          {status === "bench" && !copy ? (
+            <button
+              type="button"
+              onClick={() => setCopy(SAMPLE)}
+              className="mt-stack-md cursor-pointer border-b border-ink-black/30 pb-1 transition-colors hover:border-secondary hover:text-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black"
+            >
+              <Slug className="text-ink-black/50">Or set a sample dispatch on the bench</Slug>
+            </button>
+          ) : null}
+        </SubmissionBench>
+      }
+      record={
+        record ? (
+          <>
+            <LedgerBand entries={record.ledger} />
+            <Spread className="pt-stack-xl">
+              <MarkedSpread
+                artifact={<GalleyProof copy={record.copy} annotations={record.annotations} />}
+                margin={
+                  <div className="flex flex-col gap-stack-lg">
+                    <FindingLedger annotations={record.annotations} showQuote={false} />
+                    <SignalTable signals={record.signals} title="Readings" />
+                  </div>
+                }
               />
-            )}
-          </div>
-
-          {/* Results Column */}
-          <div className="lg:col-span-5 flex flex-col gap-12 mt-12 lg:mt-0 lg:pl-gutter lg:border-l border-primary/20">
-            {results ? (
-              <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-                <MetricGrid metrics={[
-                  { label: "CLAIMS DETECTED", value: results.metrics.claimsDetected },
-                  { label: "ENTITIES", value: results.metrics.entities },
-                  { label: "SUSPICIOUS SIGNALS", value: results.metrics.suspiciousSignals },
-                  { label: "CONFIDENCE", value: results.metrics.confidence }
-                ]} />
-
-                <EditorialDivider />
-
-                <h3 className="font-headline-md text-3xl font-bold uppercase mb-6 text-ink-black">CLAIMS EXTRACTED</h3>
-                <FindingList findings={results.claims} />
-
-                <EditorialDivider />
-
-                <h3 className="font-headline-md text-3xl font-bold uppercase mb-6 text-ink-black">LINGUISTIC SIGNALS</h3>
-                <div className="flex flex-col gap-4">
-                  {results.signals.map((signal: any, i: number) => (
-                    <div key={i} className="flex justify-between items-center border-b border-primary/10 pb-2">
-                      <span className="font-mono-label text-xs tracking-widest text-on-surface-variant">{signal.label}</span>
-                      <span className="font-mono-label text-sm text-primary font-bold">{signal.level}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-12 p-6 border border-secondary/30 bg-secondary/5 text-center">
-                  <h4 className="font-headline-md text-2xl font-bold text-secondary mb-2">TEXT ANALYSIS COMPLETE</h4>
-                  <p className="font-body-sm text-on-surface-variant font-bold tracking-widest uppercase mt-4">DEMO ANALYSIS — FRONTEND PREVIEW</p>
-                </div>
-              </div>
-            ) : (
-              <div className="w-full h-full min-h-[400px] flex items-center justify-center border border-dashed border-primary/20 text-primary/40 font-mono-label text-sm tracking-widest uppercase">
-                AWAITING INPUT
-              </div>
-            )}
-          </div>
-        </div>
-
-        <AgentNavigation nextAgent={{ name: "IMAGE", id: "image" }} />
-      </div>
-    </main>
+            </Spread>
+            <div className="pt-stack-xl">
+              <Determination verdict={record.verdict} signedBy="linguistic desk" />
+            </div>
+          </>
+        ) : null
+      }
+    />
   );
 }
