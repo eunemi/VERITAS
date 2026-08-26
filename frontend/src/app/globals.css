@@ -1,0 +1,371 @@
+/* `source()` scopes class detection to the application. Tailwind otherwise scans
+   the whole project root, which pulled candidates out of `claude-skills/` — a
+   markdown table cell reading `[build:affected]` and a Python slice `[-:|]` are
+   both valid arbitrary-property syntax, so they compiled to `build: affected;`
+   and `-: |;` and Turbopack refused the stylesheet. Nothing outside `src/`
+   carries a class name, so nothing is lost by not looking there. */
+@import "tailwindcss" source("../../src");
+
+@theme {
+    --color-error-container: #ffdad6;
+    --color-primary-fixed-dim: #c8c6c5;
+    --color-inverse-surface: #32302a;
+    --color-on-primary-fixed-variant: #474746;
+    --color-on-secondary-fixed-variant: #920023;
+    --color-background: #fef9f0;
+    --color-on-primary: #ffffff;
+    --color-inverse-primary: #c8c6c5;
+    --color-primary: #000000;
+    --color-on-secondary-container: #fffbff;
+    --color-tertiary-fixed: #ffe088;
+    --color-inverse-on-surface: #f5f0e7;
+    --color-on-error: #ffffff;
+    --color-surface-container-low: #f8f3ea;
+    --color-primary-fixed: #e5e2e1;
+    --color-surface-container-lowest: #ffffff;
+    --color-parchment: #F4EFE6;
+    --color-on-tertiary-fixed-variant: #574500;
+    --color-surface: #fef9f0;
+    --color-on-error-container: #93000a;
+    --color-on-secondary-fixed: #40000a;
+    --color-on-secondary: #ffffff;
+    --color-surface-container-highest: #e7e2d9;
+    --color-surface-container: #f2ede4;
+    --color-surface-container-high: #ece8df;
+    --color-error: #ba1a1a;
+    --color-surface-bright: #fef9f0;
+    --color-gold-foil: #D4AF37;
+    /* Gold-foil is an ornament colour: on the #fef9f0 ground it measures 2.0:1,
+       so it can fill a rule but must never set a word. This is the ink version of
+       it — 6.9:1 on paper — for the one tone that was being printed in foil. */
+    --color-gold-ink: #6E5300;
+    --color-outline: #747878;
+    --color-on-surface: #1d1c16;
+    --color-secondary-fixed: #ffdad9;
+    --color-surface-variant: #e7e2d9;
+    --color-ink-black: #1A1A1A;
+    --color-on-tertiary-fixed: #241a00;
+    --color-trust-green: #2D5F3F;
+    --color-on-background: #1d1c16;
+    --color-tertiary-container: #cca730;
+    --color-surface-tint: #5f5e5e;
+    --color-outline-variant: #c4c7c7;
+    --color-secondary-fixed-dim: #ffb3b4;
+    --color-alert-crimson: #8B0000;
+    --color-tertiary: #735c00;
+    --color-primary-container: #1c1b1b;
+    --color-surface-dim: #ded9d1;
+    --color-tertiary-fixed-dim: #e9c349;
+    --color-on-tertiary: #ffffff;
+    --color-on-surface-variant: #444748;
+    --color-on-tertiary-container: #4f3e00;
+    --color-secondary-container: #da3148;
+    --color-on-primary-container: #858383;
+    --color-on-primary-fixed: #1c1b1b;
+    --color-secondary: #b71032;
+
+    --radius-default: 0.25rem;
+    --radius-lg: 0.5rem;
+    --radius-xl: 0.75rem;
+    --radius-full: 9999px;
+
+    --spacing-column-count: 12px;
+    --spacing-margin-desktop: 64px;
+    --spacing-margin-mobile: 20px;
+    --spacing-stack-lg: 48px;
+    --spacing-stack-xl: 80px;
+    --spacing-stack-xs: 4px;
+    --spacing-stack-sm: 12px;
+    --spacing-gutter: 24px;
+    --spacing-stack-md: 24px;
+
+    --font-body-lg: var(--font-inter), sans-serif;
+    --font-headline-md: var(--font-playfair), serif;
+    --font-mono-label: var(--font-jetbrains), monospace;
+    --font-caption: var(--font-inter), sans-serif;
+    --font-headline-lg: var(--font-playfair), serif;
+    --font-headline-xl-mobile: var(--font-playfair), serif;
+    --font-body-md: var(--font-inter), sans-serif;
+    --font-headline-xl: var(--font-playfair), serif;
+    --font-masthead: var(--font-playfair), serif;
+
+    --text-body-lg: 20px;
+    --text-body-lg--line-height: 32px;
+    --text-body-lg--font-weight: 400;
+
+    --text-headline-md: 32px;
+    --text-headline-md--line-height: 40px;
+    --text-headline-md--font-weight: 600;
+
+    --text-mono-label: 12px;
+    --text-mono-label--line-height: 16px;
+    --text-mono-label--letter-spacing: 0.1em;
+    --text-mono-label--font-weight: 500;
+
+    --text-caption: 13px;
+    --text-caption--line-height: 18px;
+    --text-caption--font-weight: 500;
+
+    --text-headline-lg: 48px;
+    --text-headline-lg--line-height: 56px;
+    --text-headline-lg--font-weight: 700;
+
+    --text-headline-xl-mobile: 42px;
+    --text-headline-xl-mobile--line-height: 48px;
+    --text-headline-xl-mobile--font-weight: 700;
+
+    --text-body-md: 16px;
+    --text-body-md--line-height: 26px;
+    --text-body-md--font-weight: 400;
+
+    --text-headline-xl: 72px;
+    --text-headline-xl--line-height: 80px;
+    --text-headline-xl--letter-spacing: -0.01em;
+    --text-headline-xl--font-weight: 700;
+
+    --text-masthead: 120px;
+    --text-masthead--line-height: 110px;
+    --text-masthead--letter-spacing: -0.02em;
+    --text-masthead--font-weight: 900;
+
+    /* Small roles used across the examination desks. */
+    --font-body-sm: var(--font-inter), sans-serif;
+    --font-headline-sm: var(--font-playfair), serif;
+    --font-proof: var(--font-playfair), serif;
+
+    --text-body-sm: 14px;
+    --text-body-sm--line-height: 22px;
+    --text-body-sm--font-weight: 400;
+
+    --text-headline-sm: 20px;
+    --text-headline-sm--line-height: 26px;
+    --text-headline-sm--font-weight: 600;
+
+    /* Reading size for examined copy — serif, generous leading, set on a wide measure. */
+    --text-proof: 18px;
+    --text-proof--line-height: 32px;
+    --text-proof--font-weight: 400;
+
+    /* ------------------------------------------------------------------
+       Reading roles for the section and index pages.
+
+       The pages reached from the navigation are read, not scanned, so they
+       use these three sizes and nothing smaller. `--text-label` replaces the
+       10px/0.18em labels those pages were setting: 12px at 0.08em stays a
+       small caps mono label while remaining legible at arm's length.
+
+       Colour goes with size here. Composited over the #fef9f0 ground,
+       ink-black at /65 clears WCAG AA at 5.3:1, /70 at 6.3:1 and /75 at
+       7.4:1 — but /55 falls to 3.9:1 and /35 to 2.2:1. Running text on these
+       pages therefore never goes below /65; lighter alphas are for rules and
+       hairlines, which carry no words.
+       ------------------------------------------------------------------ */
+    --text-read: 17px;
+    --text-read--line-height: 30px;
+    --text-read--font-weight: 400;
+
+    --text-lede: 20px;
+    --text-lede--line-height: 33px;
+    --text-lede--font-weight: 400;
+
+    --text-label: 12px;
+    --text-label--line-height: 16px;
+    --text-label--letter-spacing: 0.08em;
+    --text-label--font-weight: 500;
+
+    /* ------------------------------------------------------------------
+       Reading measures.
+
+       Every text block used to set its own width in `ch`, which is the advance
+       of "0" — wider than the average mixed-case character in Inter, so a
+       declared 86ch was rendering nearer 105 characters. These three are the
+       only measures on the site, given in rem so what is declared is what is
+       set. `max-w-measure` is a 68-character line of body copy.
+       ------------------------------------------------------------------ */
+    --container-measure: 34rem;
+    --container-lede: 30rem;
+    --container-title: 42rem;
+}
+
+@keyframes float-1 {
+  0%, 100% { transform: translate(0px, 0px) rotate(-12deg); }
+  33% { transform: translate(15px, -10px) rotate(-8deg); }
+  66% { transform: translate(-10px, 15px) rotate(-15deg); }
+}
+@keyframes float-2 {
+  0%, 100% { transform: translate(0px, 0px) rotate(12deg); }
+  33% { transform: translate(-15px, -15px) rotate(16deg); }
+  66% { transform: translate(10px, 10px) rotate(8deg); }
+}
+@keyframes float-3 {
+  0%, 100% { transform: translate(0px, 0px) rotate(5deg); }
+  33% { transform: translate(10px, 20px) rotate(2deg); }
+  66% { transform: translate(-20px, 5px) rotate(8deg); }
+}
+@keyframes float-4 {
+  0%, 100% { transform: translate(0px, 0px) rotate(-6deg); }
+  33% { transform: translate(-20px, 10px) rotate(-2deg); }
+  66% { transform: translate(15px, -15px) rotate(-10deg); }
+}
+
+@keyframes proof-scan {
+  0%   { top: 0%;   opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+@layer utilities {
+  .animate-float-1 {
+    animation: float-1 6s ease-in-out infinite;
+  }
+  .animate-float-2 {
+    animation: float-2 8s ease-in-out infinite;
+  }
+  .animate-float-3 {
+    animation: float-3 7s ease-in-out infinite;
+  }
+  .animate-float-4 {
+    animation: float-4 9s ease-in-out infinite;
+  }
+  .sticker-shadow {
+    filter: drop-shadow(0 25px 25px rgba(0, 0, 0, 0.4)) drop-shadow(0 10px 10px rgba(0, 0, 0, 0.2));
+  }
+  /* The front page's photographic ground. Drawn by a fixed pseudo-element rather
+     than `background-attachment: fixed`, which iOS Safari does not honour and
+     which repaints the whole page on scroll where it does. `-1` keeps it behind
+     the page without needing a wrapper.
+
+     This is set on the front page alone. It used to sit on <body>, which put a
+     vignetted photograph behind the body text of every section page: measured
+     against the image's mean rather than the #fef9f0 token, crimson fell from
+     6.4:1 to 4.1:1 and in the dark corners solid ink-black reached 4.7:1. Body
+     text needs one flat, known ground. */
+  .custom-bg::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-image: url('/bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.8;
+  }
+
+  /* Figures in ledgers and timecodes must not jitter between values. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Registration ticks at the four corners of a block, in currentColor.
+     Replaces the hand-placed corner divs that were repeated across pages. */
+  .ticked {
+    position: relative;
+  }
+  .ticked::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-image:
+      linear-gradient(currentColor 0 0), linear-gradient(currentColor 0 0),
+      linear-gradient(currentColor 0 0), linear-gradient(currentColor 0 0),
+      linear-gradient(currentColor 0 0), linear-gradient(currentColor 0 0),
+      linear-gradient(currentColor 0 0), linear-gradient(currentColor 0 0);
+    background-size:
+      11px 1px, 1px 11px,
+      11px 1px, 1px 11px,
+      11px 1px, 1px 11px,
+      11px 1px, 1px 11px;
+    background-position:
+      left top, left top,
+      right top, right top,
+      left bottom, left bottom,
+      right bottom, right bottom;
+  }
+
+  /* Film sprockets along a filmstrip edge. */
+  .sprockets {
+    background-image: repeating-linear-gradient(
+      to right,
+      currentColor 0 7px,
+      transparent 7px 18px
+    );
+  }
+
+  /* The examination pass: a hairline travelling down the artifact under scrutiny. */
+  .animate-proof-scan {
+    animation: proof-scan 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+
+  /* A struck examiner's stamp. Multiply keeps it sitting in the paper, not on it. */
+  .stamp {
+    border: 2px solid currentColor;
+    outline: 1px solid currentColor;
+    outline-offset: 3px;
+    mix-blend-mode: multiply;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-1,
+  .animate-float-2,
+  .animate-float-3,
+  .animate-float-4,
+  .animate-proof-scan {
+    animation: none !important;
+  }
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    .grid-bg {
+        background-image:
+            linear-gradient(to right, rgba(26, 26, 26, 0.1) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(26, 26, 26, 0.1) 1px, transparent 1px);
+        background-size: 8.33% 100%, 100% 48px;
+    }
+
+    .glass-card {
+        background: rgba(244, 239, 230, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(26, 26, 26, 0.15);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+    }
+
+    .wax-seal {
+        background: #C41E3A;
+        box-shadow:
+            inset 2px 2px 5px rgba(255, 255, 255, 0.3),
+            inset -3px -3px 8px rgba(0, 0, 0, 0.6),
+            3px 3px 10px rgba(0, 0, 0, 0.3);
+        border: 2px solid #8B0000;
+    }
+
+    /* The lift is left to the `hover:scale-105` utility on the seal itself: a
+       `transform` here sits in the base layer and would always lose to it. */
+    .wax-seal:hover {
+        box-shadow:
+            inset 2px 2px 5px rgba(255, 255, 255, 0.4),
+            inset -3px -3px 8px rgba(0, 0, 0, 0.7),
+            5px 5px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    .drop-cap::first-letter {
+        /* The display face is loaded by next/font, which emits a hashed family
+           name — naming "Playfair Display" here silently fell back to serif. */
+        font-family: var(--font-playfair), serif;
+        font-size: 4.5rem;
+        line-height: 1;
+        float: left;
+        margin-right: 0.5rem;
+        color: #C41E3A;
+        font-weight: 900;
+    }
+}

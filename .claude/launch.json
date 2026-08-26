@@ -4,9 +4,14 @@
     {
       "name": "veritas",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "port": 3000,
-      "autoPort": true
+      "runtimeArgs": ["--prefix", "frontend", "run", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "veritas-api",
+      "runtimeExecutable": "backend/.venv/bin/uvicorn",
+      "runtimeArgs": ["app.main:app", "--app-dir", "backend", "--port", "8000"],
+      "port": 8000
     }
   ]
 }
