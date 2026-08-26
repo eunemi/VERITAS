@@ -1,0 +1,39 @@
+# Keep the build context to what the image actually needs: `app/` and the
+# requirements files. Everything below either bloats the context, invalidates the
+# layer cache on every edit, or must never reach an image.
+
+# Secrets — the image gets its configuration from the environment at run time.
+.env
+.env.*
+
+# Version control and editor state
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Virtual environments: large, and built for the host's platform, not the image's.
+.venv/
+venv/
+env/
+
+# Caches and compiled output
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Tests and docs are not part of the runtime image.
+tests/
+README.md
+
+# Runtime state that belongs in a volume, not a layer.
+var/
+
+# Docker's own files
+Dockerfile
+docker-compose.yml
+.dockerignore

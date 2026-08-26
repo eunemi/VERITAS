@@ -1,0 +1,78 @@
+# Tool configuration only. Dependencies live in requirements.txt, so there is no
+# `[project]` table here and nothing installs this directory as a package —
+# `tool.pytest.ini_options.pythonpath` is what makes `app` importable instead.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Adds the backend directory to sys.path, so `import app` works without an
+# editable install or a PYTHONPATH incantation in front of every command.
+pythonpath = ["."]
+# Every test in this suite is async. `auto` mode means they do not each need an
+# `@pytest.mark.asyncio` decorator.
+asyncio_mode = "auto"
+# Set explicitly because pytest-asyncio warns on every run when it is unset, and
+# the default it warns about is the one we want anyway.
+asyncio_default_fixture_loop_scope = "function"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    # Show the slowest tests; a foundation's suite should stay fast enough that
+    # this list is boring.
+    "--durations=5",
+    "-ra",
+]
+filterwarnings = [
+    # An un-awaited coroutine is a real bug in async code and is easy to scroll
+    # past in test output, so it fails the run.
+    "error::RuntimeWarning",
+    # Third-party DeprecationWarnings are deliberately left as warnings. Turning
+    # them into errors means a dependency's routine release note can break the
+    # build on an unrelated change; they are visible in the output either way.
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+extend-exclude = ["var"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # import sorting
+    "N",      # pep8-naming
+    "UP",     # pyupgrade
+    "B",      # bugbear
+    "C4",     # comprehensions
+    "SIM",    # simplify
+    "RUF",    # ruff's own
+    "ASYNC",  # blocking calls in async functions
+    "S",      # bandit
+]
+ignore = [
+    # Settings fields are upper-case by convention; N815 would flag every one.
+    "N815",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests assert, and assert is what S101 flags.
+"tests/*" = ["S101"]
+# The exception handlers narrow a parameter typed `Exception` with `assert
+# isinstance`, which is how FastAPI's handler signature is meant to be used.
+"app/core/exception_handlers.py" = ["S101"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+# Provider SDKs are added to requirements.txt as each seam is implemented, and
+# not all of them ship type information. Failing on that would make adding a
+# dependency a typing project.
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Tests exercise error paths with deliberately wrong values; requiring full
+# annotations there costs more than it catches.
+module = "tests.*"
+disallow_untyped_defs = false

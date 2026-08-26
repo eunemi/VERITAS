@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Local secrets. The repository root already ignores `.env*`; the negation below
+# is what keeps the committed template visible, since a pattern in a deeper
+# .gitignore overrides one from a parent.
+.env
+.env.*
+!.env.example
+
+# Runtime state: Chroma's persist directory, FAISS indexes, scratch artifacts.
+var/
+
+# Pinned lockfile generated from requirements.txt for deploys. Commit it when
+# there is a deploy pipeline that should be reproducible; ignored until then.
+requirements.lock

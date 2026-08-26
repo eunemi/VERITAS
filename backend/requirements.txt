@@ -1,0 +1,187 @@
+# Runtime dependencies.
+#
+# Only what the application imports today. Provider SDKs (OpenAI, Tavily, and so on)
+# are added here when the seam that needs them in `app/llm`, `app/search`,
+# `app/factcheck`, or `app/vectorstore` is actually implemented — an unused
+# dependency is a slower build and a CVE to triage for no benefit.
+#
+# These are minimum versions, not pins. For a deploy, generate a fully pinned
+# lockfile from this file so builds are reproducible:
+#
+#     pip install pip-tools && pip-compile requirements.txt -o requirements.lock
+#
+# ---------------------------------------------------------------- web ------
+fastapi>=0.115
+uvicorn[standard]>=0.32
+
+# ------------------------------------------------------ configuration ------
+pydantic>=2.9
+# 2.7 is the floor because `NoDecode` arrived in it, and app/core/config.py needs
+# that annotation for CORS_ORIGINS to survive being set as an environment
+# variable. Lowering this bound makes the container fail to start.
+pydantic-settings>=2.7
+
+# --------------------------------------------------------------- auth ------
+# Both are imported inside function bodies in `app/security`, the same discipline
+# as the NLP, vision and audio blocks below — but for a different reason, and the
+# difference matters. Those degrade: a missing library disables one desk. These do
+# not. There is no weaker hash and no unsigned token to fall back to, so a missing
+# install is a ConfigurationError on the first authenticated request rather than a
+# quietly downgraded one. See app/security/passwords.py.
+#
+# Argon2id, OWASP's first recommendation for new password storage and the winner of
+# the Password Hashing Competition. Not passlib: it has been unmaintained since
+# 2020 and its bcrypt backend breaks against bcrypt 4.x, which is a dependency
+# resolution problem in the one place an application cannot afford one.
+argon2-cffi>=23.1
+# JWT encode and decode. Not python-jose, which is unmaintained and has carried
+# algorithm-confusion CVEs; PyJWT requires the caller to name the accepted
+# algorithms on every decode, which is the API shape that prevents them.
+PyJWT>=2.9
+
+# ----------------------------------------------------------- database ------
+sqlalchemy[asyncio]>=2.0.36
+# PostgreSQL async driver, named by the default DATABASE_URL.
+asyncpg>=0.30
+# Schema migrations. The naming convention in app/database/base.py exists for it.
+alembic>=1.14
+
+# --------------------------------------------------------- http clients ------
+# The HTTP client every provider speaks through. A hard runtime dependency, not a
+# test-only one: app/providers/http.py builds the shared AsyncClient behind the three
+# search providers, the fact-check lookup, and both LLM clients. Unlike the NLP block
+# below, it is imported at module scope, so a missing httpx is an ImportError at
+# startup rather than a degraded feature.
+#
+# No vendor SDKs, and that includes `openai`. Every one of these APIs is a single POST
+# or GET with a JSON body, and the clients in app/search, app/factcheck and app/llm
+# speak them directly — which is what makes their response handling testable against
+# recorded payloads and their contracts readable in one file each. The OpenAI client is
+# also what talks to vLLM, llama.cpp and LM Studio, all of which serve the same request
+# shape; a vendor SDK would make that a second client rather than a base URL.
+httpx>=0.27
+
+# --------------------------------------------------------------- graph ------
+# The verification workflow's runtime — see app/graph. Only app/graph/workflow.py
+# imports it: the state is a TypedDict and every agent is a plain callable, so the
+# seven agents are testable without this installed and a missing langgraph is an
+# ImportError on one module rather than on the package.
+#
+# No langchain, and that is the point of the dependency. This uses the graph runtime
+# only — StateGraph, channels, supersteps — and nothing in app/graph constructs a
+# chain, a prompt template or a model client, so the LLM seam stays app/llm's.
+langgraph>=0.2.60
+
+# ------------------------------------------------------- vector store ------
+# Evidence embeddings — see app/vectorstore. Imported inside
+# ChromaVectorStore.__init__, never at module scope, for the same reason as the NLP
+# block: the dependency tree is large, and a deployment that selects
+# VECTOR_STORE_PROVIDER=memory should not have to install it. A missing chromadb
+# under VECTOR_STORE_PROVIDER=chroma is a ConfigurationError naming the fix, not an
+# ImportError from four frames down.
+#
+# 0.5 is the floor: `PersistentClient` and the `hnsw:space` collection metadata that
+# app/vectorstore/chroma.py sets to cosine are both stable from there. Not pinned
+# tighter, because the protocol in app/vectorstore/base.py is the whole surface this
+# code depends on.
+chromadb>=0.5
+
+# ---------------------------------------------------------------- nlp ------
+# Claim extraction. Every one of these is imported inside a function body, never at
+# module scope, so the application still starts and serves /health if the install
+# is incomplete — see app/nlp/resources.py for why that is structural.
+#
+# Two artifacts are NOT installed by this file, because neither is a PyPI
+# dependency of its library. A deploy needs both as their own steps:
+#
+#     python -m spacy download en_core_web_sm
+#     python -m nltk.downloader punkt_tab stopwords
+#
+# Missing the spaCy model is a hard 500 naming that command. Missing the NLTK data
+# only logs a warning and falls back to spaCy's sentence boundaries.
+
+# Dependency parse, NER, lemmas, POS. 3.7 is the floor for the Python 3.12 wheels.
+spacy>=3.7
+# Sentence segmentation with character offsets, and the stopwords corpus. 3.9 is the
+# floor because it replaced the pickled `punkt` with the `punkt_tab` data format —
+# app/nlp/resources.py loads either, but only the newer one avoids unpickling a file
+# fetched from the internet.
+nltk>=3.9
+# TF-IDF, for keyword extraction with each sentence as a document.
+scikit-learn>=1.5
+# Already present transitively via starlette; declared because app/nlp/pipeline.py
+# imports `anyio.to_thread` directly to run the parse off the event loop, and a
+# direct import deserves a direct declaration.
+anyio>=4.6
+
+# ------------------------------------------------------------- vision ------
+# Image verification — see app/vision. Same discipline as the NLP block: cv2,
+# pytesseract and ultralytics are all imported inside function bodies, so the
+# application starts and every other desk works with none of them installed, and a
+# missing one is a ConfigurationError naming its install command.
+#
+# Two artifacts are NOT installed by this file:
+#
+#   1. The Tesseract binary. `pytesseract` is a wrapper that shells out to it and
+#      does not bundle it, so a deploy needs its own step:
+#
+#          brew install tesseract          # macOS
+#          apt-get install tesseract-ocr   # Debian/Ubuntu
+#
+#      Add the language packs named in TESSERACT_LANGUAGE too (tesseract-ocr-deu
+#      and so on) — a missing pack is a runtime error, not a startup one.
+#
+#   2. The YOLOv8 weights. A bare YOLO_WEIGHTS filename is resolved by ultralytics
+#      by DOWNLOADING IT FROM THE INTERNET on first use and caching it, which a
+#      sealed or air-gapped deployment will not tolerate. Ship the file and set
+#      YOLO_WEIGHTS to its absolute path, or set IMAGE_DETECTION_ENABLED=false.
+
+# Tesseract wrapper. 0.3.10 is the floor for `Output.DICT` on image_to_data with
+# the confidence column app/vision/ocr.py filters on.
+pytesseract>=0.3.10
+# Decode, grayscale, threshold, deskew, upscale. The `-headless` build on purpose:
+# the GUI variant pulls in Qt and GTK to provide `imshow`, which a server never
+# calls, and installing both leaves two copies of cv2 fighting over one namespace.
+opencv-python-headless>=4.10
+# YOLOv8, and with it torch — several hundred megabytes. Only reached when an
+# image's own text names an object the model can detect; see
+# app/vision/relevance.py for why the gate is a fixed vocabulary rather than any
+# noun. Omit this line entirely for a deployment running with
+# IMAGE_DETECTION_ENABLED=false.
+ultralytics>=8.3
+
+# -------------------------------------------------------------- audio ------
+# Audio and video verification — see app/audio. Same discipline as the vision
+# block: librosa, soundfile, numpy and whisper are all imported inside function
+# bodies, so the application starts and every other desk works with none of them
+# installed, and a missing one is a ConfigurationError naming its install command.
+#
+# Two artifacts are NOT installed by this file:
+#
+#   1. The ffmpeg binary. libsndfile reads wav, flac, ogg and mp3, but it does not
+#      demux a container — so every video submission, and any audio codec it does
+#      not carry, reaches ffmpeg over a pipe. There is no Python fallback: without
+#      it, an mp4 is a ConfigurationError naming this step.
+#
+#          brew install ffmpeg          # macOS
+#          apt-get install ffmpeg       # Debian/Ubuntu
+#
+#   2. The Whisper checkpoint. `whisper.load_model("base")` is resolved by
+#      DOWNLOADING IT FROM THE INTERNET on first use (~140 MB for base) and caching
+#      it under ~/.cache/whisper, which a sealed or air-gapped deployment will not
+#      tolerate. Warm that cache in the image and set WHISPER_DOWNLOAD_ROOT to it.
+
+# Resampling, silence detection, RMS envelope. app/audio/analyse.py uses
+# effects.split and feature.rms; app/audio/decode.py uses load() as the
+# no-external-binary path. 0.10 is the floor because load() accepts a file object
+# there, which is what lets a fetched clip be decoded without touching the disk.
+librosa>=0.10
+# libsndfile bindings. A dependency of librosa already; declared because it is
+# specifically the backend that decides whether the native decode path works, and
+# its absence changes behaviour rather than breaking an import.
+soundfile>=0.12
+# Whisper, and with it torch — several hundred megabytes, shared with ultralytics
+# above. `openai-whisper` is the reference implementation; TRANSCRIBER exists so a
+# deployment can swap in faster-whisper or a hosted endpoint without touching the
+# desk. Omit this line for a deployment that never receives audio or video.
+openai-whisper>=20231117

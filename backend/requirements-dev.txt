@@ -1,0 +1,19 @@
+# Development and test dependencies. Install with:
+#
+#     pip install -r requirements-dev.txt
+#
+-r requirements.txt
+
+# ------------------------------------------------------------- testing ------
+pytest>=8.3
+pytest-asyncio>=0.24
+# httpx is not listed here: FastAPI's TestClient needs it, but so does
+# app/providers/http.py at import time, so it belongs in requirements.txt.
+# The SQL stores are tested against SQLite rather than a live PostgreSQL, so the
+# suite stays runnable without a server. asyncpg (in requirements.txt) is the
+# driver production uses; this one only exists for tests.
+aiosqlite>=0.20
+
+# --------------------------------------------------------------- lint ------
+ruff>=0.7
+mypy>=1.13

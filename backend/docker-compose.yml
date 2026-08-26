@@ -1,0 +1,77 @@
+# Local development stack: the API and its database.
+#
+#     docker compose up --build
+#
+# This file is for a laptop. The database password is in plaintext, the port is
+# published, and the API runs with `--reload` against a bind mount — none of which
+# belongs in a deployed environment. A deploy builds the same Dockerfile and gets
+# its configuration from real environment variables.
+
+name: veritas
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: veritas
+      POSTGRES_PASSWORD: veritas
+      POSTGRES_DB: veritas
+    ports:
+      # Published so tools on the host — psql, a GUI client, or the API run
+      # outside compose — can reach it.
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # `api` waits on this. Without it, the API starts while Postgres is still
+      # initialising and the first query fails for a reason that looks like
+      # misconfiguration rather than a race.
+      test: ["CMD-SHELL", "pg_isready -U veritas -d veritas"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  api:
+    build:
+      context: .
+      target: runtime
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      # `.env` is git-ignored, so a fresh clone does not have one. `required:
+      # false` keeps `docker compose up` working before anyone has copied
+      # `.env.example` over. Needs Compose v2.24 or newer.
+      - path: .env
+        required: false
+    environment:
+      # Set here rather than in `.env` because the hostname differs by where the
+      # API runs: `postgres` on the compose network, `localhost` from the host.
+      # Values in `environment` win over `env_file`, so this is the override.
+      DATABASE_URL: postgresql+asyncpg://veritas:veritas@postgres:5432/veritas
+      ENVIRONMENT: local
+      LOG_FORMAT: console
+    ports:
+      - "8000:8000"
+    volumes:
+      # Read-only: the reloader only needs to watch the source, and the container
+      # has no business editing the working tree.
+      - ./app:/app/app:ro
+      # Chroma's persist directory and any scratch artifact. A named volume, so
+      # it survives a rebuild and is owned by the image's non-root user.
+      - appvar:/app/var
+    # Overrides the image's CMD to add the reloader, which is a development-only
+    # concern and so does not belong in the Dockerfile.
+    command:
+      - uvicorn
+      - app.main:app
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --reload
+
+volumes:
+  pgdata:
+  appvar:
