@@ -1,0 +1,44 @@
+"""Pulling checkable claims out of prose.
+
+The bridge between the two desks that read copy: the text desk reads how something
+is written, the fact-check desk reads one assertion at a time. This service is that
+step made explicit, so a caller can perform it on its own — which is what
+``POST /api/v1/extract-claim`` exposes.
+"""
+
+from __future__ import annotations
+
+from app.core.config import Settings
+from app.domain import Extraction
+from app.nlp import get_claim_extractor
+from app.services.limits import ensure_within_limit
+
+
+class ClaimExtractionService:
+    """Turns a piece of prose into the discrete claims it makes."""
+
+    def __init__(self, *, settings: Settings) -> None:
+        self._settings = settings
+
+    async def extract(self, text: str) -> Extraction:
+        """Return everything read out of ``text``.
+
+        Two steps, and the order matters: the size guard runs before the extractor is
+        resolved, so an oversized submission gets a 413 without loading a 12 MB
+        model to reject it.
+
+        The extractor is resolved per call rather than held on this service. It is a
+        cheap object — the model behind it is cached process-wide in
+        :mod:`app.nlp.resources` — and resolving late means a test that registers a
+        substitute affects a service built before it, which a constructor-time lookup
+        would not.
+
+        Raises :class:`~app.core.errors.PayloadTooLargeError` for oversized input and
+        :class:`~app.core.errors.ConfigurationError` when the configured spaCy model
+        is not installed. Prose it cannot make claims out of is not an error: a
+        submission of pure opinion comes back with every clause marked unfit and a
+        reason, which is a 200.
+        """
+        ensure_within_limit(text, limit=self._settings.MAX_TEXT_CHARS, field="text")
+        extractor = get_claim_extractor(self._settings)
+        return await extractor.extract(text)
