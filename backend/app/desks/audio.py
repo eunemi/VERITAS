@@ -25,7 +25,7 @@ from app.audio.analyse import compose, confident, measure, voiced
 from app.audio.base import Acoustics, Transcript, Utterance
 from app.audio.decode import decode
 from app.core.config import Settings, get_settings
-from app.core.errors import ValidationError
+from app.core.errors import ValidationError, ConfigurationError
 from app.desks.anchors import attach
 from app.desks.graph import compiled, model_ledger, readings
 from app.domain import (
@@ -74,24 +74,30 @@ class AudioDesk:
         self, artifact: Artifact, *, verification_id: str | None = None
     ) -> DeskReport:
         settings = self._settings
-        clip = await decode(
-            await self._fetch(artifact),
-            max_seconds=settings.AUDIO_MAX_SECONDS,
-            timeout=settings.AUDIO_DECODE_TIMEOUT_SECONDS,
-        )
-        acoustics = await measure(
-            clip,
-            floor_db=settings.AUDIO_SILENCE_FLOOR_DB,
-            buckets=settings.AUDIO_ENVELOPE_BUCKETS,
-        )
+        try:
+            clip = await decode(
+                await self._fetch(artifact),
+                max_seconds=settings.AUDIO_MAX_SECONDS,
+                timeout=settings.AUDIO_DECODE_TIMEOUT_SECONDS,
+            )
+            acoustics = await measure(
+                clip,
+                floor_db=settings.AUDIO_SILENCE_FLOOR_DB,
+                buckets=settings.AUDIO_ENVELOPE_BUCKETS,
+            )
 
-        # Checked before the transcriber is resolved, because loading a model and
-        # its first-use weight download is the expensive part of this desk and a
-        # clip with no sound in it has nothing for the model to find.
-        if acoustics.speech_seconds < settings.AUDIO_MIN_SPEECH_SECONDS:
-            return self._unheard(Transcript(()), acoustics, (), _SILENT)
+            # Checked before the transcriber is resolved, because loading a model and
+            # its first-use weight download is the expensive part of this desk and a
+            # clip with no sound in it has nothing for the model to find.
+            if acoustics.speech_seconds < settings.AUDIO_MIN_SPEECH_SECONDS:
+                return self._unheard(Transcript(()), acoustics, (), _SILENT)
 
-        transcript = await get_transcriber(settings).transcribe(clip)
+            transcript = await get_transcriber(settings).transcribe(clip)
+        except ConfigurationError as exc:
+            import logging
+            logging.getLogger(__name__).warning("Audio desk missing dependencies: %s", exc)
+            return self._audio_unavailable()
+
         heard = self._heard(transcript, acoustics)
         text = compose(heard)
 
@@ -152,6 +158,21 @@ class AudioDesk:
         return self._own or compiled(self._settings)
 
     # ----------------------------------------------------------- filing ----
+
+    def _audio_unavailable(self) -> DeskReport:
+        """Returns a graceful error report when audio dependencies are not installed."""
+        return DeskReport(
+            desk=self.desk,
+            verdict=Verdict(
+                determination=Determination.INSUFFICIENT,
+                headline="Audio Transcription Unavailable",
+                rationale="System dependencies for audio processing (Whisper/Librosa/FFmpeg) are not installed. Cannot process audio.",
+                confidence=0.0,
+            ),
+            ledger=(LedgerEntry("Audio", "Unavailable"),),
+            signals=(),
+            detail=AudioDetail(duration=0.0, language="", text="", envelope=(), spans=(), cues=())
+        )
 
     def _unheard(
         self,
