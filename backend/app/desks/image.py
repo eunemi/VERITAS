@@ -17,7 +17,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from app.core.config import Settings, get_settings
-from app.core.errors import ValidationError, VeritasError
+from app.core.errors import ValidationError, VeritasError, ConfigurationError
 from app.desks.anchors import attach
 from app.desks.graph import compiled, model_ledger, readings
 from app.domain import (
@@ -60,7 +60,11 @@ class ImageDesk:
         self, artifact: Artifact, *, verification_id: str | None = None
     ) -> DeskReport:
         data = await self._fetch(artifact)
-        reading = await get_image_reader(self._settings).read(data)
+        try:
+            reading = await get_image_reader(self._settings).read(data)
+        except ConfigurationError as exc:
+            logger.warning("Image desk missing OCR dependencies: %s", exc)
+            return self._ocr_unavailable()
 
         if len(reading.text.strip()) < self._settings.IMAGE_MIN_TEXT_CHARS:
             return self._unread(reading)
@@ -119,6 +123,21 @@ class ImageDesk:
         return self._own or compiled(self._settings)
 
     # ----------------------------------------------------------- filing ----
+
+    def _ocr_unavailable(self) -> DeskReport:
+        """Returns a graceful error report when OCR is not installed."""
+        return DeskReport(
+            desk=self.desk,
+            verdict=Verdict(
+                determination=Determination.INSUFFICIENT,
+                headline="OCR Unavailable",
+                rationale="System dependencies for OCR (Tesseract) are not installed. Cannot process image.",
+                confidence=0.0,
+            ),
+            ledger=(LedgerEntry("OCR", "Unavailable"),),
+            signals=(),
+            detail=ImageDetail(width=0, height=0, text="", regions=())
+        )
 
     def _unread(self, reading: Reading) -> DeskReport:
         """Nothing legible on the page. Not a finding about the claim."""
