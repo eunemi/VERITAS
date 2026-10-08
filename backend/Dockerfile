@@ -46,6 +46,11 @@ RUN python -m spacy download en_core_web_sm \
 # ============================================================ runtime ========
 FROM base AS runtime
 
+# Install system libraries required by opencv-python (pulled in by ultralytics)
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y libgl1 libglib2.0-0 libxcb1 \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /opt/venv /opt/venv
 COPY --from=builder /opt/nltk_data /opt/nltk_data
 # NLTK searches the paths in NLTK_DATA before its built-in list, which is what makes
