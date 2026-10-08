@@ -1,56 +1,59 @@
-import { Band, Slug } from "./layout";
-import { TONE_TEXT, toneOf, type Verdict } from "@/lib/types/agents";
+import { type Verdict, type Exhibit } from "@/lib/types/agents";
 
-/**
- * The closing determination — the one place on the page allowed to be loud.
- *
- * The stamp carries the ruling and the confidence together, because a ruling
- * without its confidence is the thing that gets misquoted. The reasoning sits
- * beside it in the paper's own reading face, set with a drop cap, so the record
- * closes the way a leader column closes.
- */
 export function Determination({
   verdict,
   signedBy,
+  exhibits,
 }: {
   verdict: Verdict;
-  /** Which desk signed. Printed under the stamp. */
   signedBy: string;
+  exhibits?: Exhibit[];
 }) {
-  const tone = toneOf(verdict.determination);
+  const isTrue = ["SUPPORTED", "CONSISTENT", "CLEAR"].includes(verdict.determination);
+  const isFalse = ["CONTRADICTED", "CONTESTED", "ANOMALOUS", "SYNTHETIC"].includes(verdict.determination);
+  const titleText = isTrue ? "✅ TRUE" : isFalse ? "❌ FALSE" : "⚠️ UNVERIFIED";
 
   return (
-    <Band
-      className="border-t-2 border-ink-black bg-parchment"
-      inner="grid gap-stack-lg py-stack-xl lg:grid-cols-12 lg:gap-gutter"
-    >
-      <div className="lg:col-span-4">
-        <Slug className="text-ink-black/45">Determination</Slug>
+    <div className="border-t-2 border-ink-black bg-parchment pt-10 pb-16 px-6">
+      <div className="max-w-3xl mx-auto flex flex-col gap-6">
+        <h2 className="text-4xl font-bold font-serif-heading uppercase tracking-wide text-ink-black">
+          {titleText}
+        </h2>
+        
+        {verdict.confidence !== "0%" && (
+          <div className="text-lg font-serif-body font-bold text-ink-black">
+            Confidence: {verdict.confidence}
+          </div>
+        )}
 
-        <div
-          className={`stamp mt-stack-md inline-block px-5 py-3.5 ${TONE_TEXT[tone]}`}
-        >
-          <span className="font-mono-label block text-[15px] leading-none font-bold tracking-[0.16em] uppercase">
-            {verdict.determination}
-          </span>
-          <span className="tabular font-mono-label mt-2 block text-center text-[10px] leading-none tracking-[0.18em] uppercase">
-            {verdict.confidence === "0%" ? "PRELIMINARY ANALYSIS" : `Confidence ${verdict.confidence}`}
-          </span>
+        <div className="font-serif-body text-lg italic bg-ink-black/5 p-6 rounded text-ink-black/85">
+          <p className="font-bold mb-2 uppercase text-sm font-mono-label tracking-wider not-italic">{verdict.headline}</p>
+          {verdict.rationale}
         </div>
-
-        <p className="mt-stack-lg font-body-sm text-body-sm text-ink-black/55">
+        
+        <p className="font-body-sm text-sm text-ink-black/50">
           Result from the {signedBy}.
         </p>
-      </div>
 
-      <div className="lg:col-span-8">
-        <h2 className="font-headline-lg text-[clamp(30px,3.6vw,46px)] leading-[1.08] font-bold text-ink-black">
-          {verdict.headline}
-        </h2>
-        <p className="drop-cap font-proof text-proof mt-stack-md max-w-[64ch] text-ink-black/85">
-          {verdict.rationale}
-        </p>
+        {exhibits && exhibits.length > 0 && (
+          <div className="mt-8 border-t-2 border-ink-black pt-6">
+            <details className="group">
+              <summary className="text-xl font-bold font-serif-heading mb-4 cursor-pointer list-none flex items-center gap-2 text-ink-black">
+                <span className="transform transition-transform group-open:rotate-90">▶</span>
+                Sources (Exhibits)
+              </summary>
+              <ul className="flex flex-col gap-4 mt-4">
+                {exhibits.map((exhibit, idx) => (
+                  <li key={idx} className="border border-ink-black/20 p-4 bg-ink-black/5">
+                    <div className="font-bold font-mono-label text-ink-black">{exhibit.source}</div>
+                    <div className="font-serif-body text-sm mt-2 leading-relaxed text-ink-black/80">{exhibit.extract}</div>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          </div>
+        )}
       </div>
-    </Band>
+    </div>
   );
 }

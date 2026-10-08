@@ -85,7 +85,7 @@ export default function FactCheckDesk() {
               />
             </Spread>
             <div className="pt-stack-xl">
-              <Determination verdict={record.verdict} signedBy="source desk" />
+              <Determination verdict={record.verdict} signedBy="source desk" exhibits={record.exhibits} />
             </div>
           </>
         ) : null
