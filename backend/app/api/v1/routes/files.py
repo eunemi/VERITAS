@@ -46,3 +46,34 @@ async def extract_text(file: UploadFile = File(...)):
         )
         
     return {"text": text}
+
+import os
+import shutil
+import uuid
+from fastapi.responses import FileResponse
+
+UPLOAD_DIR = "/tmp/veritas_uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+@router.post("/upload-media")
+async def upload_media(file: UploadFile = File(...)):
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="No file uploaded")
+    
+    ext = os.path.splitext(file.filename)[1].lower()
+    filename = f"{uuid.uuid4()}{ext}"
+    path = os.path.join(UPLOAD_DIR, filename)
+    
+    with open(path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    # Using localhost for simplicity as the backend fetches it. 
+    # The frontend can also use this URL if it runs on localhost.
+    return {"url": f"http://localhost:8000/api/v1/files/media/{filename}"}
+
+@router.get("/media/{filename}")
+async def get_media(filename: str):
+    path = os.path.join(UPLOAD_DIR, filename)
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(path)

@@ -562,3 +562,34 @@ export async function extractTextFromFile(file: File, options: CallOptions = {})
 
   return parsed?.text || "";
 }
+
+/** Upload a media file and return its temporary URL */
+export async function uploadMediaFile(file: File, options: CallOptions = {}): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/files/upload-media`, {
+      method: "POST",
+      body: formData,
+      signal: options.signal,
+    });
+  } catch (cause) {
+    throw new Error(`Could not reach the media upload service. ${cause}`);
+  }
+
+  const text = await response.text();
+  let parsed: { url?: string; detail?: string } | null = null;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    throw new Error("Invalid response from server");
+  }
+
+  if (!response.ok) {
+    throw new Error(parsed?.detail || "Failed to upload media");
+  }
+
+  return parsed?.url || "";
+}

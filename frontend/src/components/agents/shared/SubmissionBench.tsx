@@ -230,20 +230,57 @@ export function LinkField({
   // Holds the address that failed to load rather than a flag, so a new address
   // clears the failure without an effect to reset it.
   const [broken, setBroken] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const trimmed = value.trim();
   const fetchable = isFetchableUrl(trimmed);
   const preview = kind === "image" && fetchable && broken !== trimmed;
 
+  const handleFileUpload = async (file: File) => {
+    if (!file) return;
+    setIsUploading(true);
+    setUploadError(null);
+    try {
+      const url = await uploadMediaFile(file);
+      onChange(url);
+    } catch (e: unknown) {
+      const err = e as Error;
+      setUploadError(err.message || "Failed to upload media file.");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFileUpload(file);
+  };
+
   return (
     <div>
-      <div className="ticked relative overflow-hidden bg-parchment text-ink-black/25">
-        {scanning ? (
+      <div 
+        className="ticked relative overflow-hidden bg-parchment text-ink-black/25"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={handleDrop}
+      >
+        {scanning || isUploading ? (
           <span
             aria-hidden
             className="animate-proof-scan pointer-events-none absolute inset-x-0 z-10 h-px bg-secondary"
           />
         ) : null}
+        
+        {isUploading && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-parchment/80 backdrop-blur-sm">
+            <Slug className="animate-pulse text-ink-black">Uploading media...</Slug>
+          </div>
+        )}
 
         <label className="block px-6 pt-6 pb-4">
           <Slug className="text-ink-black/45">Address of the {kind}</Slug>
@@ -254,7 +291,8 @@ export function LinkField({
             onChange={(event) => onChange(event.target.value)}
             placeholder="https://"
             spellCheck={false}
-            className="font-proof text-proof mt-2.5 w-full border-b border-ink-black/25 bg-transparent pb-2 text-ink-black placeholder:text-ink-black/30 focus:border-secondary focus:outline-none"
+            disabled={scanning || isUploading}
+            className="font-proof text-proof mt-2.5 w-full border-b border-ink-black/25 bg-transparent pb-2 text-ink-black placeholder:text-ink-black/30 focus:border-secondary focus:outline-none disabled:opacity-50"
           />
         </label>
 
@@ -276,13 +314,40 @@ export function LinkField({
               ? "That is not an http or https address the desk could fetch."
               : broken === trimmed && trimmed
                 ? "Nothing loaded from that address here. The desk will try it too, and will say so in the record if it cannot read it."
-                : `The desk fetches the ${kind} from this address. A file on your own disk cannot be sent to it yet.`}
+                : `The desk fetches the ${kind} from this address or you can upload a file.`}
           </p>
         )}
+        
+        <div className="absolute bottom-4 right-6 z-10">
+          <input
+            type="file"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFileUpload(file);
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={scanning || isUploading}
+            className="cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Slug className="text-ink-black/50 transition-colors hover:text-secondary">
+              [ UPLOAD FILE ]
+            </Slug>
+          </button>
+        </div>
       </div>
 
       <div className="mt-2.5 flex flex-wrap items-baseline justify-between gap-3">
-        <Slug className="text-ink-black/35">Accepts {formats}</Slug>
+        <div className="flex flex-col gap-1">
+          <Slug className="text-ink-black/35">Accepts {formats}</Slug>
+          {uploadError && (
+            <span className="font-body-sm text-xs text-red-600">{uploadError}</span>
+          )}
+        </div>
         {trimmed ? (
           <button
             type="button"
