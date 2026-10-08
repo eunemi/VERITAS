@@ -74,7 +74,6 @@ export default function TextDesk() {
                 margin={
                   <div className="flex flex-col gap-stack-lg">
                     <FindingLedger annotations={record.annotations} />
-                    <SignalTable signals={record.signals} title="Analysis Metrics" />
                   </div>
                 }
               />
