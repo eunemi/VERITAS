@@ -58,9 +58,7 @@ export function CommissionPanel({ close }: Dismiss) {
     try {
       const payload = inputType === "text" 
         ? { kind: "text" as const, content: text }
-        : inputType === "video" 
-          ? { kind: "audio" as const, url: text } // route video to audio
-          : { kind: inputType, url: text };
+        : { kind: inputType, url: text };
       
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const adjudication = await convene(payload as any, {
@@ -98,11 +96,7 @@ export function CommissionPanel({ close }: Dismiss) {
               ))}
             </div>
 
-            {inputType === "video" && (
-              <div className="bg-gold-foil/20 p-4 font-serif-body text-sm italic">
-                Notice: Visual content analysis is coming soon. The audio track of this video will be extracted and analyzed.
-              </div>
-            )}
+            
 
             <div 
               className="relative"
@@ -190,11 +184,7 @@ export function CommissionPanel({ close }: Dismiss) {
               Confidence: {result.decision.verdict.confidence}
             </div>
             
-            {inputType === "video" && (
-              <div className="bg-gold-foil/20 p-3 font-serif-body text-sm italic">
-                Note: This result is based on audio track analysis only.
-              </div>
-            )}
+            
 
             <p className="font-serif-body text-lg italic bg-ink-black/5 p-4 rounded">
               {result.decision.verdict.rationale}
