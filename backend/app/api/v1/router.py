@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from app.api.v1.routes import auth, claims, health, research, verification
+from app.api.v1.routes import auth, claims, health, research, verification, files
 
 router = APIRouter()
 
@@ -29,3 +29,4 @@ router.include_router(auth.router)
 router.include_router(verification.router)
 router.include_router(claims.router)
 router.include_router(research.router)
+router.include_router(files.router)

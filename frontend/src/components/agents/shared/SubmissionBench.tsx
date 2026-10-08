@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Slug } from "./layout";
+import { extractTextFromFile } from "@/lib/api/client";
 
 /* ------------------------------------------------------------ artifact ---- */
 
@@ -98,28 +99,97 @@ export function CopyField({
   scanning?: boolean;
 }) {
   const words = value.trim() ? value.trim().split(/\s+/).length : 0;
+  
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractError, setExtractError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (file: File) => {
+    if (!file) return;
+    setIsExtracting(true);
+    setExtractError(null);
+    try {
+      const text = await extractTextFromFile(file);
+      onChange(text);
+    } catch (e: unknown) {
+      const err = e as Error;
+      setExtractError(err.message || "Failed to extract text from file.");
+    } finally {
+      setIsExtracting(false);
+      // Reset input value so the same file can be uploaded again if needed
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      handleFileUpload(file);
+    }
+  };
 
   return (
     <div>
-      <div className="ticked relative overflow-hidden bg-parchment text-ink-black/25">
+      <div 
+        className="ticked relative overflow-hidden bg-parchment text-ink-black/25"
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
         <span aria-hidden className="absolute inset-y-0 left-[52px] w-px bg-secondary/35" />
-        {scanning ? (
+        {scanning || isExtracting ? (
           <span
             aria-hidden
             className="animate-proof-scan pointer-events-none absolute inset-x-0 z-10 h-px bg-secondary"
           />
         ) : null}
+        {isExtracting && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-parchment/80 backdrop-blur-sm">
+            <span className="font-mono-label text-ink-black uppercase tracking-widest text-sm animate-pulse">Extracting text...</span>
+          </div>
+        )}
         <textarea
           value={value}
           onChange={(event) => onChange(event.target.value)}
           rows={rows}
           placeholder={placeholder}
           spellCheck={false}
-          className="font-proof text-proof relative w-full resize-y bg-transparent py-6 pr-6 pl-[72px] text-ink-black placeholder:text-ink-black/30 focus:outline-none"
+          disabled={isExtracting}
+          className="font-proof text-proof relative w-full resize-y bg-transparent py-6 pr-6 pl-[72px] text-ink-black placeholder:text-ink-black/30 focus:outline-none disabled:opacity-50"
         />
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          className="hidden" 
+          accept=".pdf,.docx,.md"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleFileUpload(file);
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isExtracting}
+          className="absolute bottom-4 right-4 z-10 font-mono-label text-xs uppercase tracking-wider text-ink-black/50 hover:text-ink-black transition-colors disabled:opacity-50"
+          title="Upload .pdf, .docx, or .md"
+        >
+          [ UPLOAD FILE ]
+        </button>
       </div>
       <div className="mt-2.5 flex items-baseline justify-between">
-        <Slug className="text-ink-black/35">Plain text · no formatting kept</Slug>
+        <div className="flex flex-col gap-1">
+          <Slug className="text-ink-black/35">Plain text · no formatting kept</Slug>
+          {extractError && (
+            <span className="font-body-sm text-xs text-red-600">{extractError}</span>
+          )}
+        </div>
         <Slug className="tabular text-ink-black/40">
           {String(words).padStart(3, "0")} words
         </Slug>

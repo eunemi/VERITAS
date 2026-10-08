@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Drawer, type Dismiss } from "@/components/ui/Drawer";
 import { convene, type Adjudication } from "@/lib/services/agentServices";
 import { ExaminationTicker } from "@/components/agents/shared/ExaminationTicker";
+import { extractTextFromFile } from "@/lib/api/client";
 
 export function CommissionPanel({ close }: Dismiss) {
   const [inputType, setInputType] = useState<"text" | "image" | "audio" | "video">("text");
@@ -9,6 +10,41 @@ export function CommissionPanel({ close }: Dismiss) {
   const [runningDesks, setRunningDesks] = useState<string[]>([]);
   const [step, setStep] = useState<"input" | "running" | "result">("input");
   const [result, setResult] = useState<Adjudication | null>(null);
+
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractError, setExtractError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (file: File) => {
+    if (!file) return;
+    setIsExtracting(true);
+    setExtractError(null);
+    try {
+      const extractedText = await extractTextFromFile(file);
+      setText(extractedText);
+      setInputType("text"); // auto-switch to text mode
+    } catch (e: unknown) {
+      const err = e as Error;
+      setExtractError(err.message || "Failed to extract text from file.");
+    } finally {
+      setIsExtracting(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      handleFileUpload(file);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!text.trim()) return;
@@ -21,6 +57,7 @@ export function CommissionPanel({ close }: Dismiss) {
           ? { kind: "audio" as const, url: text } // route video to audio
           : { kind: inputType, url: text };
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const adjudication = await convene(payload as any, {
         onReading: (record) => {
           const active = record.desks
@@ -62,17 +99,61 @@ export function CommissionPanel({ close }: Dismiss) {
               </div>
             )}
 
-            <textarea
-              className="w-full h-48 p-4 border-2 border-ink-black bg-transparent font-serif-body focus:outline-none"
-              placeholder={inputType === "text" ? "Paste the news article or text here..." : `Paste the ${inputType} URL here...`}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              data-first
-            />
+            <div 
+              className="relative"
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+            >
+              <textarea
+                className="w-full h-48 p-4 border-2 border-ink-black bg-transparent font-serif-body focus:outline-none disabled:opacity-50"
+                placeholder={inputType === "text" ? "Paste the news article or text here..." : `Paste the ${inputType} URL here...`}
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                disabled={isExtracting}
+                data-first
+              />
+              
+              {isExtracting && (
+                <div className="absolute inset-0 flex items-center justify-center bg-parchment/80 backdrop-blur-sm z-10 border-2 border-ink-black">
+                  <span className="font-mono-label text-ink-black uppercase tracking-widest text-sm animate-pulse">Extracting text...</span>
+                </div>
+              )}
+
+              {inputType === "text" && (
+                <>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    accept=".pdf,.docx,.md"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFileUpload(file);
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isExtracting}
+                    className="absolute bottom-4 right-4 z-20 font-mono-label text-xs uppercase tracking-wider text-ink-black/50 hover:text-ink-black transition-colors disabled:opacity-50"
+                    title="Upload .pdf, .docx, or .md"
+                  >
+                    [ UPLOAD FILE ]
+                  </button>
+                </>
+              )}
+            </div>
+
+            {extractError && (
+              <div className="font-body-sm text-sm text-red-600 mt-[-1rem]">
+                {extractError}
+              </div>
+            )}
             
             <button
               onClick={handleSubmit}
-              className="bg-ink-black text-parchment py-3 px-6 font-mono-label hover:bg-ink-black/80 transition-colors"
+              disabled={isExtracting}
+              className="bg-ink-black text-parchment py-3 px-6 font-mono-label hover:bg-ink-black/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               ANALYZE NOW
             </button>

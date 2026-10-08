@@ -531,3 +531,34 @@ export async function verify(
   const accepted = await submitVerification(submission, { signal: options.signal });
   return pollVerification(accepted.id, options);
 }
+
+/** Upload a file for text extraction */
+export async function extractTextFromFile(file: File, options: CallOptions = {}): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/files/extract-text`, {
+      method: "POST",
+      body: formData,
+      signal: options.signal,
+    });
+  } catch (cause) {
+    throw new Error(`Could not reach the file extraction service. ${cause}`);
+  }
+
+  const text = await response.text();
+  let parsed: { text?: string; detail?: string } | null = null;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    throw new Error("Invalid response from server");
+  }
+
+  if (!response.ok) {
+    throw new Error(parsed?.detail || "Failed to extract text");
+  }
+
+  return parsed?.text || "";
+}

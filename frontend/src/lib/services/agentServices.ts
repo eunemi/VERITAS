@@ -525,3 +525,16 @@ export async function retrieve(
   const { record } = await readVerification(id, { signal: options.signal });
   return examinationOf(record);
 }
+
+export async function examineVideo(
+  url: string,
+  filename: string | null = null,
+  options: ExamineOptions = {},
+): Promise<ImageRecord> {
+  const examination = await commission(
+    { kind: "video", url, filename },
+    ["video"],
+    options,
+  );
+  return filed<ImageRecord>(examination, "video", "image");
+}

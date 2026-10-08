@@ -52,6 +52,8 @@ from app.desks.factcheck import build as build_factcheck
 from app.desks.image import ImageDesk
 from app.desks.image import build as build_image
 from app.desks.text import TextDesk
+from app.desks.video import VideoDesk
+from app.desks.video import build as build_video
 from app.desks.text import build as build_text
 from app.domain import Desk
 
@@ -66,6 +68,7 @@ adjudicators: ProviderRegistry[Desk, Adjudicator] = ProviderRegistry("adjudicato
 examiners.register(Desk.TEXT, build_text)
 examiners.register(Desk.IMAGE, build_image)
 examiners.register(Desk.AUDIO, build_audio)
+examiners.register(Desk.VIDEO, build_video)
 examiners.register(Desk.FACT_CHECK, build_factcheck)
 adjudicators.register(Desk.DECISION, build_decision)
 
@@ -88,6 +91,7 @@ __all__ = [
     "FactCheckDesk",
     "ImageDesk",
     "TextDesk",
+    "VideoDesk",
     "adjudicators",
     "examiners",
     "get_adjudicator",

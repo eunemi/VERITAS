@@ -42,12 +42,19 @@ export function ForensicPlate({
               <>
                 {/* A URL the examiner was pointed at, not a project asset — next/image
                     cannot be given an arbitrary remote host without configuring it. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={previewUrl}
-                  alt={`Frame under examination: ${fileName}`}
-                  className="block max-h-[520px] w-auto"
-                />
+                {previewUrl?.match(/\.(mp4|mov|webm|mkv)$/i) ? (
+                  <video
+                    src={previewUrl}
+                    controls
+                    className="block max-h-[520px] w-auto"
+                  />
+                ) : (
+                  <img
+                    src={previewUrl}
+                    alt={`Frame under examination: ${fileName}`}
+                    className="block max-h-[520px] w-auto"
+                  />
+                )}
                 {regions.map((region, index) => {
                   const note = noteFor(region.ref);
                   return (

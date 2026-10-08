@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AudioSlate } from "@/components/agents/instruments/AudioSlate";
+import { ForensicPlate } from "@/components/agents/instruments/ForensicPlate";
 import { Determination } from "@/components/agents/shared/Determination";
 import { DeskFailure } from "@/components/agents/shared/DeskFailure";
 import { DeskPage } from "@/components/agents/shared/DeskPage";
@@ -15,14 +15,14 @@ import {
 import { useExamination } from "@/components/agents/shared/useExamination";
 import { MarkedSpread, Spread } from "@/components/agents/shared/layout";
 import { DESKS } from "@/lib/desks";
-import { DESK_PACE_MS, examineAudio } from "@/lib/services/agentServices";
-import type { AudioRecord } from "@/lib/types/agents";
+import { DESK_PACE_MS, examineVideo } from "@/lib/services/agentServices";
+import type { ImageRecord } from "@/lib/types/agents";
 
 const desk = DESKS.video;
 
 export default function VideoDesk() {
   const [url, setUrl] = useState("");
-  const { status, record, error, open, reopen, working } = useExamination<AudioRecord>();
+  const { status, record, error, open, reopen, working } = useExamination<ImageRecord>();
 
   const ready = isFetchableUrl(url);
 
@@ -35,15 +35,12 @@ export default function VideoDesk() {
       bench={
         <SubmissionBench
           prompt={desk.prompt}
-          note="Audio track will be analyzed. Visual content analysis coming soon."
-          hint="The desk marks where the recording carries speech, then sets the transcript against it line by line."
-          actionLines={["Examine", "video audio"]}
-          onSubmit={() => open(() => examineAudio(url.trim()))}
+          note="One video clip at a time"
+          hint="The desk extracts frames and rules them. A clip's sound goes to the speech desk."
+          actionLines={["Examine", "footage"]}
+          onSubmit={() => open(() => examineVideo(url.trim()))}
           disabled={!ready || working}
         >
-          <div className="bg-gold-foil/20 p-4 font-serif-body text-sm italic mb-4">
-            Notice: Video visual analysis is not yet implemented. Only the audio track will be examined.
-          </div>
           <LinkField
             value={url}
             onChange={setUrl}
@@ -57,25 +54,27 @@ export default function VideoDesk() {
       record={
         record ? (
           <>
-            <div className="bg-gold-foil/20 p-4 font-serif-body text-sm italic mt-8 text-center max-w-2xl mx-auto">
-              Note: The findings below are based exclusively on the video's audio track.
-            </div>
             <LedgerBand entries={record.ledger} />
             <Spread className="pt-stack-xl">
               <MarkedSpread
-                artifact={<AudioSlate record={record} />}
+                artifact={
+                  <ForensicPlate
+                    previewUrl={record.previewUrl}
+                    fileName={record.fileName}
+                    regions={record.regions}
+                    annotations={record.annotations}
+                  />
+                }
                 margin={
                   <div className="flex flex-col gap-stack-lg">
                     <FindingLedger annotations={record.annotations} />
-                    {record.signals.length ? (
-                      <SignalTable signals={record.signals} title="What was heard" />
-                    ) : null}
+                    <SignalTable signals={record.signals} title="Readings" />
                   </div>
                 }
               />
             </Spread>
             <div className="pt-stack-xl">
-              <Determination verdict={record.verdict} signedBy="speech forensics desk" />
+              <Determination verdict={record.verdict} signedBy="temporal forensics desk" />
             </div>
           </>
         ) : null
