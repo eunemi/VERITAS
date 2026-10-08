@@ -95,9 +95,6 @@ export default function DecisionDesk() {
                 artifact={
                   <div className="flex flex-col gap-stack-xl">
                     <ContributionBand contributions={record.contributions} />
-                    {record.signals.length ? (
-                      <SignalTable signals={record.signals} title="How the ruling was tested" />
-                    ) : null}
                   </div>
                 }
                 margin={

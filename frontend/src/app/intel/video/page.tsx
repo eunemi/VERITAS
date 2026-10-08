@@ -68,7 +68,6 @@ export default function VideoDesk() {
                 margin={
                   <div className="flex flex-col gap-stack-lg">
                     <FindingLedger annotations={record.annotations} />
-                    <SignalTable signals={record.signals} title="Readings" />
                   </div>
                 }
               />

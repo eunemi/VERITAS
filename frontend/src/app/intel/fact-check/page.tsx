@@ -77,9 +77,6 @@ export default function FactCheckDesk() {
                 margin={
                   <div className="flex flex-col gap-stack-lg">
                     <FindingLedger annotations={record.annotations} title="Where they conflict" />
-                    {record.signals.length ? (
-                      <SignalTable signals={record.signals} title="What was counted" />
-                    ) : null}
                   </div>
                 }
               />

@@ -61,9 +61,6 @@ export default function AudioDesk() {
                 margin={
                   <div className="flex flex-col gap-stack-lg">
                     <FindingLedger annotations={record.annotations} />
-                    {record.signals.length ? (
-                      <SignalTable signals={record.signals} title="What was heard" />
-                    ) : null}
                   </div>
                 }
               />

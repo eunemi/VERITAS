@@ -33,7 +33,7 @@ export function ForensicPlate({
 
   return (
     <section>
-      <SectionHead title="Plate" note={`${regions.length} regions ruled`} />
+      <SectionHead title="Analyzed Media" note="Media with findings marked" />
 
       <figure className="mt-stack-md">
         <div className="ticked relative bg-ink-black text-parchment/20">

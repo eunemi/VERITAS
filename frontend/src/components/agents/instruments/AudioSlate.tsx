@@ -22,7 +22,7 @@ export function AudioSlate({ record }: { record: AudioRecord }) {
   return (
     <section>
       <SectionHead
-        title="Slate"
+        title="Analyzed Audio"
         note={`${duration} · ${String(voicedSpans.length).padStart(2, "0")} voiced stretches · ${language}`}
       />
 
@@ -72,7 +72,7 @@ export function AudioSlate({ record }: { record: AudioRecord }) {
       </figure>
 
       <div className="mt-stack-lg">
-        <SectionHead title="Transcript" note={`${fileName} · timecoded`} />
+        <SectionHead title="Extracted Transcript" note={`${fileName} · timecoded`} />
         <ol className="mt-stack-sm">
           {transcript.map((segment, index) => (
             <li
