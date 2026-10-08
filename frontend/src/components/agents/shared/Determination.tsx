@@ -11,7 +11,20 @@ export function Determination({
 }) {
   const isTrue = ["SUPPORTED", "CONSISTENT", "CLEAR"].includes(verdict.determination);
   const isFalse = ["CONTRADICTED", "CONTESTED", "ANOMALOUS", "SYNTHETIC"].includes(verdict.determination);
-  const titleText = isTrue ? "✅ TRUE" : isFalse ? "❌ FALSE" : "⚠️ UNVERIFIED";
+  
+  let titleText = isTrue ? "✅ TRUE" : isFalse ? "❌ FALSE" : "⚠️ UNVERIFIED";
+  
+  // If this is an extraction desk (not the final fact-check or decision desk), 
+  // REQUIRES VERIFICATION means it successfully extracted claims.
+  const isExtractionDesk = !signedBy.includes("decision core") && !signedBy.includes("source desk");
+  if (isExtractionDesk) {
+    if (verdict.determination === "REQUIRES VERIFICATION") {
+      titleText = "✅ EXTRACTION COMPLETE";
+    } else if (verdict.determination === "INSUFFICIENT") {
+      titleText = "⚠️ NO CLAIMS FOUND";
+    }
+  }
+
 
   return (
     <div className="border-t-2 border-ink-black bg-parchment pt-10 pb-16 px-6">
@@ -20,9 +33,11 @@ export function Determination({
           {titleText}
         </h2>
         
-        <div className="text-lg font-serif-body font-bold text-ink-black">
-          Confidence: {verdict.confidence}
-        </div>
+        {!isExtractionDesk && (
+          <div className="text-lg font-serif-body font-bold text-ink-black">
+            Confidence: {verdict.confidence}
+          </div>
+        )}
 
         <div className="font-serif-body text-lg italic bg-ink-black/5 p-6 rounded text-ink-black/85">
           <p className="font-bold mb-2 uppercase text-sm font-mono-label tracking-wider not-italic">{verdict.headline}</p>
