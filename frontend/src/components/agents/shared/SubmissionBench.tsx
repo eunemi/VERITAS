@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Slug } from "./layout";
-import { extractTextFromFile } from "@/lib/api/client";
+import { extractTextFromFile, uploadMediaFile } from "@/lib/api/client";
 
 /* ------------------------------------------------------------ artifact ---- */
 
