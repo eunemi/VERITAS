@@ -16,7 +16,7 @@ import {
  */
 export function FindingLedger({
   annotations,
-  title = "Marginalia",
+  title = "Findings",
   showQuote = true,
 }: {
   annotations: Annotation[];

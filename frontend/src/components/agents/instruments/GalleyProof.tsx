@@ -61,7 +61,7 @@ export function GalleyProof({
 
   return (
     <section>
-      <SectionHead title="Galley proof" note="Copy as submitted · marked in place" />
+      <SectionHead title="Source Text" note="Analyzed text with findings marked" />
       <p className="font-proof text-proof mt-stack-md max-w-[68ch] whitespace-pre-wrap text-ink-black">
         {pieces.map((piece, index) =>
           piece.annotation ? (

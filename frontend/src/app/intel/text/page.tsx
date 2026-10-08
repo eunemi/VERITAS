@@ -73,8 +73,8 @@ export default function TextDesk() {
                 artifact={<GalleyProof copy={record.copy} annotations={record.annotations} />}
                 margin={
                   <div className="flex flex-col gap-stack-lg">
-                    <FindingLedger annotations={record.annotations} showQuote={false} />
-                    <SignalTable signals={record.signals} title="Readings" />
+                    <FindingLedger annotations={record.annotations} />
+                    <SignalTable signals={record.signals} title="Analysis Metrics" />
                   </div>
                 }
               />

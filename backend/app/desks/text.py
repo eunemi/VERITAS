@@ -153,7 +153,7 @@ class TextDesk:
                     Annotation(
                         ref=claim.ref,
                         quote=claim.quote,
-                        note="Checkable assertion; passed on for checking.",
+                        note="Identified as a factual claim that requires verification.",
                         determination=Determination.REQUIRES_VERIFICATION,
                     )
                     for claim in checkable
@@ -205,20 +205,6 @@ def _ledger(
         LedgerEntry("Claims to check", str(len(checkable))),
         LedgerEntry("Claims set aside", str(len(aside))),
     ]
-    if extraction.entities:
-        entries.append(
-            LedgerEntry(
-                "Named entities",
-                _clipped(", ".join(e.text for e in extraction.entities)),
-            )
-        )
-    if extraction.keywords:
-        entries.append(
-            LedgerEntry(
-                "Subject terms",
-                _clipped(", ".join(k.term for k in extraction.keywords)),
-            )
-        )
     return tuple(entries)
 
 

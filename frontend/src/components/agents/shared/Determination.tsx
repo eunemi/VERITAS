@@ -28,18 +28,18 @@ export function Determination({
         <Slug className="text-ink-black/45">Determination</Slug>
 
         <div
-          className={`stamp mt-stack-md inline-block -rotate-[2.5deg] px-5 py-3.5 ${TONE_TEXT[tone]}`}
+          className={`stamp mt-stack-md inline-block px-5 py-3.5 ${TONE_TEXT[tone]}`}
         >
           <span className="font-mono-label block text-[15px] leading-none font-bold tracking-[0.16em] uppercase">
             {verdict.determination}
           </span>
           <span className="tabular font-mono-label mt-2 block text-center text-[10px] leading-none tracking-[0.18em] uppercase">
-            Confidence {verdict.confidence}
+            {verdict.confidence === "0%" ? "PRELIMINARY ANALYSIS" : `Confidence ${verdict.confidence}`}
           </span>
         </div>
 
         <p className="mt-stack-lg font-body-sm text-body-sm text-ink-black/55">
-          Signed at the {signedBy}.
+          Result from the {signedBy}.
         </p>
       </div>
 
