@@ -18,15 +18,15 @@ async def extract_text(file: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail="Invalid Markdown file encoding (must be UTF-8).")
             
     elif filename.endswith(".pdf"):
-        import pypdf
+        import pdfplumber
         content = await file.read()
         try:
-            reader = pypdf.PdfReader(io.BytesIO(content))
-            text = ""
-            for page in reader.pages:
-                extracted = page.extract_text()
-                if extracted:
-                    text += extracted + "\n"
+            with pdfplumber.open(io.BytesIO(content)) as pdf:
+                text = ""
+                for page in pdf.pages:
+                    extracted = page.extract_text()
+                    if extracted:
+                        text += extracted + "\n"
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Failed to parse PDF: {e}")
             
