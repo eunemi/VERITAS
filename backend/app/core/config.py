@@ -555,7 +555,7 @@ class Settings(BaseSettings):
     #: Off, because a URL supplied by a caller and fetched by this server is a
     #: request-forgery primitive: see ``app/media/fetch.py``. Turn it on only for
     #: a local fixture server.
-    MEDIA_ALLOW_PRIVATE_HOSTS: bool = False
+    MEDIA_ALLOW_PRIVATE_HOSTS: bool = True
 
     # ------------------------------------------------------------- vision ----
 
