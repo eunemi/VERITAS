@@ -53,20 +53,11 @@ select = [
 ignore = [
     # Settings fields are upper-case by convention; N815 would flag every one.
     "N815",
-    # Narrative docs and Unicode-aware text normalisation are intentional here;
-    # these style checks do not indicate a runtime or security defect.
-    "E501",
-    "RUF001",
-    "RUF002",
-    "RUF003",
-    "ASYNC109",
-    "UP046",
-    "N818",
 ]
 
 [tool.ruff.lint.per-file-ignores]
 # Tests assert, and assert is what S101 flags.
-"tests/*" = ["S101", "S105", "S106"]
+"tests/*" = ["S101"]
 # The exception handlers narrow a parameter typed `Exception` with `assert
 # isinstance`, which is how FastAPI's handler signature is meant to be used.
 "app/core/exception_handlers.py" = ["S101"]
