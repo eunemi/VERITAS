@@ -67,7 +67,6 @@ from app.domain.user import User, normalise_email
 from app.domain.verification import (
     Annotation,
     Artifact,
-    AudioDetail,
     DeskProgress,
     DeskReport,
     Exhibit,
@@ -76,7 +75,6 @@ from app.domain.verification import (
     LedgerEntry,
     PlateRegion,
     Signal,
-    TranscriptCue,
     Verdict,
     Verification,
 )
@@ -87,7 +85,6 @@ __all__ = [
     "Annotation",
     "Artifact",
     "ArtifactKind",
-    "AudioDetail",
     "Axis",
     "Band",
     "ClaimResearch",
@@ -125,7 +122,6 @@ __all__ = [
     "Source",
     "Stance",
     "Status",
-    "TranscriptCue",
     "Unfit",
     "User",
     "Verdict",
