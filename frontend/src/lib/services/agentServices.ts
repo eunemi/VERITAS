@@ -35,14 +35,14 @@ import {
 import {
   toneOf,
   type AgentRecord,
-  type AudioRecord,
+
   type Contribution,
   type DecisionRecord,
   type Determination,
   type FactCheckRecord,
   type ImageRecord,
   type TextRecord,
-  type TranscriptSegment,
+
   type Verdict,
 } from "@/lib/types/agents";
 
@@ -179,36 +179,11 @@ function imageRecordOf(report: DeskReportOut, artifact: ArtifactOut): ImageRecor
     annotations: report.annotations,
     signals: report.signals,
     verdict: verdictOf(report.verdict),
+    extractedText: detail?.text ?? "",
   };
 }
 
-function audioRecordOf(report: DeskReportOut, artifact: ArtifactOut): AudioRecord {
-  const detail = report.detail && "cues" in report.detail ? report.detail : null;
-  const refs = annotationRefs(report);
 
-  const transcript: TranscriptSegment[] = (detail?.cues ?? []).map((cue) => ({
-    ref: cue.ref || null,
-    timecode: cue.timecode,
-    line: cue.text,
-    flagged: ruled(refs, cue.ref),
-  }));
-
-  return {
-    kind: "audio",
-    fileName: nameFrom(artifact.url ?? "", artifact.filename),
-    duration: detail?.runtime ?? "0:00",
-    envelope: detail?.envelope ?? [],
-    voicedSpans: (detail?.spans ?? [])
-      .filter((span) => span.length >= 2)
-      .map(([start, end]) => ({ start, end })),
-    language: detail?.language ?? "unknown",
-    transcript,
-    ledger: report.ledger,
-    annotations: report.annotations,
-    signals: report.signals,
-    verdict: verdictOf(report.verdict),
-  };
-}
 
 /**
  * The signed record.
@@ -250,8 +225,7 @@ function recordOf(report: DeskReportOut, artifact: ArtifactOut): AgentRecord | n
       return factCheckRecordOf(report, artifact);
     case "image":
       return imageRecordOf(report, artifact);
-    case "audio":
-      return audioRecordOf(report, artifact);
+
     default:
       return null;
   }
@@ -367,18 +341,7 @@ export async function examineImage(
   return filed<ImageRecord>(examination, "image", "image");
 }
 
-export async function examineAudio(
-  url: string,
-  filename: string | null = null,
-  options: ExamineOptions = {},
-): Promise<AudioRecord> {
-  const examination = await commission(
-    { kind: "audio", url, filename },
-    ["audio"],
-    options,
-  );
-  return filed<AudioRecord>(examination, "audio", "audio");
-}
+
 
 /** What a submission that ran to a signed record comes back as. */
 export interface Adjudication {
@@ -437,8 +400,7 @@ const HANDED_OVER: Record<ArtifactKind, string> = {
   claim: "Claim",
   url: "Address",
   image: "Frame",
-  audio: "Recording",
-  video: "Footage",
+
 };
 
 const TITLE_LENGTH = 120;
@@ -526,15 +488,3 @@ export async function retrieve(
   return examinationOf(record);
 }
 
-export async function examineVideo(
-  url: string,
-  filename: string | null = null,
-  options: ExamineOptions = {},
-): Promise<ImageRecord> {
-  const examination = await commission(
-    { kind: "video", url, filename },
-    ["video"],
-    options,
-  );
-  return filed<ImageRecord>(examination, "video", "image");
-}
