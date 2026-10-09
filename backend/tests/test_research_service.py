@@ -671,7 +671,7 @@ async def test_every_source_in_the_dossier_came_from_a_provider() -> None:
     offered = {r.url for results in returned.values() for r in results}
     for source in result.claims[0].sources:
         assert set(source.urls) <= offered
-        assert source.url in set(source.urls)
+        assert source.url in {u for u in source.urls}
         assert source.host in source.url
         assert set(source.providers) <= {"tavily", "brave"}
         for retrieval in source.retrievals:
