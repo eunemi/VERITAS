@@ -10,9 +10,6 @@ primitive — it reaches whatever this process can reach, which includes the clo
 metadata endpoint at ``http://169.254.169.254/`` and this deployment's own database
 at ``http://localhost:5432``. :func:`_permitted` is what stands between the two.
 
-One module for every media kind rather than one per desk. The image desk and the
-audio desk differ only in the ``accept`` prefixes they pass, and the guard above is
-the part that must not exist twice.
 """
 
 from __future__ import annotations
@@ -60,9 +57,7 @@ async def fetch(
     """Fetch ``url`` and return its bytes, or raise.
 
     ``accept`` is a tuple of permitted media-type prefixes (``("image/",)``), or
-    empty to take whatever arrives. It is a prefix rather than an exact type
-    because a container's media type is not a reliable discriminator — the same
-    ``.mp4`` is served as ``video/mp4`` by one host and ``audio/mp4`` by another.
+    empty to take whatever arrives.
 
     Redirects are followed manually rather than by httpx, because the guard has to
     run on every hop: an allowed host that answers ``302 Location:
