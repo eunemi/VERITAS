@@ -25,7 +25,7 @@ from app.audio.analyse import compose, confident, measure, voiced
 from app.audio.base import Acoustics, Transcript, Utterance
 from app.audio.decode import decode
 from app.core.config import Settings, get_settings
-from app.core.errors import ValidationError, ConfigurationError
+from app.core.errors import ConfigurationError, ValidationError
 from app.desks.anchors import attach
 from app.desks.graph import compiled, model_ledger, readings
 from app.domain import (
@@ -95,7 +95,10 @@ class AudioDesk:
             transcript = await get_transcriber(settings).transcribe(clip)
         except ConfigurationError as exc:
             import logging
-            logging.getLogger(__name__).warning("Audio desk missing dependencies: %s", exc)
+
+            logging.getLogger(__name__).warning(
+                "Audio desk missing dependencies: %s", exc
+            )
             return self._audio_unavailable()
 
         heard = self._heard(transcript, acoustics)
@@ -126,7 +129,12 @@ class AudioDesk:
             # ``video/mp4`` by one host and ``audio/mp4`` by another, so narrowing
             # by kind here would reject working files.
             accept=("audio/", "video/"),
-            allow_private=self._settings.MEDIA_ALLOW_PRIVATE_HOSTS,
+            allow_private=(
+                self._settings.MEDIA_ALLOW_PRIVATE_HOSTS
+                or fetch.is_managed_upload_url(
+                    artifact.url, public_api_url=self._settings.PUBLIC_API_URL
+                )
+            ),
         )
 
     def _heard(
@@ -171,7 +179,9 @@ class AudioDesk:
             ),
             ledger=(LedgerEntry("Audio", "Unavailable"),),
             signals=(),
-            detail=AudioDetail(duration=0.0, language="", text="", envelope=(), spans=(), cues=())
+            detail=AudioDetail(
+                duration=0.0, language="", text="", envelope=(), spans=(), cues=()
+            ),
         )
 
     def _unheard(

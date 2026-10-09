@@ -455,9 +455,7 @@ async def test_somebody_else_s_record_is_404_and_not_403(client: AsyncClient) ->
     )
     record_id = submitted.json()["id"]
 
-    denied = await client.get(
-        f"{V1}/verification/{record_id}", headers=other_headers
-    )
+    denied = await client.get(f"{V1}/verification/{record_id}", headers=other_headers)
     absent = await client.get(f"{V1}/verification/nope", headers=other_headers)
 
     assert denied.status_code == 404

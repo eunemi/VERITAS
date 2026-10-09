@@ -218,9 +218,7 @@ def cluster(sources: Sequence[Source]) -> tuple[Source, ...]:
         return tuple(sources)
 
     prints = {source.url: _Print.of(source) for source in sources}
-    roots = _components(
-        sorted(prints), lambda a, b: _same_story(prints[a], prints[b])
-    )
+    roots = _components(sorted(prints), lambda a, b: _same_story(prints[a], prints[b]))
 
     members: dict[str, list[Source]] = {}
     for source in sources:
@@ -237,9 +235,7 @@ def cluster(sources: Sequence[Source]) -> tuple[Source, ...]:
         for index, group_ in enumerate(ranked, start=1)
         for source in group_
     }
-    return tuple(
-        replace(source, cluster=label.get(source.url)) for source in sources
-    )
+    return tuple(replace(source, cluster=label.get(source.url)) for source in sources)
 
 
 @dataclass(frozen=True, slots=True)
@@ -377,8 +373,7 @@ def shingles(text: str, width: int = SHINGLE_WIDTH) -> frozenset[tuple[str, ...]
     if len(tokens) < width:
         return frozenset()
     return frozenset(
-        tuple(tokens[index : index + width])
-        for index in range(len(tokens) - width + 1)
+        tuple(tokens[index : index + width]) for index in range(len(tokens) - width + 1)
     )
 
 
@@ -481,10 +476,7 @@ _TRUNCATION = re.compile(r"(?:\s*\.\s*){2,}|…|⋯|‥")
 
 #: Punctuation NFKC does not fold, plus the invisibles it does not delete.
 _FOLD = {
-    **{
-        ord(char): "'"
-        for char in "‘’‚‛′´ʼ‵"
-    },
+    **{ord(char): "'" for char in "‘’‚‛′´ʼ‵"},
     **{ord(char): '"' for char in "“”„‟″«»"},
     **{ord(char): "-" for char in "‐‑‒–—―−"},
     **dict.fromkeys(

@@ -120,7 +120,9 @@ def keywords(
     if not documents:
         return (), ()
 
-    scored = _tfidf(documents, stopwords) if len(documents) >= _MIN_DOCS_FOR_TFIDF else None
+    scored = (
+        _tfidf(documents, stopwords) if len(documents) >= _MIN_DOCS_FOR_TFIDF else None
+    )
     if scored is None:
         scored = _frequency(documents, stopwords)
 

@@ -114,7 +114,7 @@ class TokenOut(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     access_token: str
-    token_type: Literal["bearer"] = "bearer"
+    token_type: Literal["bearer"] = Field(default="bearer")
     expires_in: int = Field(
         description="Seconds until the token stops being accepted.",
     )

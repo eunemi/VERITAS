@@ -47,9 +47,7 @@ from tests.stubs import (
 )
 
 #: Every determination this desk is permitted to reach.
-ALLOWED = frozenset(
-    {Determination.REQUIRES_VERIFICATION, Determination.INSUFFICIENT}
-)
+ALLOWED = frozenset({Determination.REQUIRES_VERIFICATION, Determination.INSUFFICIENT})
 
 
 def configured(**overrides: Any) -> Settings:
@@ -222,9 +220,7 @@ async def test_empty_prose_never_reaches_the_extractor() -> None:
 async def test_a_submitted_claim_is_taken_as_written() -> None:
     stub = StubClaimExtractor(extraction=sample_extraction())
     body = "Rainfall in Chennai set a July record in 2025."
-    report = await seated(stub).examine(
-        Artifact(kind=ArtifactKind.CLAIM, content=body)
-    )
+    report = await seated(stub).examine(Artifact(kind=ArtifactKind.CLAIM, content=body))
 
     # Never screened: screening it would let this desk set aside a claim the
     # fact-check desk goes on to check anyway.
@@ -272,9 +268,7 @@ async def test_a_checkable_claim_is_marked_and_passed_on() -> None:
 async def test_an_unfit_claim_is_annotated_with_its_reason_not_dropped() -> None:
     report = await desk().examine(text())
     aside = [
-        a
-        for a in report.annotations
-        if a.determination is Determination.INSUFFICIENT
+        a for a in report.annotations if a.determination is Determination.INSUFFICIENT
     ]
     assert [a.quote for a in aside] == ["It is a beautiful bridge"]
     assert aside[0].note == f"Set aside: {Unfit.OPINION}."

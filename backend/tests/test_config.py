@@ -132,9 +132,7 @@ def test_local_runs_without_a_signing_key() -> None:
     assert settings.is_local
 
 
-@pytest.mark.parametrize(
-    "environment", ["development", "staging", "production"]
-)
+@pytest.mark.parametrize("environment", ["development", "staging", "production"])
 def test_deployed_environments_require_a_signing_key(environment: str) -> None:
     with pytest.raises(ConfigurationError) as raised:
         build(ENVIRONMENT=environment)
@@ -161,6 +159,17 @@ def test_production_rejects_debug() -> None:
         build(ENVIRONMENT="production", JWT_SECRET_KEY=REAL_SECRET, DEBUG=True)
 
     assert raised.value.details["setting"] == "DEBUG"
+
+
+def test_production_rejects_private_media_hosts() -> None:
+    with pytest.raises(ConfigurationError) as raised:
+        build(
+            ENVIRONMENT="production",
+            JWT_SECRET_KEY=REAL_SECRET,
+            MEDIA_ALLOW_PRIVATE_HOSTS=True,
+        )
+
+    assert raised.value.details["setting"] == "MEDIA_ALLOW_PRIVATE_HOSTS"
 
 
 def test_a_correct_production_configuration_starts() -> None:

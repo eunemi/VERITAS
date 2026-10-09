@@ -275,9 +275,7 @@ def candidates(
 
     scale = _upscale_factor(height, upscale_to)
     if scale > 1.0:
-        gray = cv2.resize(
-            gray, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC
-        )
+        gray = cv2.resize(gray, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
 
     size = (gray.shape[1], gray.shape[0])
     found = [

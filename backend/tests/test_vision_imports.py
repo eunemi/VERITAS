@@ -39,6 +39,7 @@ FORBIDDEN = frozenset(
 #: schemas and these tests read are available with nothing installed.
 PLAIN_PYTHON = ("base.py", "relevance.py")
 
+
 def modules() -> list[Path]:
     """Every source file in the package, ``__init__`` included."""
     return sorted(VISION.glob("*.py"))

@@ -33,7 +33,7 @@ from app.core.errors import ConfigurationError, VeritasError
 from app.core.logging import get_logger
 from app.domain import ProviderOutcome, ProviderStatus, Retrieval
 from app.providers.http import redact
-from app.providers.outcomes import outcome
+from app.providers.outcomes import outcome as provider_outcome
 from app.search.base import SearchClient, SearchResult
 
 __all__ = ["Harvest", "Task", "harvest"]
@@ -200,9 +200,7 @@ async def _run(
                 now=now,
             )
 
-    settled = await asyncio.gather(
-        *(one(job) for job in jobs), return_exceptions=True
-    )
+    settled = await asyncio.gather(*(one(job) for job in jobs), return_exceptions=True)
     return list(zip(jobs, settled, strict=True))
 
 
@@ -287,7 +285,7 @@ def _outcome(
     documented there. All this adds is which error code an exception that is not a
     :class:`~app.core.errors.VeritasError` should be reported under.
     """
-    return outcome(
+    return provider_outcome(
         provider,
         ran=ran,
         failed=failed,

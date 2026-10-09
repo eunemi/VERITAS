@@ -34,7 +34,6 @@ MAX_RECORDS = 1000
 class InMemoryVerificationRepository:
     """Keeps verifications in an insertion-ordered dict, newest last."""
 
-
     def __init__(self, *, max_records: int = MAX_RECORDS) -> None:
         self._records: OrderedDict[str, Verification] = OrderedDict()
         self._max_records = max_records
@@ -161,4 +160,3 @@ class InMemoryUserRepository:
                 del self._by_email[existing.email]
                 self._by_email[user.email] = user.id
             self._users[user.id] = user
-

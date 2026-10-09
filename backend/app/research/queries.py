@@ -194,9 +194,7 @@ def _keyword_terms(
     ranking this reflects is the one TF-IDF produced.
     """
     already = {word for text in covered for word in terms.words(text)}
-    ranked = sorted(
-        enumerate(keywords), key=lambda pair: (-pair[1].score, pair[0])
-    )
+    ranked = sorted(enumerate(keywords), key=lambda pair: (-pair[1].score, pair[0]))
     chosen: list[str] = []
     seen: set[str] = set()
     for _, keyword in ranked:

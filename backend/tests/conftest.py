@@ -97,4 +97,3 @@ def nlp_resources() -> object:
         return load("en_core_web_sm")
     except ConfigurationError as exc:  # the model, not the library
         pytest.skip(str(exc))
-

@@ -43,13 +43,13 @@ __all__ = ["parse_absolute", "parse_relative", "resolve"]
 #: declined. Display forms, in the order a Google-derived string is most likely to
 #: use them.
 _DISPLAY_FORMATS: tuple[str, ...] = (
-    "%b %d, %Y",     # Mar 10, 2022      — the one documented Serper example
-    "%B %d, %Y",     # March 10, 2022
-    "%d %b %Y",      # 10 Mar 2022
-    "%d %B %Y",      # 10 March 2022
-    "%b %d %Y",      # Mar 10 2022
-    "%Y/%m/%d",      # 2022/03/10
-    "%d/%m/%Y",      # 10/03/2022        — see the note in `parse_absolute`
+    "%b %d, %Y",  # Mar 10, 2022      — the one documented Serper example
+    "%B %d, %Y",  # March 10, 2022
+    "%d %b %Y",  # 10 Mar 2022
+    "%d %B %Y",  # 10 March 2022
+    "%b %d %Y",  # Mar 10 2022
+    "%Y/%m/%d",  # 2022/03/10
+    "%d/%m/%Y",  # 10/03/2022        — see the note in `parse_absolute`
 )
 
 #: ``"2 days ago"``, ``"about 3 hours ago"``, ``"1 month ago"``. The trailing
@@ -187,11 +187,7 @@ def resolve(
     if (found := parse_absolute(text)) is not None:
         return (found, basis) if _plausible(found, now) else None
     if (found := parse_relative(text, now=now)) is not None:
-        return (
-            (found, DateBasis.PROVIDER_RELATIVE)
-            if _plausible(found, now)
-            else None
-        )
+        return (found, DateBasis.PROVIDER_RELATIVE) if _plausible(found, now) else None
     return None
 
 

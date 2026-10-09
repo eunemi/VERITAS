@@ -68,9 +68,7 @@ class ContradictionAgent:
         )
         return GraphState(
             conflicts=found,
-            trace=(
-                AgentNote(NAME, f"{sum(len(f) for f in found)} conflict(s) found"),
-            ),
+            trace=(AgentNote(NAME, f"{sum(len(f) for f in found)} conflict(s) found"),),
         )
 
     def _for_claim(

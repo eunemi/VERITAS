@@ -57,7 +57,9 @@ def report(desk: Desk) -> DeskReport:
         (ArtifactKind.VIDEO, (Desk.AUDIO, Desk.VIDEO)),
     ],
 )
-def test_default_roster_per_kind(kind: ArtifactKind, expected: tuple[Desk, ...]) -> None:
+def test_default_roster_per_kind(
+    kind: ArtifactKind, expected: tuple[Desk, ...]
+) -> None:
     assert desks_for(kind) == expected
 
 
@@ -128,14 +130,25 @@ def test_an_empty_roster_is_refused() -> None:
 @pytest.mark.parametrize("bad", [-0.1, 1.1, 42.0])
 def test_confidence_outside_zero_to_one_is_refused(bad: float) -> None:
     with pytest.raises(ValueError):
-        Verdict(determination=Determination.SUPPORTED, headline="h", rationale="r", confidence=bad)
+        Verdict(
+            determination=Determination.SUPPORTED,
+            headline="h",
+            rationale="r",
+            confidence=bad,
+        )
 
 
 @pytest.mark.parametrize("edge", [0.0, 1.0])
 def test_the_bounds_themselves_are_allowed(edge: float) -> None:
-    assert Verdict(
-        determination=Determination.SUPPORTED, headline="h", rationale="r", confidence=edge
-    ).confidence == edge
+    assert (
+        Verdict(
+            determination=Determination.SUPPORTED,
+            headline="h",
+            rationale="r",
+            confidence=edge,
+        ).confidence
+        == edge
+    )
 
 
 # ------------------------------------------------------------------ records ---
@@ -210,7 +223,9 @@ def test_failing_keeps_the_reports_already_filed() -> None:
     record = record.with_report(report(Desk.TEXT))
 
     record = record.failed(
-        Failure(code="provider_error", message="The search timed out.", desk=Desk.FACT_CHECK)
+        Failure(
+            code="provider_error", message="The search timed out.", desk=Desk.FACT_CHECK
+        )
     )
 
     assert record.status is Status.FAILED

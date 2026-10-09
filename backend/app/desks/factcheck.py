@@ -194,9 +194,7 @@ class FactCheckDesk:
                 )
         return retrieved, indexed
 
-    async def _stored(
-        self, outcome: Outcome, *, verification_id: str | None
-    ) -> None:
+    async def _stored(self, outcome: Outcome, *, verification_id: str | None) -> None:
         """Write what was gathered, without letting a write failure lose it."""
         if self._store is None:
             return

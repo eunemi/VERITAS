@@ -72,9 +72,7 @@ class DecisionDesk:
 
         filed = tuple(reports)
         determination = _governing(filed)
-        deciding = tuple(
-            r for r in filed if r.verdict.determination is determination
-        )
+        deciding = tuple(r for r in filed if r.verdict.determination is determination)
         return DeskReport(
             desk=self.desk,
             verdict=Verdict(

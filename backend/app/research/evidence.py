@@ -108,7 +108,56 @@ _SENTENCE_END = re.compile(r"""(?<=[.!?])(?P<tail>["'”’»)\]]*)\s+""")
 #: which is what a regex sentence splitter is: the alternative is NLTK's Punkt, and
 #: everything in this package has to work when NLTK is not installed.
 _ABBREVIATIONS = frozenset(
-    ["mr", "mrs", "ms", "dr", "prof", "rev", "hon", "sen", "rep", "gov", "st", "sr", "jr", "inc", "corp", "co", "ltd", "plc", "dept", "univ", "vs", "etc", "al", "eg", "ie", "cf", "approx", "est", "jan", "feb", "mar", "apr", "jun", "jul", "aug", "sept", "sep", "oct", "nov", "dec", "no", "fig", "vol", "pp", "ed", "u.s", "u.k", "e.u"]
+    [
+        "mr",
+        "mrs",
+        "ms",
+        "dr",
+        "prof",
+        "rev",
+        "hon",
+        "sen",
+        "rep",
+        "gov",
+        "st",
+        "sr",
+        "jr",
+        "inc",
+        "corp",
+        "co",
+        "ltd",
+        "plc",
+        "dept",
+        "univ",
+        "vs",
+        "etc",
+        "al",
+        "eg",
+        "ie",
+        "cf",
+        "approx",
+        "est",
+        "jan",
+        "feb",
+        "mar",
+        "apr",
+        "jun",
+        "jul",
+        "aug",
+        "sept",
+        "sep",
+        "oct",
+        "nov",
+        "dec",
+        "no",
+        "fig",
+        "vol",
+        "pp",
+        "ed",
+        "u.s",
+        "u.k",
+        "e.u",
+    ]
 )
 
 
@@ -301,9 +350,7 @@ def assess(needle: Needle, text: str) -> Match | None:
     )
 
     present = set(tokens)
-    overlap = (
-        len(needle.words & present) / len(needle.words) if needle.words else 0.0
-    )
+    overlap = len(needle.words & present) / len(needle.words) if needle.words else 0.0
 
     if needle.anchored:
         if not (matched_numbers or matched_entities or matched_terms):

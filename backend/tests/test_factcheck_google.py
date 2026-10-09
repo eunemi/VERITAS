@@ -471,7 +471,7 @@ def test_a_review_with_no_url_is_dropped_and_the_rest_survive(
 def test_a_missing_publisher_name_is_never_filled_from_the_site(
     client: GoogleFactCheckClient,
 ) -> None:
-    """"Who reviewed it" and "what host the URL points at" are different assertions.
+    """ "Who reviewed it" and "what host the URL points at" are different assertions.
 
     Google documents ``site`` as derived from the review URL — it is not something the
     publisher said — so substituting it would attribute a verdict to an organisation on
@@ -480,7 +480,10 @@ def test_a_missing_publisher_name_is_never_filled_from_the_site(
     body = one(
         reviewed(
             claimReview=[
-                review(publisher={"site": "somewhere.example"}, url="https://somewhere.example/check")
+                review(
+                    publisher={"site": "somewhere.example"},
+                    url="https://somewhere.example/check",
+                )
             ]
         )
     )
@@ -538,7 +541,9 @@ def test_nanosecond_precision_parses(client: GoogleFactCheckClient) -> None:
     relies on. A rejected timestamp would silently null out the date on every review from
     a publisher whose CMS emits nanoseconds.
     """
-    body = one(reviewed(claimReview=[review(reviewDate="2024-03-15T09:30:00.123456789Z")]))
+    body = one(
+        reviewed(claimReview=[review(reviewDate="2024-03-15T09:30:00.123456789Z")])
+    )
 
     assert client.parse(body, now=NOW)[0].reviews[0].reviewed_at == datetime(
         2024, 3, 15, 9, 30, 0, 123456, tzinfo=UTC

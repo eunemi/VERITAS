@@ -35,9 +35,7 @@ class SourceAgent:
             )
             for record in research
         )
-        strong = sum(
-            1 for group in graded for c in group if c.band is Band.STRONG
-        )
+        strong = sum(1 for group in graded for c in group if c.band is Band.STRONG)
         total = sum(len(group) for group in graded)
         return GraphState(
             grading=graded,

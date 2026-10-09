@@ -17,7 +17,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from app.core.config import Settings, get_settings
-from app.core.errors import ValidationError, VeritasError, ConfigurationError
+from app.core.errors import ConfigurationError, ValidationError, VeritasError
 from app.desks.anchors import attach
 from app.desks.graph import compiled, model_ledger, readings
 from app.domain import (
@@ -88,7 +88,12 @@ class ImageDesk:
             timeout=self._settings.MEDIA_FETCH_TIMEOUT_SECONDS,
             limit=self._settings.MAX_UPLOAD_BYTES,
             accept=("image/",),
-            allow_private=self._settings.MEDIA_ALLOW_PRIVATE_HOSTS,
+            allow_private=(
+                self._settings.MEDIA_ALLOW_PRIVATE_HOSTS
+                or fetch.is_managed_upload_url(
+                    artifact.url, public_api_url=self._settings.PUBLIC_API_URL
+                )
+            ),
         )
 
     async def _look(self, data: bytes, reading: Reading) -> tuple[Detection, ...]:
@@ -136,7 +141,7 @@ class ImageDesk:
             ),
             ledger=(LedgerEntry("OCR", "Unavailable"),),
             signals=(),
-            detail=ImageDetail(width=0, height=0, text="", regions=())
+            detail=ImageDetail(width=0, height=0, text="", regions=()),
         )
 
     def _unread(self, reading: Reading) -> DeskReport:
@@ -248,9 +253,7 @@ class ImageDesk:
             for index, line in enumerate(reading.lines)
         ]
         regions.extend(
-            _region(
-                found.box, reading, 0, f"{found.label} {found.confidence:.0%}"
-            )
+            _region(found.box, reading, 0, f"{found.label} {found.confidence:.0%}")
             for found in detections
         )
         return ImageDetail(

@@ -84,9 +84,7 @@ class DeskRow(Base):
         ForeignKey("verifications.id", ondelete="CASCADE"),
         primary_key=True,
     )
-    desk: Mapped[Desk] = mapped_column(
-        enum_column(Desk, name="desk"), primary_key=True
-    )
+    desk: Mapped[Desk] = mapped_column(enum_column(Desk, name="desk"), primary_key=True)
     position: Mapped[int] = mapped_column(Integer)
     status: Mapped[Status] = mapped_column(enum_column(Status, name="status"))
     started_at: Mapped[datetime | None] = mapped_column(UTCDateTime)

@@ -481,9 +481,7 @@ async def test_too_little_speech_to_stand_behind_is_insufficient() -> None:
 
 
 async def test_the_text_threshold_is_configurable() -> None:
-    built, transcriber, graph = desk(
-        BRIEF, settings=configured(AUDIO_MIN_TEXT_CHARS=5)
-    )
+    built, transcriber, graph = desk(BRIEF, settings=configured(AUDIO_MIN_TEXT_CHARS=5))
 
     with bench(transcriber):
         report = await built.examine(RECORDING)

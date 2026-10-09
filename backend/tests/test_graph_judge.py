@@ -116,7 +116,11 @@ async def test_three_copies_of_one_wire_story_count_as_one() -> None:
     syndicated = tuple(
         reported(url, ref=ref, cluster=7)
         for ref, url in enumerate(
-            ("https://reuters.com/a", "https://abc.net.au/b", "https://thestar.com.my/c"),
+            (
+                "https://reuters.com/a",
+                "https://abc.net.au/b",
+                "https://thestar.com.my/c",
+            ),
             start=1,
         )
     )

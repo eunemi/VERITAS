@@ -52,9 +52,9 @@ from app.desks.factcheck import build as build_factcheck
 from app.desks.image import ImageDesk
 from app.desks.image import build as build_image
 from app.desks.text import TextDesk
+from app.desks.text import build as build_text
 from app.desks.video import VideoDesk
 from app.desks.video import build as build_video
-from app.desks.text import build as build_text
 from app.domain import Desk
 
 #: The five desks that read an artifact, keyed by which desk they are.

@@ -51,11 +51,13 @@ def test_a_conjunct_with_its_own_subject_keeps_it(nlp_resources: Resources) -> N
 def test_a_parenthetical_relative_clause_becomes_a_claim(
     nlp_resources: Resources,
 ) -> None:
-    """"The bridge, which cost £4bn, opened" does assert that the bridge cost £4bn."""
+    """ "The bridge, which cost £4bn, opened" does assert that the bridge cost £4bn."""
     found = texts(nlp_resources, "The bridge, which cost £4bn, opened in March.")
 
     assert len(found) == 2
-    assert any("bridge" in text and "4bn" in text and "which" not in text for text in found)
+    assert any(
+        "bridge" in text and "4bn" in text and "which" not in text for text in found
+    )
     # And the main clause reads without the removed words or their punctuation.
     assert any(text == "The bridge opened in March." for text in found)
 
@@ -95,9 +97,7 @@ def test_a_parenthetical_relative_clause_becomes_a_claim(
         ),
     ],
 )
-def test_it_refuses_to_split(
-    nlp_resources: Resources, sentence: str, why: str
-) -> None:
+def test_it_refuses_to_split(nlp_resources: Resources, sentence: str, why: str) -> None:
     assert len(texts(nlp_resources, sentence)) == 1, why
 
 
@@ -119,9 +119,10 @@ def test_every_clause_locates_itself_in_the_source(
     """The invariant every offset in the response rests on."""
     for clause in clauses(only_sentence(nlp_resources, source), 0):
         assert 0 <= clause.start < clause.end <= len(source)
-        assert source[clause.start : clause.end].strip() == source[
-            clause.start : clause.end
-        ]
+        assert (
+            source[clause.start : clause.end].strip()
+            == source[clause.start : clause.end]
+        )
 
 
 @pytest.mark.parametrize("source", SOURCES)
@@ -140,7 +141,9 @@ def test_offsets_are_shifted_by_the_sentence_offset(
 def test_clauses_come_back_in_reading_order(
     nlp_resources: Resources, source: str
 ) -> None:
-    starts = [clause.start for clause in clauses(only_sentence(nlp_resources, source), 0)]
+    starts = [
+        clause.start for clause in clauses(only_sentence(nlp_resources, source), 0)
+    ]
 
     assert starts == sorted(starts)
 
@@ -211,14 +214,16 @@ def rewrite(source: str, *keep: str) -> str:
 
 
 def test_a_gap_left_by_a_removed_token_becomes_one_space() -> None:
-    """"The bridge" + "cost £4bn" — 15 characters apart in the source, one space here.
+    """ "The bridge" + "cost £4bn" — 15 characters apart in the source, one space here.
 
     ``text_with_ws`` would give "The bridgecost £4bn" whenever the token holding the
     space was the one removed, which is exactly the case a split creates.
     """
     source = "The bridge, which cost £4bn, opened in March."
 
-    assert rewrite(source, "The", "bridge", "cost", "£", "4bn") == "The bridge cost £4bn."
+    assert (
+        rewrite(source, "The", "bridge", "cost", "£", "4bn") == "The bridge cost £4bn."
+    )
 
 
 def test_adjacent_tokens_are_not_separated() -> None:
@@ -227,7 +232,7 @@ def test_adjacent_tokens_are_not_separated() -> None:
 
 
 def test_a_comma_left_against_the_terminator_is_removed() -> None:
-    """"…in March,." is what a split leaves behind when the sentence had a comma."""
+    """ "…in March,." is what a split leaves behind when the sentence had a comma."""
     source = "The bridge opened in March, and cost £4bn."
 
     assert (

@@ -86,5 +86,19 @@ async def test_each_request_gets_a_distinct_id(client: AsyncClient) -> None:
     assert first != second
 
 
+async def test_declared_oversized_body_is_rejected_before_parsing(
+    client: AsyncClient, settings: Settings
+) -> None:
+    response = await client.post(
+        "/api/v1/verify",
+        content=b"{}",
+        headers={"content-length": str(settings.MAX_UPLOAD_BYTES + 1)},
+    )
+
+    assert response.status_code == 413
+    assert response.json()["error"]["code"] == "payload_too_large"
+    assert response.headers[REQUEST_ID_HEADER]
+
+
 async def test_docs_are_open_outside_production(client: AsyncClient) -> None:
     assert (await client.get("/openapi.json")).status_code == 200

@@ -237,7 +237,9 @@ def test_a_thinly_evidenced_claim_is_uncertain_however_one_sided() -> None:
     This is the gate the lean cannot supply: the evidence points one way unanimously,
     and there is not enough of it to say so.
     """
-    result = rate((supports(0.2),), (reported("https://a.example/a", dated=False),), grade=False)
+    result = rate(
+        (supports(0.2),), (reported("https://a.example/a", dated=False),), grade=False
+    )
     assert result.value == 30
     assert result.assessment is Assessment.UNCERTAIN
     assert not result.contested
@@ -288,9 +290,9 @@ def test_better_sources_score_higher_and_ungraded_ones_score_neutral() -> None:
     the same reasoning behind the judge's own treatment of an ungraded source.
     """
     trio = publishers(3)
-    assert part(rate((supports(),), trio, grade=False), "credibility").points == pytest.approx(
-        scoring.CREDIBILITY_POINTS * scoring.NEUTRAL
-    )
+    assert part(
+        rate((supports(),), trio, grade=False), "credibility"
+    ).points == pytest.approx(scoring.CREDIBILITY_POINTS * scoring.NEUTRAL)
     assert part(rate((supports(),), trio), "credibility").points > 0
 
 
@@ -301,7 +303,10 @@ def test_independent_confirmation_saturates_rather_than_accumulating() -> None:
     the budget without arriving. A component that paid out in full at some target would
     make everything past that target free.
     """
-    points = [part(rate((supports(),), publishers(n)), "confirmation").points for n in (1, 2, 4, 8)]
+    points = [
+        part(rate((supports(),), publishers(n)), "confirmation").points
+        for n in (1, 2, 4, 8)
+    ]
     assert points == sorted(points)
     assert points[1] - points[0] > points[3] - points[2]
     assert points[-1] < scoring.CONFIRMATION_POINTS
@@ -358,9 +363,10 @@ def test_losing_a_date_never_pays_better_than_having_an_old_one() -> None:
     undated = tuple(
         reported(f"https://r{i}.example/a", ref=i, dated=False) for i in (1, 2, 3)
     )
-    assert part(rate((supports(),), undated), "recency").points == part(
-        rate((supports(),), trio, now=MUCH_LATER), "recency"
-    ).points
+    assert (
+        part(rate((supports(),), undated), "recency").points
+        == part(rate((supports(),), trio, now=MUCH_LATER), "recency").points
+    )
     assert part(rate((supports(),), undated), "recency").points > 0
 
 
@@ -372,7 +378,10 @@ def test_an_unrecorded_retrieval_time_is_treated_as_an_unknown_age() -> None:
     """
     result = rate((supports(),), publishers(3), now=None)
     recency = part(result, "recency")
-    assert recency.points == part(rate((supports(),), publishers(3), now=MUCH_LATER), "recency").points
+    assert (
+        recency.points
+        == part(rate((supports(),), publishers(3), now=MUCH_LATER), "recency").points
+    )
     assert "retrieval time" in recency.detail
 
 
@@ -431,13 +440,19 @@ def test_the_contest_threshold_comes_from_the_judge_s_own_configuration() -> Non
     """
     trio = publishers(3)
     close = (supports(), supports(), refutes())
-    assert scoring.score(
-        indications=close, sources=trio, grading=graded(trio), now=NOW
-    ).assessment is Assessment.UNCERTAIN
-    assert scoring.score(
-        indications=close,
-        sources=trio,
-        grading=graded(trio),
-        now=NOW,
-        thresholds=Thresholds(contest_margin=0.45),
-    ).assessment is Assessment.MOSTLY_TRUE
+    assert (
+        scoring.score(
+            indications=close, sources=trio, grading=graded(trio), now=NOW
+        ).assessment
+        is Assessment.UNCERTAIN
+    )
+    assert (
+        scoring.score(
+            indications=close,
+            sources=trio,
+            grading=graded(trio),
+            now=NOW,
+            thresholds=Thresholds(contest_margin=0.45),
+        ).assessment
+        is Assessment.MOSTLY_TRUE
+    )

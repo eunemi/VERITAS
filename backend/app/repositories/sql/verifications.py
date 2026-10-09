@@ -81,9 +81,7 @@ class SqlVerificationRepository:
             found = await session.execute(
                 select(VerificationRow)
                 .where(VerificationRow.user_id == user_id)
-                .order_by(
-                    VerificationRow.created_at.desc(), VerificationRow.id.desc()
-                )
+                .order_by(VerificationRow.created_at.desc(), VerificationRow.id.desc())
                 .limit(limit)
             )
             return tuple(_to_domain(row) for row in found.scalars().all())

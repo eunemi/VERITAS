@@ -52,9 +52,7 @@ def get_verification_repository(request: Request) -> VerificationRepository:
     return request.app.state.verification_repository
 
 
-RepositoryDep = Annotated[
-    VerificationRepository, Depends(get_verification_repository)
-]
+RepositoryDep = Annotated[VerificationRepository, Depends(get_verification_repository)]
 
 
 def get_verification_service(
@@ -95,9 +93,7 @@ def get_research_store(settings: SettingsDep) -> ResearchRepository | None:
     return SqlResearchRepository()
 
 
-ResearchStoreDep = Annotated[
-    ResearchRepository | None, Depends(get_research_store)
-]
+ResearchStoreDep = Annotated[ResearchRepository | None, Depends(get_research_store)]
 
 
 def get_research_service(
@@ -130,9 +126,7 @@ def get_user_repository(request: Request) -> UserRepository:
 UserRepositoryDep = Annotated[UserRepository, Depends(get_user_repository)]
 
 
-def get_auth_service(
-    users: UserRepositoryDep, settings: SettingsDep
-) -> AuthService:
+def get_auth_service(users: UserRepositoryDep, settings: SettingsDep) -> AuthService:
     """Build the auth service for this request."""
     return AuthService(users=users, settings=settings)
 
@@ -157,9 +151,7 @@ bearer_scheme = HTTPBearer(
     auto_error=False,
 )
 
-CredentialsDep = Annotated[
-    HTTPAuthorizationCredentials | None, Depends(bearer_scheme)
-]
+CredentialsDep = Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)]
 
 
 async def get_current_user(
@@ -196,4 +188,3 @@ async def get_optional_user(
 
 
 OptionalUserDep = Annotated[User | None, Depends(get_optional_user)]
-

@@ -90,7 +90,7 @@ def test_every_determination_can_be_stated_to_a_reader() -> None:
     assert set(HEADLINES) == set(Determination)
 
 
-@pytest.mark.parametrize("adverse", [d for d in GRAVITY[:4]])
+@pytest.mark.parametrize("adverse", list(GRAVITY[:4]))
 async def test_one_adverse_finding_is_never_averaged_away(
     adverse: Determination,
 ) -> None:

@@ -141,9 +141,7 @@ def test_separate_blocks_stay_separate() -> None:
     """A caption is not the continuation of the headline above it."""
     text = compose(lines(PAGE, floor=0.0))
 
-    assert text == (
-        "The central bank held the rate at 5.25%.\n\nPhotograph: Reuters"
-    )
+    assert text == ("The central bank held the rate at 5.25%.\n\nPhotograph: Reuters")
 
 
 def test_a_block_that_recurs_after_another_is_not_merged_backwards() -> None:

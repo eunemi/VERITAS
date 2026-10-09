@@ -322,9 +322,7 @@ VOCABULARY: dict[str, Finding] = {
     "passage_word_overlap_only": Finding(
         Axis.EVIDENCE, Direction.NEUTRAL, level=NEUTRAL, weight=0.50
     ),
-    "second_passage": Finding(
-        Axis.EVIDENCE, Direction.RAISES, level=0.70, weight=0.40
-    ),
+    "second_passage": Finding(Axis.EVIDENCE, Direction.RAISES, level=0.70, weight=0.40),
     "no_qualifying_passage": Finding(
         Axis.EVIDENCE, Direction.LOWERS, level=0.15, weight=0.90
     ),
@@ -346,9 +344,7 @@ VOCABULARY: dict[str, Finding] = {
     # Read out of a dated path in the URL. A fact about the URL a provider returned
     # rather than a claim by the publisher, which is why it is the weakest basis and
     # still a positive one: a date that can be pointed at beats no date at all.
-    "date_read_from_url": Finding(
-        Axis.DATE, Direction.RAISES, level=0.55, weight=0.50
-    ),
+    "date_read_from_url": Finding(Axis.DATE, Direction.RAISES, level=0.55, weight=0.50),
     "within_current_window": Finding(
         Axis.DATE, Direction.RAISES, level=0.75, weight=0.50
     ),

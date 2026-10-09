@@ -23,9 +23,7 @@ class SearchAgent:
         found = await harvest(
             [
                 Task(claim=claim.text, queries=formulations)
-                for claim, formulations in zip(
-                    claims, state["queries"], strict=True
-                )
+                for claim, formulations in zip(claims, state["queries"], strict=True)
             ],
             settings=self._settings,
             now=state["now"],

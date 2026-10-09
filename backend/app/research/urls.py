@@ -55,40 +55,130 @@ __all__ = [
 #: article key, and there is no way to tell from the URL alone. Under-stripping
 #: leaves two rows for one page, which is visible and harmless. Over-stripping
 #: silently loses one of them.
-TRACKING_PARAMS: frozenset[str] = frozenset({
-    # Google Analytics and the wider UTM convention. `utm_` is also matched as a
-    # prefix below, which covers the long tail (`utm_id`, `utm_source_platform`).
-    "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
-    "utm_name", "utm_cid", "utm_reader", "utm_viz_id", "utm_pubreferrer",
-    "utm_swu", "utm_brand",
-    # Ad-click identifiers. Every one of these is stamped on by the ad network.
-    "gclid", "gclsrc", "dclid", "gbraid", "wbraid", "fbclid", "msclkid",
-    "twclid", "ttclid", "li_fat_id", "igshid", "igsh", "yclid", "rdt_cid",
-    "epik", "s_kwcid", "_bhlid",
-    # Email and marketing automation.
-    "mc_cid", "mc_eid", "_hsenc", "_hsmi", "hsctatracking", "vero_conv",
-    "vero_id", "oly_anon_id", "oly_enc_id", "ck_subscriber_id", "mkt_tok",
-    # Referrer breadcrumbs. Not `source`, which some CMSes use for content.
-    "ref", "referer", "referrer", "_openstat", "__twitter_impression",
-    # Publisher-specific campaign tags, all analytics.
-    "at_medium", "at_campaign", "at_campaign_type", "at_custom1", "at_custom2",
-    "at_custom3", "at_custom4", "at_link_id", "at_link_origin",
-    "at_link_type", "at_ptr_name", "at_bbc_team",
-    "ns_campaign", "ns_mchannel", "ns_source", "ns_linkname", "ns_fee",
-    "cmpid", "cmp", "ito", "smid", "smtyp", "partner", "ncid", "sh", "srnd",
-    "taid", "reflink", "guccounter", "guce_referrer", "guce_referrer_sig",
-    "xtor", "wt.mc_id", "wtmc", "spm", "scm", "share_id", "campaign_id",
-    "ad_id", "adset_id", "fb_action_ids", "fb_action_types", "fb_source",
-    # AMP plumbing. Dropping these turns the AMP rendering of an article into
-    # the article, which is the whole point of handling AMP at all.
-    "amp", "_amp", "outputtype", "output", "usqp", "amp_js_v", "amp_gsa",
-    "amp_ct", "amp_tf",
-})
+TRACKING_PARAMS: frozenset[str] = frozenset(
+    {
+        # Google Analytics and the wider UTM convention. `utm_` is also matched as a
+        # prefix below, which covers the long tail (`utm_id`, `utm_source_platform`).
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "utm_name",
+        "utm_cid",
+        "utm_reader",
+        "utm_viz_id",
+        "utm_pubreferrer",
+        "utm_swu",
+        "utm_brand",
+        # Ad-click identifiers. Every one of these is stamped on by the ad network.
+        "gclid",
+        "gclsrc",
+        "dclid",
+        "gbraid",
+        "wbraid",
+        "fbclid",
+        "msclkid",
+        "twclid",
+        "ttclid",
+        "li_fat_id",
+        "igshid",
+        "igsh",
+        "yclid",
+        "rdt_cid",
+        "epik",
+        "s_kwcid",
+        "_bhlid",
+        # Email and marketing automation.
+        "mc_cid",
+        "mc_eid",
+        "_hsenc",
+        "_hsmi",
+        "hsctatracking",
+        "vero_conv",
+        "vero_id",
+        "oly_anon_id",
+        "oly_enc_id",
+        "ck_subscriber_id",
+        "mkt_tok",
+        # Referrer breadcrumbs. Not `source`, which some CMSes use for content.
+        "ref",
+        "referer",
+        "referrer",
+        "_openstat",
+        "__twitter_impression",
+        # Publisher-specific campaign tags, all analytics.
+        "at_medium",
+        "at_campaign",
+        "at_campaign_type",
+        "at_custom1",
+        "at_custom2",
+        "at_custom3",
+        "at_custom4",
+        "at_link_id",
+        "at_link_origin",
+        "at_link_type",
+        "at_ptr_name",
+        "at_bbc_team",
+        "ns_campaign",
+        "ns_mchannel",
+        "ns_source",
+        "ns_linkname",
+        "ns_fee",
+        "cmpid",
+        "cmp",
+        "ito",
+        "smid",
+        "smtyp",
+        "partner",
+        "ncid",
+        "sh",
+        "srnd",
+        "taid",
+        "reflink",
+        "guccounter",
+        "guce_referrer",
+        "guce_referrer_sig",
+        "xtor",
+        "wt.mc_id",
+        "wtmc",
+        "spm",
+        "scm",
+        "share_id",
+        "campaign_id",
+        "ad_id",
+        "adset_id",
+        "fb_action_ids",
+        "fb_action_types",
+        "fb_source",
+        # AMP plumbing. Dropping these turns the AMP rendering of an article into
+        # the article, which is the whole point of handling AMP at all.
+        "amp",
+        "_amp",
+        "outputtype",
+        "output",
+        "usqp",
+        "amp_js_v",
+        "amp_gsa",
+        "amp_ct",
+        "amp_tf",
+    }
+)
 
 #: Prefixes matched in addition to the exact names above.
-_TRACKING_PREFIXES: tuple[str, ...] = ("utm_", "at_custom", "at_link", "pk_",
-                                       "piwik_", "matomo_", "_ga", "_gl",
-                                       "_x_tr_", "hsa_", "vgo_")
+_TRACKING_PREFIXES: tuple[str, ...] = (
+    "utm_",
+    "at_custom",
+    "at_link",
+    "pk_",
+    "piwik_",
+    "matomo_",
+    "_ga",
+    "_gl",
+    "_x_tr_",
+    "hsa_",
+    "vgo_",
+)
 
 #: Leftmost host labels that name a *rendering* of a site rather than a different
 #: site, so ``www.bbc.co.uk``, ``m.bbc.co.uk`` and ``amp.bbc.co.uk`` are one page.

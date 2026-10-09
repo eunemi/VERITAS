@@ -23,7 +23,11 @@ from app.api.v1.routes import health as health_route
 from app.core.config import Settings, StoreBackend, get_settings
 from app.core.exception_handlers import register_exception_handlers
 from app.core.logging import configure_logging, get_logger
-from app.core.middleware import REQUEST_ID_HEADER, RequestContextMiddleware
+from app.core.middleware import (
+    REQUEST_ID_HEADER,
+    ContentLengthLimitMiddleware,
+    RequestContextMiddleware,
+)
 from app.database.session import dispose_engine
 from app.repositories import (
     InMemoryUserRepository,
@@ -130,6 +134,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # middleware in reverse registration order, so CORS — added last — is the
     # outermost layer and gets to answer a preflight before anything else runs,
     # while the request-id layer still wraps every real handler.
+    # Registered after the size guard so it is the outermost layer and supplies a
+    # correlation id even when the request is rejected before parsing its body.
+    app.add_middleware(
+        ContentLengthLimitMiddleware, max_bytes=settings.MAX_UPLOAD_BYTES
+    )
     app.add_middleware(RequestContextMiddleware)
     app.add_middleware(
         CORSMiddleware,

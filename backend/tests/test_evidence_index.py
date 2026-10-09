@@ -278,9 +278,7 @@ def test_an_unknown_date_and_no_cluster_decode_back_to_none() -> None:
 
 def test_cluster_zero_is_not_read_as_no_cluster() -> None:
     """The reason the sentinel is ``-1`` rather than ``0``."""
-    research = dossier(
-        CLAIM, carrying("https://www.reuters.com/a", HELD, cluster=0)
-    )
+    research = dossier(CLAIM, carrying("https://www.reuters.com/a", HELD, cluster=0))
 
     assert only(research).cluster == 0
 

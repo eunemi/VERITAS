@@ -56,22 +56,20 @@ class JudgeAgent:
 
         searched = _searched(state)
         now = state.get("now")
-        rulings = tuple(
-            self._rule(case, searched=searched, now=now) for case in found
-        )
+        rulings = tuple(self._rule(case, searched=searched, now=now) for case in found)
         ruling = _overall(rulings)
         return GraphState(
             ruling=ruling,
             trace=(
-                AgentNote(NAME, f"{ruling.judgement.value} across {len(rulings)} claim(s)"),
+                AgentNote(
+                    NAME, f"{ruling.judgement.value} across {len(rulings)} claim(s)"
+                ),
             ),
         )
 
     # -------------------------------------------------------------- one claim ---
 
-    def _rule(
-        self, case: Case, *, searched: bool, now: datetime | None
-    ) -> ClaimRuling:
+    def _rule(self, case: Case, *, searched: bool, now: datetime | None) -> ClaimRuling:
         shortfall = self._insufficient(case, searched=searched)
         if shortfall:
             return _ruling(case, scoring.declined(shortfall, searched=searched))
@@ -205,9 +203,7 @@ class JudgeAgent:
             for passage in source.evidence:
                 if not (passage.matched_numbers or passage.matched_entities):
                     continue
-                matched = ", ".join(
-                    passage.matched_numbers or passage.matched_entities
-                )
+                matched = ", ".join(passage.matched_numbers or passage.matched_entities)
                 found.append(
                     Indication(
                         agent=NAME,

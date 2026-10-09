@@ -170,7 +170,9 @@ def test_a_tie_within_one_basis_goes_to_the_earlier_retrieval() -> None:
 def test_a_date_in_the_url_is_used_when_no_provider_stated_one() -> None:
     """The common path, not an edge case: Serper never dates, Tavily only for news."""
     found = build(
-        retrieval("serper", "https://bbc.co.uk/news/2026/03/04/business-123", snippet=WIRE)
+        retrieval(
+            "serper", "https://bbc.co.uk/news/2026/03/04/business-123", snippet=WIRE
+        )
     )
     source = found.sources[0]
 
@@ -185,7 +187,9 @@ def test_a_url_date_carries_no_provider_string() -> None:
     present this service's own inference as something an engine reported.
     """
     found = build(
-        retrieval("serper", "https://bbc.co.uk/news/2026/03/04/business-123", snippet=WIRE)
+        retrieval(
+            "serper", "https://bbc.co.uk/news/2026/03/04/business-123", snippet=WIRE
+        )
     )
 
     assert found.sources[0].date_text is None
@@ -209,15 +213,21 @@ def test_a_url_date_never_beats_a_provider_date() -> None:
 
 
 def test_no_date_at_all_leaves_all_three_fields_empty() -> None:
-    """"Unknown" is a state this has to be able to express.
+    """ "Unknown" is a state this has to be able to express.
 
     A fallback to the retrieval time would be a fabricated publication date that
     looks exactly like a real one, and every consumer downstream would believe it.
     """
-    found = build(retrieval("serper", "https://bbc.co.uk/news/business-123", snippet=WIRE))
+    found = build(
+        retrieval("serper", "https://bbc.co.uk/news/business-123", snippet=WIRE)
+    )
     source = found.sources[0]
 
-    assert (source.published_at, source.date_basis, source.date_text) == (None, None, None)
+    assert (source.published_at, source.date_basis, source.date_text) == (
+        None,
+        None,
+        None,
+    )
 
 
 def test_the_basis_is_set_exactly_when_the_date_is() -> None:
@@ -248,7 +258,9 @@ def test_the_url_date_is_anchored_to_the_passed_instant() -> None:
     """
     future = "https://bbc.co.uk/news/2027/01/01/business-123"
 
-    assert build(retrieval("serper", future, snippet=WIRE)).sources[0].published_at is None
+    assert (
+        build(retrieval("serper", future, snippet=WIRE)).sources[0].published_at is None
+    )
     later = build(
         retrieval("serper", future, snippet=WIRE),
         now=datetime(2027, 6, 1, tzinfo=UTC),
@@ -312,7 +324,8 @@ def test_sources_come_out_strongest_first() -> None:
         ),
     )
     scores = [
-        source.evidence[0].score if source.evidence else -1.0 for source in found.sources
+        source.evidence[0].score if source.evidence else -1.0
+        for source in found.sources
     ]
 
     assert found.sources[0].domain == "strong.example"
@@ -461,7 +474,9 @@ def test_one_page_from_three_engines_is_one_source() -> None:
     """And the corroboration between engines is recorded, not conflated with
     corroboration between publishers."""
     found = build(
-        retrieval("tavily", "https://bbc.co.uk/news/1?utm_source=x", snippet=WIRE, rank=3),
+        retrieval(
+            "tavily", "https://bbc.co.uk/news/1?utm_source=x", snippet=WIRE, rank=3
+        ),
         retrieval("brave", "http://www.bbc.co.uk/news/1/", snippet=WIRE, rank=1),
         retrieval("serper", "https://bbc.co.uk/news/1#top", snippet=WIRE, rank=7),
     )

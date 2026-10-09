@@ -224,8 +224,9 @@ class SourceOut(BaseModel):
         description="Registrable domain — `bbc.co.uk`, not `www.bbc.co.uk`. The unit "
         "publisher independence is counted over."
     )
-    host: str = Field(description="Full host, kept because the subdomain is often the "
-        "section.")
+    host: str = Field(
+        description="Full host, kept because the subdomain is often the section."
+    )
     evidence: list[EvidenceOut] = Field(
         description=(
             "Passages bearing on the claim, strongest first. **Empty is a real "
@@ -323,7 +324,8 @@ class ReviewOut(BaseModel):
     title: str = Field(default="", description="The review's headline, where given.")
     language: str = Field(default="", description="BCP-47, as reported.")
     reviewed_at: datetime | None = Field(
-        default=None, description="When the review was published, parsed from `date_text`."
+        default=None,
+        description="When the review was published, parsed from `date_text`.",
     )
     date_text: str | None = Field(
         default=None,
@@ -748,7 +750,9 @@ class ClaimResearchOut(BaseModel):
             "finding about any source here."
         ),
     )
-    domains: list[str] = Field(description="Distinct publishers, in order of appearance.")
+    domains: list[str] = Field(
+        description="Distinct publishers, in order of appearance."
+    )
     stories: int = Field(
         description=(
             "Distinct stories: clustered sources count once, unclustered count "
@@ -893,7 +897,7 @@ class ResearchResponse(BaseModel):
             "True when the fact-check database actually answered. **False makes every "
             "empty `fact_checks` list here meaningless rather than negative** — and "
             "unlike `searched`, the wrong reading of it is an inviting one, because "
-            "\"no fact-checker has ruled on this\" is the natural way to read an empty "
+            '"no fact-checker has ruled on this" is the natural way to read an empty '
             "list and it licenses treating the claim as unexamined. A partial answer "
             "counts as true; which claims it covered is in `fact_checkers[].queries`."
         )

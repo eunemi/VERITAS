@@ -37,9 +37,7 @@ def normalise_email(value: str) -> str:
     email = value.strip().lower()
     local, _, domain = email.partition("@")
     if not local or not domain or "." not in domain:
-        raise ValidationError(
-            "That is not an email address.", details={"email": value}
-        )
+        raise ValidationError("That is not an email address.", details={"email": value})
     return email
 
 

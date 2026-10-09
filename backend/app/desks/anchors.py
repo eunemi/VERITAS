@@ -94,9 +94,7 @@ def note(ruling: ClaimRuling, reading: Reasoning | None = None) -> str:
     return f"{ruling.judgement} at {round(ruling.confidence * 100)}% confidence."
 
 
-def _longest_run(
-    indices: list[int], fragments: Sequence[tuple[str, int]]
-) -> list[int]:
+def _longest_run(indices: list[int], fragments: Sequence[tuple[str, int]]) -> list[int]:
     runs: list[list[int]] = []
     for index in indices:
         if (

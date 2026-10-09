@@ -18,12 +18,20 @@ import type {
  * `NEXT_PUBLIC_*` is substituted at build time by matching the literal text
  * `process.env.NEXT_PUBLIC_API_URL`, so this expression cannot be built up from a
  * variable or read off a destructured `process.env` — either spelling survives into
- * the bundle as an undefined lookup and the fallback silently becomes the only value
- * in production. The trailing slash is trimmed because every path below leads with one.
+ * the bundle as an undefined lookup. The trailing slash is trimmed because every
+ * path below leads with one.
  */
-export const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
-).replace(/\/+$/, "");
+export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
+
+function requireApiBaseUrl(): string {
+  if (!API_BASE_URL) {
+    throw new ApiError(
+      "configuration_error",
+      "The application is missing its API endpoint configuration.",
+    );
+  }
+  return API_BASE_URL;
+}
 
 // ================================================================== wire ====
 
@@ -329,9 +337,10 @@ export async function request<T>(
   path: string,
   init: RequestInit & CallOptions,
 ): Promise<{ body: T; response: Response }> {
+  const apiBaseUrl = requireApiBaseUrl();
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
+    response = await fetch(`${apiBaseUrl}${path}`, {
       ...init,
       // Caller headers land last so an explicit one wins; the token is spread in
       // before them and never overwrites a header a call site set on purpose.
@@ -348,7 +357,7 @@ export async function request<T>(
     if (cause instanceof DOMException && cause.name === "AbortError") throw cause;
     throw new ApiError(
       UNREACHABLE,
-      `Could not reach the examination service at ${API_BASE_URL}.`,
+      `Could not reach the examination service at ${apiBaseUrl}.`,
       0,
       { cause: String(cause) },
     );
@@ -532,64 +541,22 @@ export async function verify(
   return pollVerification(accepted.id, options);
 }
 
-/** Upload a file for text extraction */
+/** Upload a document and return its extracted text. */
 export async function extractTextFromFile(file: File, options: CallOptions = {}): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);
-
-  let response: Response;
-  try {
-    response = await fetch(`${API_BASE_URL}/files/extract-text`, {
-      method: "POST",
-      body: formData,
-      signal: options.signal,
-    });
-  } catch (cause) {
-    throw new Error(`Could not reach the file extraction service. ${cause}`);
-  }
-
-  const text = await response.text();
-  let parsed: { text?: string; detail?: string } | null = null;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    throw new Error("Invalid response from server");
-  }
-
-  if (!response.ok) {
-    throw new Error(parsed?.detail || "Failed to extract text");
-  }
-
-  return parsed?.text || "";
+  const { body } = await request<{ text: string }>("/files/extract-text", {
+    method: "POST", body: formData, signal: options.signal,
+  });
+  return body.text;
 }
 
-/** Upload a media file and return its temporary URL */
+/** Upload media and return the API URL the examination service can read. */
 export async function uploadMediaFile(file: File, options: CallOptions = {}): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);
-
-  let response: Response;
-  try {
-    response = await fetch(`${API_BASE_URL}/files/upload-media`, {
-      method: "POST",
-      body: formData,
-      signal: options.signal,
-    });
-  } catch (cause) {
-    throw new Error(`Could not reach the media upload service. ${cause}`);
-  }
-
-  const text = await response.text();
-  let parsed: { url?: string; detail?: string } | null = null;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    throw new Error("Invalid response from server");
-  }
-
-  if (!response.ok) {
-    throw new Error(parsed?.detail || "Failed to upload media");
-  }
-
-  return parsed?.url || "";
+  const { body } = await request<{ url: string }>("/files/upload-media", {
+    method: "POST", body: formData, signal: options.signal,
+  });
+  return body.url;
 }

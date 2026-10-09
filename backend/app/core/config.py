@@ -681,6 +681,8 @@ class Settings(BaseSettings):
     #: Ceiling on artifact size, in bytes. Enforced by the upload dependency
     #: rather than left to the reverse proxy, so limits hold in local runs too.
     MAX_UPLOAD_BYTES: int = 50 * 1024 * 1024
+    PUBLIC_API_URL: str = "http://localhost:8000"
+    UPLOAD_DIRECTORY: str = "./var/uploads"
 
     #: Ceiling on submitted prose, in characters. A separate limit because the
     #: JSON path is the only ingress today — ``MAX_UPLOAD_BYTES`` is never

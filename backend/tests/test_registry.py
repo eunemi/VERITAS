@@ -79,7 +79,7 @@ def test_resolving_an_unregistered_provider_names_the_seam() -> None:
 
 
 def test_not_implemented_is_a_501_not_a_500() -> None:
-    """"Not built yet" must never be reported to a client as "broken"."""
+    """ "Not built yet" must never be reported to a client as "broken"."""
     registry: ProviderRegistry[str, object] = ProviderRegistry("widget")
 
     with pytest.raises(NotImplementedYetError) as raised:

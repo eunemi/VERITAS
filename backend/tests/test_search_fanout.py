@@ -24,6 +24,7 @@ from datetime import UTC, datetime
 from app.core.config import SearchProvider, Settings
 from app.core.errors import SearchError
 from app.domain import ProviderStatus
+from app.search.base import SearchResult
 from app.search.fanout import Task, harvest
 from tests.search_bench import Fake, bench, found
 
@@ -40,7 +41,9 @@ def configured(*providers: SearchProvider, **overrides: object) -> Settings:
 async def test_a_provider_failure_costs_only_its_own_results() -> None:
     """The central promise. One dead engine, two live results."""
     dead = Fake("tavily", error=SearchError("tavily is down", provider="tavily"))
-    alive = Fake("brave", results=[found("https://a.example/1"), found("https://b.example/2")])
+    alive = Fake(
+        "brave", results=[found("https://a.example/1"), found("https://b.example/2")]
+    )
 
     with bench({SearchProvider.TAVILY: dead, SearchProvider.BRAVE: alive}):
         result = await harvest(
@@ -304,9 +307,7 @@ async def test_no_tasks_is_no_work_and_no_error() -> None:
     fake = Fake("tavily", results=[found("https://a.example/1")])
 
     with bench({SearchProvider.TAVILY: fake}):
-        result = await harvest(
-            [], settings=configured(SearchProvider.TAVILY), now=NOW
-        )
+        result = await harvest([], settings=configured(SearchProvider.TAVILY), now=NOW)
 
     assert result.retrievals == ()
     assert fake.queries == []

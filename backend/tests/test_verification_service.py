@@ -82,7 +82,10 @@ async def test_get_turns_absence_into_a_not_found(service: VerificationService) 
 
 
 async def test_a_full_run_reaches_completed(service: VerificationService) -> None:
-    stubs = {Desk.TEXT: StubExaminer(Desk.TEXT), Desk.FACT_CHECK: StubExaminer(Desk.FACT_CHECK)}
+    stubs = {
+        Desk.TEXT: StubExaminer(Desk.TEXT),
+        Desk.FACT_CHECK: StubExaminer(Desk.FACT_CHECK),
+    }
     record = await service.submit(artifact=TEXT, desks=(Desk.TEXT, Desk.FACT_CHECK))
 
     with desk_bench(stubs, StubAdjudicator()):
@@ -92,12 +95,19 @@ async def test_a_full_run_reaches_completed(service: VerificationService) -> Non
     assert finished.status is Status.COMPLETED
     assert finished.completed_at is not None
     assert finished.failure is None
-    assert [r.desk for r in finished.reports] == [Desk.TEXT, Desk.FACT_CHECK, ADJUDICATOR]
+    assert [r.desk for r in finished.reports] == [
+        Desk.TEXT,
+        Desk.FACT_CHECK,
+        ADJUDICATOR,
+    ]
     assert all(p.status is Status.COMPLETED for p in finished.desks)
 
 
 async def test_every_desk_gets_the_artifact(service: VerificationService) -> None:
-    stubs = {Desk.TEXT: StubExaminer(Desk.TEXT), Desk.FACT_CHECK: StubExaminer(Desk.FACT_CHECK)}
+    stubs = {
+        Desk.TEXT: StubExaminer(Desk.TEXT),
+        Desk.FACT_CHECK: StubExaminer(Desk.FACT_CHECK),
+    }
     record = await service.submit(artifact=TEXT, desks=(Desk.TEXT, Desk.FACT_CHECK))
 
     with desk_bench(stubs, StubAdjudicator()):
@@ -117,7 +127,10 @@ async def test_the_adjudicator_sees_the_reports_as_filed(
     nothing — a bug that leaves a completed, plausible-looking record behind.
     """
     decision = StubAdjudicator()
-    stubs = {Desk.TEXT: StubExaminer(Desk.TEXT), Desk.FACT_CHECK: StubExaminer(Desk.FACT_CHECK)}
+    stubs = {
+        Desk.TEXT: StubExaminer(Desk.TEXT),
+        Desk.FACT_CHECK: StubExaminer(Desk.FACT_CHECK),
+    }
     record = await service.submit(artifact=TEXT, desks=(Desk.TEXT, Desk.FACT_CHECK))
 
     with desk_bench(stubs, decision):

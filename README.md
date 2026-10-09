@@ -347,6 +347,46 @@ ruff check backend/ && ruff format --check backend/ && mypy backend/app
 
 ---
 
+## Production deployment
+
+Deploy the frontend from `frontend/` to Vercel and the API from `backend/` to a
+Render Web Service. The API's durable PostgreSQL store belongs on Neon; no second
+backend service is needed. The Docker image honours Render's `PORT` and exposes
+`/health` for the service health check.
+
+Set `NEXT_PUBLIC_API_URL` in Vercel for every environment (Development, Preview,
+and Production) to the public Render URL plus `/api/v1`, for example
+`https://api.example.com/api/v1`. It is a public, build-time value; never put a
+credential in a `NEXT_PUBLIC_*` variable. Copy
+`frontend/.env.example` for local development.
+
+On Render, set these server-only variables: `ENVIRONMENT=production`, a unique
+`JWT_SECRET_KEY`, `DATABASE_URL`, and `CORS_ORIGINS` containing the exact Vercel
+origins. Use Neon's **pooled** connection string with the `postgresql+asyncpg://`
+driver for `DATABASE_URL`; use a separate direct URL only when running Alembic
+migrations. Configure optional provider keys only for providers you enable:
+`OPENAI_API_KEY`, `TAVILY_API_KEY`, `BRAVE_API_KEY`, `SERPER_API_KEY`, and
+`GOOGLE_FACT_CHECK_API_KEY`. Start from `backend/.env.example`; do not upload an
+`.env` file or commit a real secret.
+
+Before promoting a release, run migrations once against the target database:
+
+```bash
+cd backend
+DATABASE_URL='postgresql+asyncpg://…' alembic upgrade head
+```
+
+This initial migration creates tables and indexes; it does not delete data. Take a
+Neon restore point before every future schema migration. The service's `/health` is
+liveness only, so a dependency outage does not cause restart loops.
+
+For validation, run `npm ci && npm run lint && npm run build` in `frontend/`, then
+`pip install -r requirements-dev.txt`, `ruff check app`, `mypy app`, and `pytest` in
+`backend/`. Render should also enforce a request-body limit at its edge: the app
+rejects oversized declared bodies, while chunked requests require the proxy limit.
+
+---
+
 <div align="center">
   <sub>Built with precision and verifiable truth. © 2026 Veritas Intelligence.</sub>
 </div>

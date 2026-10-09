@@ -64,9 +64,7 @@ async def login(payload: LoginRequest, service: AuthServiceDep) -> TokenOut:
     Every rejection is the same 401 with the same message, whether the address is
     unknown, the password is wrong, or the account has been closed.
     """
-    user, issued = await service.login(
-        email=payload.email, password=payload.password
-    )
+    user, issued = await service.login(email=payload.email, password=payload.password)
     return TokenOut(
         access_token=issued.token,
         expires_in=issued.expires_in,

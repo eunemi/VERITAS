@@ -85,4 +85,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 # the orchestrator handle restarts and rollout instead of a worker manager inside
 # the container. Behind a TLS-terminating proxy, add `--proxy-headers` and set
 # `--forwarded-allow-ips` to that proxy's address.
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

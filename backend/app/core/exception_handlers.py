@@ -93,9 +93,7 @@ async def handle_veritas_error(request: Request, exc: Exception) -> JSONResponse
     )
 
 
-async def handle_validation_error(
-    request: Request, exc: Exception
-) -> JSONResponse:
+async def handle_validation_error(request: Request, exc: Exception) -> JSONResponse:
     """Render FastAPI's own request-validation failure in our envelope."""
     assert isinstance(exc, RequestValidationError)
 

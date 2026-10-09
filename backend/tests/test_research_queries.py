@@ -169,9 +169,7 @@ def test_keywords_are_ordered_by_score_and_capped() -> None:
     """Four, and the four the extractor ranked highest."""
     terms_rung = queries.build(RATE)[1]
 
-    assert terms_rung.endswith(
-        "benchmark rate inflation monetary policy committee"
-    )
+    assert terms_rung.endswith("benchmark rate inflation monetary policy committee")
     assert "services" not in terms_rung
 
 

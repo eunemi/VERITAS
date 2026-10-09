@@ -278,6 +278,4 @@ def extractor_bench(extractor: StubClaimExtractor) -> Iterator[None]:
     try:
         yield
     finally:
-        claim_extractors.register(
-            ClaimExtractorProvider.SPACY, build_spacy_extractor
-        )
+        claim_extractors.register(ClaimExtractorProvider.SPACY, build_spacy_extractor)

@@ -209,9 +209,7 @@ class Scripted:
 
     name = "scripted"
 
-    def __init__(
-        self, *, verdict: str = "MOSTLY_TRUE", confidence: int = 72
-    ) -> None:
+    def __init__(self, *, verdict: str = "MOSTLY_TRUE", confidence: int = 72) -> None:
         self._verdict = verdict
         self._confidence = confidence
         #: Every rendered brief, so a test can read what the model was actually shown.
@@ -345,9 +343,7 @@ class Sequential:
         #: from rather than a second pass made to observe one.
         self.finished: list[Finished] = []
 
-    async def run(
-        self, artifact: Artifact, *, now: datetime | None = None
-    ) -> Finished:
+    async def run(self, artifact: Artifact, *, now: datetime | None = None) -> Finished:
         state = channels.initial(artifact, now=now or NOW)
         _merge(state, await self._claim(state))
         if state.get("claims"):
@@ -644,9 +640,7 @@ def test_the_passages_were_indexed_and_read_back(run: Run) -> None:
 
 def test_nothing_retrieved_came_from_outside_the_dossier(run: Run) -> None:
     case = channels.cases(run.outcome.state)[0]
-    quotes = {
-        passage.quote for source in case.sources for passage in source.evidence
-    }
+    quotes = {passage.quote for source in case.sources for passage in source.evidence}
     assert {passage.quote for passage in run.retrieved} <= quotes
 
 

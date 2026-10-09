@@ -79,7 +79,7 @@ async def test_whitespace_only_text_yields_an_empty_extraction(
 async def test_it_finds_a_claim_in_every_sentence_and_more(
     nlp_resources: object, extractor: SpacyClaimExtractor
 ) -> None:
-    """"Support multiple claims" in its strongest form: more claims than sentences.
+    """ "Support multiple claims" in its strongest form: more claims than sentences.
 
     Five sentences, and one of them coordinates two assertions, so a correct read
     returns six claims. An extractor that treated a sentence as a claim would return
@@ -217,7 +217,7 @@ async def test_a_claims_entities_lie_inside_it(
 async def test_document_entities_are_deduplicated(
     nlp_resources: object, extractor: SpacyClaimExtractor
 ) -> None:
-    """"Queensferry Crossing" is in the headline and the first sentence, once here."""
+    """ "Queensferry Crossing" is in the headline and the first sentence, once here."""
     extraction = await extractor.extract(ARTICLE)
 
     keys = [(entity.text.casefold(), entity.label) for entity in extraction.entities]

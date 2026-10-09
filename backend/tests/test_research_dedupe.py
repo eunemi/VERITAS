@@ -75,7 +75,9 @@ def test_every_spelling_of_one_url_is_one_page() -> None:
         "https://www-bbc-co-uk.cdn.ampproject.org/c/s/www.bbc.co.uk/news/business-123",
     ]
     grouping = dedupe.group(
-        retrieval(f"engine{index}", url, title="Rates held", snippet=WIRE, rank=index + 1)
+        retrieval(
+            f"engine{index}", url, title="Rates held", snippet=WIRE, rank=index + 1
+        )
         for index, url in enumerate(spellings)
     )
 
@@ -134,7 +136,9 @@ def test_the_title_is_the_best_ranked_providers_own_string() -> None:
     """Chosen, never composed. Splicing two would be this service writing a headline."""
     page = dedupe.group(
         [
-            retrieval("tavily", "https://bbc.co.uk/1", title="Rates held — BBC", rank=7),
+            retrieval(
+                "tavily", "https://bbc.co.uk/1", title="Rates held — BBC", rank=7
+            ),
             retrieval("brave", "https://bbc.co.uk/1", title="Rates held", rank=2),
         ]
     ).pages[0]
@@ -179,9 +183,9 @@ def test_one_publishers_boilerplate_does_not_merge_two_of_its_stories() -> None:
     overlap = dedupe.containment(
         dedupe.shingles(LOCAL_PLANNING), dedupe.shingles(LOCAL_FERRY)
     )
-    shared = dedupe.anchors(f"{LOCAL_PLANNING_TITLE}. {LOCAL_PLANNING}") & dedupe.anchors(
-        f"{LOCAL_FERRY_TITLE}. {LOCAL_FERRY}"
-    )
+    shared = dedupe.anchors(
+        f"{LOCAL_PLANNING_TITLE}. {LOCAL_PLANNING}"
+    ) & dedupe.anchors(f"{LOCAL_FERRY_TITLE}. {LOCAL_FERRY}")
     clustered = dedupe.cluster(syndication())
 
     assert overlap >= dedupe.CONTAINMENT_THRESHOLD
@@ -209,9 +213,7 @@ def test_a_similar_headline_can_add_a_merge() -> None:
     headlines match and does not when they do not. Which is the whole claim the rescue
     makes: a title can add a merge and can never veto one.
     """
-    overlap = dedupe.containment(
-        dedupe.shingles(WIRE), dedupe.shingles(WIRE_REPHRASED)
-    )
+    overlap = dedupe.containment(dedupe.shingles(WIRE), dedupe.shingles(WIRE_REPHRASED))
     assert dedupe.TITLE_RESCUE_FLOOR <= overlap < dedupe.TITLE_RESCUE_CEILING
 
     same = dedupe.cluster(
@@ -294,7 +296,9 @@ def test_cluster_ids_are_numbered_from_one_without_gaps() -> None:
         [
             *syndication()[:3],
             source("https://a.example/f", title="Severn flood warnings", snippet=other),
-            source("https://b.example/g", title="Flood warnings on Severn", snippet=other),
+            source(
+                "https://b.example/g", title="Flood warnings on Severn", snippet=other
+            ),
         ]
     )
     ids = sorted({item.cluster for item in clustered if item.cluster is not None})
@@ -323,7 +327,9 @@ def test_two_independent_reports_of_one_event_stay_two_stories() -> None:
     clustered = dedupe.cluster(
         [
             source("https://reuters.com/a", title=WIRE_TITLE, snippet=WIRE),
-            source("https://ft.com/b", title="Rate-setters hold firm", snippet=independent),
+            source(
+                "https://ft.com/b", title="Rate-setters hold firm", snippet=independent
+            ),
         ]
     )
 
@@ -441,7 +447,9 @@ def test_a_figure_survives_shingling_as_one_token() -> None:
     an identity to be matched as written.
     """
     assert ("held", "at", "4.75") in dedupe.shingles("held at 4.75% today")
-    assert dedupe.shingles("held at 4.75% today") == dedupe.shingles("held at 4.75 today")
+    assert dedupe.shingles("held at 4.75% today") == dedupe.shingles(
+        "held at 4.75 today"
+    )
 
 
 @pytest.mark.parametrize(
@@ -449,7 +457,10 @@ def test_a_figure_survives_shingling_as_one_token() -> None:
     [
         ("The Bank&amp;s rate", "The Bank&s rate"),
         ("The <b>Bank of England</b> held", "The Bank of England held"),
-        ("The &lt;b&gt;Bank of England&lt;/b&gt; held", "The <b>Bank of England</b> held"),
+        (
+            "The &lt;b&gt;Bank of England&lt;/b&gt; held",
+            "The <b>Bank of England</b> held",
+        ),
         ("The Bank’s rate", "The Bank's rate"),
         ("The Bank–s rate", "The Bank-s rate"),
         ("The Bank​s rate", "The Banks rate"),
@@ -458,7 +469,9 @@ def test_a_figure_survives_shingling_as_one_token() -> None:
         ("THE BANKS RATE", "the banks rate"),
     ],
 )
-def test_flatten_lands_two_engines_spellings_on_one_string(left: str, right: str) -> None:
+def test_flatten_lands_two_engines_spellings_on_one_string(
+    left: str, right: str
+) -> None:
     """One engine's markup against another's plain text, over identical copy.
 
     Without this, a typographic apostrophe against an ASCII one breaks every trigram

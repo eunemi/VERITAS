@@ -5,7 +5,7 @@ import { AudioSlate } from "@/components/agents/instruments/AudioSlate";
 import { Determination } from "@/components/agents/shared/Determination";
 import { DeskFailure } from "@/components/agents/shared/DeskFailure";
 import { DeskPage } from "@/components/agents/shared/DeskPage";
-import { FindingLedger, SignalTable } from "@/components/agents/shared/FindingLedger";
+import { FindingLedger } from "@/components/agents/shared/FindingLedger";
 import { LedgerBand } from "@/components/agents/shared/LedgerBand";
 import {
   isFetchableUrl,

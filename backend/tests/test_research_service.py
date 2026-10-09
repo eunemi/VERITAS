@@ -219,7 +219,9 @@ async def test_a_provider_key_never_reaches_a_reportable_detail() -> None:
     else.
     """
     key = "tvly-service-level-secret"
-    leaky = Fake("tavily", error=SearchError(f"rejected token {key}", provider="tavily"))
+    leaky = Fake(
+        "tavily", error=SearchError(f"rejected token {key}", provider="tavily")
+    )
 
     with bench({SearchProvider.TAVILY: leaky}):
         result = await service(TAVILY_API_KEY=key).from_claims([CLAIM])
@@ -280,7 +282,10 @@ async def test_the_claims_path_never_touches_the_extractor() -> None:
     """
     stub = StubClaimExtractor(raises=AssertionError("the claims path extracted"))
 
-    with bench({SearchProvider.TAVILY: Fake("tavily", results=[])}), extractor_bench(stub):
+    with (
+        bench({SearchProvider.TAVILY: Fake("tavily", results=[])}),
+        extractor_bench(stub),
+    ):
         result = await service().from_claims([CLAIM])
 
     assert stub.seen == []
@@ -334,7 +339,9 @@ async def test_the_ceiling_applies_to_the_text_path_too() -> None:
     ):
         result = await service(SEARCH_MAX_CLAIMS=1).from_text("whatever")
 
-    assert [claim.claim for claim in result.claims] == ["The bridge opened in March 2026."]
+    assert [claim.claim for claim in result.claims] == [
+        "The bridge opened in March 2026."
+    ]
     # Unfit first, then what the ceiling dropped: the order the exclusions were applied
     # in, which is what a reader reconstructing the request needs.
     assert [skipped.claim for skipped in result.skipped] == [
@@ -370,7 +377,10 @@ async def test_an_oversized_claims_batch_is_refused_before_any_search() -> None:
     """
     fake = Fake("tavily", results=[])
 
-    with bench({SearchProvider.TAVILY: fake}), pytest.raises(PayloadTooLargeError) as raised:
+    with (
+        bench({SearchProvider.TAVILY: fake}),
+        pytest.raises(PayloadTooLargeError) as raised,
+    ):
         await service(MAX_TEXT_CHARS=20).from_claims(["x" * 12, "y" * 12])
 
     assert raised.value.details == {"field": "claims", "characters": 25, "limit": 20}
@@ -414,7 +424,9 @@ async def test_the_url_date_is_read_against_that_same_instant() -> None:
         result = await service().from_claims([CLAIM])
     source = result.claims[0].sources[0]
 
-    assert source.published_at == datetime(2026, 3, 4, tzinfo=source.published_at.tzinfo)
+    assert source.published_at == datetime(
+        2026, 3, 4, tzinfo=source.published_at.tzinfo
+    )
     assert source.date_basis == "url_path"
     assert source.date_text is None
     assert result.retrieved_at >= source.published_at
@@ -537,8 +549,12 @@ async def test_one_page_from_three_engines_is_one_source() -> None:
         SearchProvider.TAVILY: Fake(
             "tavily", results=[wire("https://bbc.co.uk/news/1?utm_source=x")]
         ),
-        SearchProvider.BRAVE: Fake("brave", results=[wire("http://www.bbc.co.uk/news/1/")]),
-        SearchProvider.SERPER: Fake("serper", results=[wire("https://bbc.co.uk/news/1#top")]),
+        SearchProvider.BRAVE: Fake(
+            "brave", results=[wire("http://www.bbc.co.uk/news/1/")]
+        ),
+        SearchProvider.SERPER: Fake(
+            "serper", results=[wire("https://bbc.co.uk/news/1#top")]
+        ),
     }
 
     with bench(dict(spellings)):
@@ -571,7 +587,11 @@ async def test_syndication_is_marked_and_never_merged() -> None:
         "tavily",
         results=[
             wire("https://reuters.com/a", title=WIRE_TITLE, snippet=WIRE),
-            wire("https://apnews.com/b", title=WIRE_TITLE_REWRITTEN, snippet=WIRE_TRUNCATED),
+            wire(
+                "https://apnews.com/b",
+                title=WIRE_TITLE_REWRITTEN,
+                snippet=WIRE_TRUNCATED,
+            ),
             wire(
                 "https://heraldscotland.com/c",
                 title=WIRE_TITLE_REGIONAL,
@@ -595,13 +615,18 @@ async def test_a_url_that_is_not_a_web_page_never_becomes_a_source() -> None:
     would put a publisher's name against a page that has none."""
     fake = Fake(
         "tavily",
-        results=[found("mailto:tips@example.com", snippet=WIRE), wire("https://bbc.co.uk/1")],
+        results=[
+            found("mailto:tips@example.com", snippet=WIRE),
+            wire("https://bbc.co.uk/1"),
+        ],
     )
 
     with bench({SearchProvider.TAVILY: fake}):
         result = await service().from_claims([CLAIM])
 
-    assert [source.url for source in result.claims[0].sources] == ["https://bbc.co.uk/1"]
+    assert [source.url for source in result.claims[0].sources] == [
+        "https://bbc.co.uk/1"
+    ]
 
 
 # =============================================================== no fabrication ====
@@ -626,7 +651,11 @@ async def test_every_source_in_the_dossier_came_from_a_provider() -> None:
         ],
         "brave": [
             wire("https://www.bbc.co.uk/news/1/"),
-            wire("https://apnews.com/b", title=WIRE_TITLE_REWRITTEN, snippet=WIRE_TRUNCATED),
+            wire(
+                "https://apnews.com/b",
+                title=WIRE_TITLE_REWRITTEN,
+                snippet=WIRE_TRUNCATED,
+            ),
         ],
     }
     fakes = {
@@ -642,7 +671,7 @@ async def test_every_source_in_the_dossier_came_from_a_provider() -> None:
     offered = {r.url for results in returned.values() for r in results}
     for source in result.claims[0].sources:
         assert set(source.urls) <= offered
-        assert source.url in {u for u in source.urls}
+        assert source.url in set(source.urls)
         assert source.host in source.url
         assert set(source.providers) <= {"tavily", "brave"}
         for retrieval in source.retrievals:
@@ -659,7 +688,9 @@ async def test_every_quote_is_a_substring_of_the_snippet_it_names() -> None:
     this would fail.
     """
     fakes = {
-        SearchProvider.TAVILY: Fake("tavily", results=[wire("https://bbc.co.uk/news/1")]),
+        SearchProvider.TAVILY: Fake(
+            "tavily", results=[wire("https://bbc.co.uk/news/1")]
+        ),
         SearchProvider.BRAVE: Fake(
             "brave", results=[wire("https://bbc.co.uk/news/1", snippet=WIRE_TRUNCATED)]
         ),

@@ -129,7 +129,8 @@ def test_no_agent_imports_another_agent(path: Path) -> None:
     reached = sorted(
         name
         for name in _imports(path)
-        if name.startswith("app.graph.agents") and name != f"app.graph.agents.{path.stem}"
+        if name.startswith("app.graph.agents")
+        and name != f"app.graph.agents.{path.stem}"
     )
     assert not reached, (
         f"{path.name} imports {', '.join(reached)}. Pass it through a channel on "
@@ -153,7 +154,8 @@ def test_the_state_and_the_verdict_types_reach_for_nothing(name: str) -> None:
     reached = sorted(
         name_
         for name_ in _imports(GRAPH / name)
-        if name_.startswith("app.") and not name_.startswith(("app.domain", "app.graph"))
+        if name_.startswith("app.")
+        and not name_.startswith(("app.domain", "app.graph"))
     )
     assert not reached, f"{name} imports {', '.join(reached)}"
     assert not any(
@@ -177,7 +179,9 @@ def test_the_agents_package_imports_no_agent() -> None:
     ``test_graph_judge`` unrunnable in an environment without pydantic installed.
     """
     reached = sorted(
-        name for name in _imports(GRAPH / "agents" / "__init__.py") if name != "__future__"
+        name
+        for name in _imports(GRAPH / "agents" / "__init__.py")
+        if name != "__future__"
     )
     assert not reached, f"app/graph/agents/__init__.py imports {', '.join(reached)}"
 

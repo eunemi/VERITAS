@@ -133,9 +133,7 @@ def source(
         host=host,
         evidence=evidence,
         retrievals=retrievals
-        or (
-            retrieval(provider, url, title=title, snippet=snippet, rank=rank),
-        ),
+        or (retrieval(provider, url, title=title, snippet=snippet, rank=rank),),
         published_at=published_at,
         date_basis=date_basis,
         date_text=date_text,
@@ -163,9 +161,7 @@ WIRE = (
 WIRE_TRUNCATED = WIRE[:238]
 
 #: The same body again, behind a regional masthead that added its own lead-in.
-WIRE_WITH_LEAD = (
-    "LONDON — Rates are on hold for a third meeting running. " + WIRE
-)
+WIRE_WITH_LEAD = "LONDON — Rates are on hold for a third meeting running. " + WIRE
 
 #: The wire copy lightly rewritten, the way a subeditor trims to fit a column.
 #:

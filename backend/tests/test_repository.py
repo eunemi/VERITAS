@@ -50,19 +50,25 @@ def report(desk: Desk = Desk.TEXT) -> DeskReport:
     )
 
 
-async def test_a_created_record_reads_back(store: InMemoryVerificationRepository) -> None:
+async def test_a_created_record_reads_back(
+    store: InMemoryVerificationRepository,
+) -> None:
     record = submission()
     await store.create(record)
 
     assert await store.get(record.id) == record
 
 
-async def test_an_unknown_id_reads_as_none(store: InMemoryVerificationRepository) -> None:
+async def test_an_unknown_id_reads_as_none(
+    store: InMemoryVerificationRepository,
+) -> None:
     """`None` rather than a raise: turning absence into a 404 is the service's call."""
     assert await store.get("nope") is None
 
 
-async def test_the_full_transition_sequence(store: InMemoryVerificationRepository) -> None:
+async def test_the_full_transition_sequence(
+    store: InMemoryVerificationRepository,
+) -> None:
     record = submission()
     await store.create(record)
 
@@ -85,7 +91,9 @@ async def test_failing_is_recorded(store: InMemoryVerificationRepository) -> Non
     record = submission()
     await store.create(record)
 
-    await store.fail(record.id, Failure(code="not_implemented", message="No desk.", desk=Desk.TEXT))
+    await store.fail(
+        record.id, Failure(code="not_implemented", message="No desk.", desk=Desk.TEXT)
+    )
 
     stored = await store.get(record.id)
     assert stored is not None

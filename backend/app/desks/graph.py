@@ -75,8 +75,7 @@ def readings(
     if len(reasoning) != len(rulings):
         return {}
     return {
-        ruling.ref: reading
-        for ruling, reading in zip(rulings, reasoning, strict=True)
+        ruling.ref: reading for ruling, reading in zip(rulings, reasoning, strict=True)
     }
 
 

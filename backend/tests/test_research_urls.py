@@ -92,7 +92,9 @@ def test_the_amp_cache_url_of_a_page_is_that_page() -> None:
     wrapped = "https://www-bbc-co-uk.cdn.ampproject.org/c/s/www.bbc.co.uk/news/1"
 
     assert urls.normalise(urls.unwrap(wrapped)) == "https://bbc.co.uk/news/1"
-    assert urls.registrable_domain(urls.host_of(urls.unwrap(wrapped)) or "") == "bbc.co.uk"
+    assert (
+        urls.registrable_domain(urls.host_of(urls.unwrap(wrapped)) or "") == "bbc.co.uk"
+    )
 
 
 def test_the_amp_host_encoding_is_decoded_when_the_path_is_absent() -> None:
@@ -114,7 +116,9 @@ def test_a_translate_proxy_url_is_the_page_it_proxies() -> None:
 
 def test_unwrapping_is_idempotent_and_bounded() -> None:
     """A mirror of a mirror resolves; a cycle cannot hang the request path."""
-    once = urls.unwrap("https://www-bbc-co-uk.cdn.ampproject.org/c/s/www.bbc.co.uk/news/1")
+    once = urls.unwrap(
+        "https://www-bbc-co-uk.cdn.ampproject.org/c/s/www.bbc.co.uk/news/1"
+    )
 
     assert urls.unwrap(once) == once
 
@@ -137,7 +141,10 @@ def test_an_unrecognised_url_is_returned_unchanged() -> None:
         ("https://youtube.com/watch?v=A", "https://youtube.com/watch?v=B"),
         ("https://example.com/articles?id=1", "https://example.com/articles?id=2"),
         ("https://example.com/list?page=1", "https://example.com/list?page=2"),
-        ("https://example.com/search?q=rates", "https://example.com/search?q=inflation"),
+        (
+            "https://example.com/search?q=rates",
+            "https://example.com/search?q=inflation",
+        ),
         ("https://example.com/story?p=100", "https://example.com/story?p=200"),
         # RFC 3986 makes paths case-sensitive, and some CMSes mean it.
         ("https://example.com/News/1", "https://example.com/news/1"),
@@ -163,8 +170,12 @@ def test_two_documents_keep_two_identities(left: str, right: str) -> None:
 
 def test_a_blank_valued_parameter_is_kept() -> None:
     """``?print`` is how some CMSes switch rendering, and the link has to still work."""
-    assert urls.normalise("https://example.com/1?print") == "https://example.com/1?print="
-    assert urls.normalise("https://example.com/1?print=") == "https://example.com/1?print="
+    assert (
+        urls.normalise("https://example.com/1?print") == "https://example.com/1?print="
+    )
+    assert (
+        urls.normalise("https://example.com/1?print=") == "https://example.com/1?print="
+    )
 
 
 def test_a_rendering_prefix_is_not_stripped_off_a_bare_domain() -> None:

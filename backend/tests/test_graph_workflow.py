@@ -30,7 +30,15 @@ from app.graph.verdict import Judgement
 from tests.graph_bench import CLAIM, NOW, claim
 
 #: Every agent, by the name it is registered under.
-AGENTS = ("claim", "search", "factcheck", "evidence", "source", "contradiction", "judge")
+AGENTS = (
+    "claim",
+    "search",
+    "factcheck",
+    "evidence",
+    "source",
+    "contradiction",
+    "judge",
+)
 
 
 class _NeverAsked:
@@ -68,7 +76,9 @@ def test_the_gatherers_are_one_fan_out_and_evidence_is_the_join() -> None:
     assert ("contradiction", "judge") in edges
 
 
-def test_the_branch_fans_out_to_both_gatherers_when_there_is_something_to_gather() -> None:
+def test_the_branch_fans_out_to_both_gatherers_when_there_is_something_to_gather() -> (
+    None
+):
     assert workflow._after_claim(GraphState(claims=(claim(CLAIM),))) == [
         "search",
         "factcheck",

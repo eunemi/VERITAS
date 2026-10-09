@@ -58,8 +58,19 @@ _CONDITIONALS = frozenset({"if", "unless", "whether", "lest", "supposing"})
 #: something about the writer, not about the figure.
 _STANCE_VERBS = frozenset(
     {
-        "think", "believe", "feel", "reckon", "suppose", "doubt", "hope",
-        "guess", "suspect", "fear", "wonder", "trust", "assume",
+        "think",
+        "believe",
+        "feel",
+        "reckon",
+        "suppose",
+        "doubt",
+        "hope",
+        "guess",
+        "suspect",
+        "fear",
+        "wonder",
+        "trust",
+        "assume",
     }
 )
 
@@ -68,8 +79,19 @@ _STANCE_VERBS = frozenset(
 #: are not here, because a clause built on them does assert something checkable.
 _REPORTING_VERBS = frozenset(
     {
-        "say", "state", "tell", "add", "remark", "comment", "declare",
-        "claim", "allege", "insist", "deny", "confirm", "note",
+        "say",
+        "state",
+        "tell",
+        "add",
+        "remark",
+        "comment",
+        "declare",
+        "claim",
+        "allege",
+        "insist",
+        "deny",
+        "confirm",
+        "note",
     }
 )
 
@@ -78,15 +100,53 @@ _REPORTING_VERBS = frozenset(
 #: somebody could be asked to defend, and none of them is merely unpleasant.
 _EVALUATIVE = frozenset(
     {
-        "admirable", "appalling", "awful", "beautiful", "best", "better",
-        "boring", "brilliant", "commendable", "deplorable", "disappointing",
-        "disgraceful", "dreadful", "excellent", "exciting", "great", "hideous",
-        "ideal", "impressive", "inexcusable", "laudable", "magnificent",
-        "marvellous", "marvelous", "outrageous", "overrated", "perfect",
-        "pointless", "praiseworthy", "remarkable", "ridiculous", "shameful",
-        "silly", "splendid", "stupid", "superb", "terrible", "ugly",
-        "unacceptable", "underrated", "unnecessary", "useless", "valuable",
-        "wonderful", "worse", "worst", "worthless",
+        "admirable",
+        "appalling",
+        "awful",
+        "beautiful",
+        "best",
+        "better",
+        "boring",
+        "brilliant",
+        "commendable",
+        "deplorable",
+        "disappointing",
+        "disgraceful",
+        "dreadful",
+        "excellent",
+        "exciting",
+        "great",
+        "hideous",
+        "ideal",
+        "impressive",
+        "inexcusable",
+        "laudable",
+        "magnificent",
+        "marvellous",
+        "marvelous",
+        "outrageous",
+        "overrated",
+        "perfect",
+        "pointless",
+        "praiseworthy",
+        "remarkable",
+        "ridiculous",
+        "shameful",
+        "silly",
+        "splendid",
+        "stupid",
+        "superb",
+        "terrible",
+        "ugly",
+        "unacceptable",
+        "underrated",
+        "unnecessary",
+        "useless",
+        "valuable",
+        "wonderful",
+        "worse",
+        "worst",
+        "worthless",
     }
 )
 
@@ -95,11 +155,30 @@ _EVALUATIVE = frozenset(
 #: is not checkable and its presence marks the first as argument rather than report.
 _STANCE_ADVERBS = frozenset(
     {
-        "admittedly", "arguably", "clearly", "curiously", "disappointingly",
-        "frankly", "fortunately", "honestly", "hopefully", "inevitably",
-        "obviously", "predictably", "presumably", "regrettably", "sadly",
-        "shockingly", "surely", "surprisingly", "thankfully", "tragically",
-        "unbelievably", "undoubtedly", "unfortunately", "worryingly",
+        "admittedly",
+        "arguably",
+        "clearly",
+        "curiously",
+        "disappointingly",
+        "frankly",
+        "fortunately",
+        "honestly",
+        "hopefully",
+        "inevitably",
+        "obviously",
+        "predictably",
+        "presumably",
+        "regrettably",
+        "sadly",
+        "shockingly",
+        "surely",
+        "surprisingly",
+        "thankfully",
+        "tragically",
+        "unbelievably",
+        "undoubtedly",
+        "unfortunately",
+        "worryingly",
     }
 )
 
@@ -216,7 +295,9 @@ def _is_prediction(children: list[Token]) -> bool:
     return any(
         child.dep_ == "xcomp"
         and child.head.lemma_.lower() == "go"
-        and any(sub.dep_ == "aux" and sub.lemma_.lower() == "to" for sub in child.children)
+        and any(
+            sub.dep_ == "aux" and sub.lemma_.lower() == "to" for sub in child.children
+        )
         for child in children
     )
 

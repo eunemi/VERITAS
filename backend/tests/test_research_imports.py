@@ -112,7 +112,9 @@ def test_no_forbidden_application_package_is_imported(path: Path) -> None:
         {
             name
             for name in _imports(path)
-            if any(name == banned or name.startswith(f"{banned}.") for banned in FORBIDDEN)
+            if any(
+                name == banned or name.startswith(f"{banned}.") for banned in FORBIDDEN
+            )
         }
     )
     assert not offending, (

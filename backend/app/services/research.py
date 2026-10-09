@@ -272,9 +272,7 @@ class WebResearchService:
                 # Which providers answered, so a thin dossier can be explained from
                 # the log without reproducing the request.
                 "outcomes": {o.provider: str(o.status) for o in found.outcomes},
-                "fact_checkers": {
-                    o.provider: str(o.status) for o in checked.outcomes
-                },
+                "fact_checkers": {o.provider: str(o.status) for o in checked.outcomes},
                 # How the sources graded, counted by band. Cheap — the readings are
                 # already computed — and the one thing about the scoring worth having
                 # in a log: a dossier that is all ``unknown`` is a scorer reaching
@@ -304,9 +302,7 @@ class WebResearchService:
         if self._store is None:
             return
         try:
-            await self._store.save_dossier(
-                assembled, verification_id=verification_id
-            )
+            await self._store.save_dossier(assembled, verification_id=verification_id)
         except Exception:
             logger.exception(
                 "research could not be stored",

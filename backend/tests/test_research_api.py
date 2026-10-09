@@ -322,7 +322,11 @@ async def test_every_provider_failing_is_still_a_200(
     apart from a successful search that found nothing.
     """
     with bench(
-        {SearchProvider.TAVILY: Fake("tavily", error=SearchError("502", provider="tavily"))}
+        {
+            SearchProvider.TAVILY: Fake(
+                "tavily", error=SearchError("502", provider="tavily")
+            )
+        }
     ):
         response = await research(client, claims=[CLAIM])
 
@@ -342,9 +346,7 @@ async def test_an_api_key_never_reaches_the_response_body(
     message.
     """
     key = "sk-tavily-0123456789"
-    configure(
-        SEARCH_PROVIDERS=[SearchProvider.TAVILY], TAVILY_API_KEY=SecretStr(key)
-    )
+    configure(SEARCH_PROVIDERS=[SearchProvider.TAVILY], TAVILY_API_KEY=SecretStr(key))
     leaky = Fake(
         "tavily",
         error=SearchError(f"401 unauthorized for key {key}", provider="tavily"),
@@ -504,7 +506,8 @@ async def test_one_page_from_three_engines_is_one_source(
     )
     fakes: dict[SearchProvider, Fake | Exception] = {
         SearchProvider.TAVILY: Fake(
-            "tavily", results=[found("https://bbc.co.uk/news/1?utm_source=x", snippet=WIRE)]
+            "tavily",
+            results=[found("https://bbc.co.uk/news/1?utm_source=x", snippet=WIRE)],
         ),
         SearchProvider.BRAVE: Fake(
             "brave", results=[found("http://www.bbc.co.uk/news/1/", snippet=WIRE)]
@@ -559,7 +562,11 @@ async def test_syndication_is_marked_and_never_merged(
 
     claim = response.json()["claims"][0]
     assert len(claim["sources"]) == 3
-    assert sorted(claim["domains"]) == ["apnews.com", "heraldscotland.com", "reuters.com"]
+    assert sorted(claim["domains"]) == [
+        "apnews.com",
+        "heraldscotland.com",
+        "reuters.com",
+    ]
     assert claim["stories"] == 1
     clusters = {source["cluster"] for source in claim["sources"]}
     assert clusters == {1}
@@ -673,7 +680,10 @@ async def test_an_unfit_claim_is_reported_as_skipped_not_dropped(
     The extractor's own reason travels with it, so a caller that disagrees can see the
     judgement was made and resubmit through ``claims``, which does not second-guess.
     """
-    with extractor_bench(StubClaimExtractor()), bench({SearchProvider.TAVILY: Fake("t")}):
+    with (
+        extractor_bench(StubClaimExtractor()),
+        bench({SearchProvider.TAVILY: Fake("t")}),
+    ):
         response = await research(client, text=SAMPLE_TEXT)
 
     body = response.json()
@@ -974,9 +984,7 @@ async def test_a_review_of_a_neighbouring_claim_says_so_in_the_body(
     """
     near = "The Federal Reserve held rates at 4.75% in March 2026."
     database = factcheck_bench.Fake(
-        results=[
-            factcheck_bench.record(near, factcheck_bench.review(rating="False"))
-        ]
+        results=[factcheck_bench.record(near, factcheck_bench.review(rating="False"))]
     )
 
     with (

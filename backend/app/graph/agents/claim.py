@@ -71,9 +71,7 @@ class ClaimAgent:
         return (
             tuple(c for c in extraction.claims if c.checkable),
             tuple(
-                SkippedClaim(
-                    claim=c.text, reason=c.reason or "not a checkable claim"
-                )
+                SkippedClaim(claim=c.text, reason=c.reason or "not a checkable claim")
                 for c in extraction.claims
                 if not c.checkable
             ),
@@ -88,6 +86,4 @@ def _verbatim(content: str) -> ExtractedClaim:
     filling the offsets with something that breaks it.
     """
     claim = content.strip()
-    return ExtractedClaim(
-        ref=1, text=claim, quote=claim, start=0, end=len(claim)
-    )
+    return ExtractedClaim(ref=1, text=claim, quote=claim, start=0, end=len(claim))

@@ -1,19 +1,21 @@
 from __future__ import annotations
 
-import tempfile
-import os
-import cv2
-import anyio.to_thread
 import logging
+import os
+import tempfile
+
+import anyio.to_thread
+import cv2
 
 from app.core.config import Settings, get_settings
-from app.core.errors import ValidationError, ConfigurationError
+from app.core.errors import ConfigurationError, ValidationError
 from app.desks.image import ImageDesk
-from app.domain import Artifact, Desk, DeskReport, ArtifactKind
+from app.domain import Artifact, ArtifactKind, Desk, DeskReport
 from app.media import fetch
 from app.vision import get_image_reader
 
 logger = logging.getLogger(__name__)
+
 
 class VideoDesk(ImageDesk):
     desk = Desk.VIDEO
@@ -26,19 +28,24 @@ class VideoDesk(ImageDesk):
                 "A video artifact needs a URL to fetch.",
                 details={"desk": str(self.desk)},
             )
-            
+
         data = await fetch.fetch(
             artifact.url,
             timeout=self._settings.MEDIA_FETCH_TIMEOUT_SECONDS,
             limit=self._settings.MAX_UPLOAD_BYTES,
             accept=("video/",),
-            allow_private=self._settings.MEDIA_ALLOW_PRIVATE_HOSTS,
+            allow_private=(
+                self._settings.MEDIA_ALLOW_PRIVATE_HOSTS
+                or fetch.is_managed_upload_url(
+                    artifact.url, public_api_url=self._settings.PUBLIC_API_URL
+                )
+            ),
         )
 
         def extract_middle_frame(video_bytes: bytes) -> bytes | None:
             fd, path = tempfile.mkstemp(suffix=".mp4")
             try:
-                with os.fdopen(fd, 'wb') as f:
+                with os.fdopen(fd, "wb") as f:
                     f.write(video_bytes)
                 cap = cv2.VideoCapture(path)
                 total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -46,7 +53,7 @@ class VideoDesk(ImageDesk):
                     cap.set(cv2.CAP_PROP_POS_FRAMES, max(0, total_frames // 2))
                 ret, frame = cap.read()
                 if ret:
-                    ret_encode, buf = cv2.imencode('.jpg', frame)
+                    ret_encode, buf = cv2.imencode(".jpg", frame)
                     if ret_encode:
                         return buf.tobytes()
                 return None
@@ -60,7 +67,7 @@ class VideoDesk(ImageDesk):
                 "Could not extract a frame from the video.",
                 details={"desk": str(self.desk)},
             )
-            
+
         try:
             reading = await get_image_reader(self._settings).read(frame_bytes)
         except ConfigurationError as exc:
@@ -74,7 +81,7 @@ class VideoDesk(ImageDesk):
                 annotations=rep.annotations,
                 signals=rep.signals,
                 exhibits=rep.exhibits,
-                detail=rep.detail
+                detail=rep.detail,
             )
 
         if len(reading.text.strip()) < self._settings.IMAGE_MIN_TEXT_CHARS:
@@ -86,7 +93,7 @@ class VideoDesk(ImageDesk):
                 annotations=rep.annotations,
                 signals=rep.signals,
                 exhibits=rep.exhibits,
-                detail=rep.detail
+                detail=rep.detail,
             )
 
         outcome = await self._graph().run(
@@ -101,8 +108,9 @@ class VideoDesk(ImageDesk):
             annotations=rep.annotations,
             signals=rep.signals,
             exhibits=rep.exhibits,
-            detail=rep.detail
+            detail=rep.detail,
         )
+
 
 def build(settings: Settings | None = None) -> VideoDesk:
     return VideoDesk(settings=settings or get_settings())

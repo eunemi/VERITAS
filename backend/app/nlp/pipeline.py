@@ -170,7 +170,8 @@ def _entities_within(doc: Doc, offset: int, clause: Clause) -> tuple[Entity, ...
             end=offset + ent.end_char,
         )
         for ent in doc.ents
-        if offset + ent.start_char >= clause.start and offset + ent.end_char <= clause.end
+        if offset + ent.start_char >= clause.start
+        and offset + ent.end_char <= clause.end
     )
 
 

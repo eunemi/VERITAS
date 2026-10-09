@@ -25,7 +25,9 @@ from collections.abc import Iterator
 from app.nlp.resources import Resources
 
 
-def sentence_spans(text: str, resources: Resources, *, limit: int) -> list[tuple[int, int]]:
+def sentence_spans(
+    text: str, resources: Resources, *, limit: int
+) -> list[tuple[int, int]]:
     """Return ``(start, end)`` for each sentence in ``text``, in order.
 
     ``end`` is exclusive and neither end includes whitespace, so

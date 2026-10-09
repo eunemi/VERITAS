@@ -79,9 +79,7 @@ class VerificationService:
                 limit=self._settings.MAX_TEXT_CHARS,
                 field="artifact.content",
             )
-        record = Verification.submitted(
-            artifact=artifact, desks=desks, user_id=user_id
-        )
+        record = Verification.submitted(artifact=artifact, desks=desks, user_id=user_id)
         await self._repository.create(record)
         logger.info(
             "verification submitted",

@@ -76,17 +76,13 @@ def build(
     """Compile the workflow. Cheap, and safe to hold for the process's lifetime."""
     graph: StateGraph = StateGraph(GraphState)
 
-    graph.add_node(
-        claim.NAME, claim.ClaimAgent(settings=settings, extractor=extractor)
-    )
+    graph.add_node(claim.NAME, claim.ClaimAgent(settings=settings, extractor=extractor))
     graph.add_node(search.NAME, search.SearchAgent(settings=settings))
     graph.add_node(factcheck.NAME, factcheck.FactCheckAgent(settings=settings))
     graph.add_node(evidence.NAME, evidence.EvidenceAgent())
     graph.add_node(source.NAME, source.SourceAgent(settings=settings))
     graph.add_node(contradiction.NAME, contradiction.ContradictionAgent())
-    graph.add_node(
-        judge.NAME, judge.JudgeAgent(thresholds=thresholds_from(settings))
-    )
+    graph.add_node(judge.NAME, judge.JudgeAgent(thresholds=thresholds_from(settings)))
 
     graph.add_edge(START, claim.NAME)
     graph.add_conditional_edges(

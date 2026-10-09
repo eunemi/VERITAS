@@ -252,9 +252,7 @@ async def test_does_not_retry_a_rejected_key(
     assert slept == []
 
 
-async def test_a_timeout_is_not_retried(
-    settings: Settings, slept: list[float]
-) -> None:
+async def test_a_timeout_is_not_retried(settings: Settings, slept: list[float]) -> None:
     """A timeout has already spent the caller's budget once."""
     client = TavilyClient(settings)
     seen = wire(client, raiser(httpx.TimeoutException("too slow")))
@@ -291,9 +289,7 @@ async def test_a_quota_status_is_reported_as_unavailable(settings: Settings) -> 
     client = TavilyClient(settings)
     wire(
         client,
-        replies(
-            httpx.Response(432, json={"detail": {"error": "plan limit exceeded"}})
-        ),
+        replies(httpx.Response(432, json={"detail": {"error": "plan limit exceeded"}})),
     )
 
     with pytest.raises(ProviderUnavailableError, match="quota exhausted") as caught:
@@ -346,7 +342,9 @@ async def test_a_200_carrying_html_is_a_failure(settings: Settings) -> None:
     ("body", "expected"),
     [
         pytest.param({"detail": {"error": "tavily said no"}}, "tavily said no"),
-        pytest.param({"message": "serper said no", "statusCode": 400}, "serper said no"),
+        pytest.param(
+            {"message": "serper said no", "statusCode": 400}, "serper said no"
+        ),
         pytest.param(
             {"type": "ErrorResponse", "error": {"detail": "brave said no"}},
             "brave said no",

@@ -38,7 +38,9 @@ RATE = claim(
 )
 
 #: What the extractor produces with no NLP extras installed: text, nothing else.
-UNANALYSED = claim("The rate was held at the same level again this month by the committee.")
+UNANALYSED = claim(
+    "The rate was held at the same level again this month by the committee."
+)
 
 #: Snippets in the shapes the three providers actually return them.
 SNIPPETS = [
@@ -77,7 +79,9 @@ SNIPPETS = [
 @pytest.mark.parametrize("snippet", SNIPPETS)
 def test_every_quote_is_a_verbatim_slice_of_the_snippet(snippet: str) -> None:
     """The invariant the whole design rests on, checked against every shape."""
-    found = ev.select(ev.Needle.of(RATE), [retrieval("tavily", "https://x/1", snippet=snippet)])
+    found = ev.select(
+        ev.Needle.of(RATE), [retrieval("tavily", "https://x/1", snippet=snippet)]
+    )
 
     assert found  # otherwise this passes vacuously
     for evidence in found:
@@ -109,9 +113,13 @@ def test_offsets_index_the_snippet_of_the_provider_they_name() -> None:
 
 def test_a_quote_is_never_padded_with_whitespace() -> None:
     """``snippet[start:end]`` is the quote with nothing left to trim."""
-    snippet = "   The Bank of England held its benchmark rate at 4.75% in March 2026.   "
+    snippet = (
+        "   The Bank of England held its benchmark rate at 4.75% in March 2026.   "
+    )
 
-    for evidence in ev.select(ev.Needle.of(RATE), [retrieval("p", "u", snippet=snippet)]):
+    for evidence in ev.select(
+        ev.Needle.of(RATE), [retrieval("p", "u", snippet=snippet)]
+    ):
         assert evidence.quote == evidence.quote.strip()
 
 
@@ -132,7 +140,9 @@ def test_no_quote_spans_an_elision(marker: str) -> None:
     right = "Inflation is expected to fall below target by the end of next year."
     snippet = f"{left}{marker}{right}"
 
-    for evidence in ev.select(ev.Needle.of(RATE), [retrieval("p", "u", snippet=snippet)]):
+    for evidence in ev.select(
+        ev.Needle.of(RATE), [retrieval("p", "u", snippet=snippet)]
+    ):
         assert marker not in evidence.quote
         assert not (left[-20:] in evidence.quote and right[:20] in evidence.quote)
 
@@ -174,7 +184,9 @@ def test_a_page_with_nothing_matching_gets_no_evidence() -> None:
 
 def test_boilerplate_is_not_evidence() -> None:
     """A newsletter block shares ordinary words with everything and anchors nothing."""
-    assert ev.select(ev.Needle.of(RATE), [retrieval("p", "u", snippet=BOILERPLATE)]) == ()
+    assert (
+        ev.select(ev.Needle.of(RATE), [retrieval("p", "u", snippet=BOILERPLATE)]) == ()
+    )
 
 
 def test_an_anchored_claim_requires_an_anchor_not_word_overlap() -> None:
@@ -213,7 +225,9 @@ def test_a_fragment_too_short_to_carry_a_proposition_is_not_quoted() -> None:
     """``Yes.`` and ``Read more`` are verbatim and say nothing."""
     snippet = "Bank of England. 4.75%. Yes. Read more"
 
-    for evidence in ev.select(ev.Needle.of(RATE), [retrieval("p", "u", snippet=snippet)]):
+    for evidence in ev.select(
+        ev.Needle.of(RATE), [retrieval("p", "u", snippet=snippet)]
+    ):
         assert len(evidence.quote) >= ev.MIN_QUOTE_CHARS
 
 
@@ -259,7 +273,9 @@ def test_a_passage_carrying_the_claims_figure_outranks_one_that_does_not() -> No
 def test_the_score_is_a_legible_fraction() -> None:
     """``earned / possible``, so 1.0 means the passage repeats everything the claim has."""
     for snippet in (WIRE, "Rates held at 4.75% by the Bank of England in March 2026."):
-        for evidence in ev.select(ev.Needle.of(RATE), [retrieval("p", "u", snippet=snippet)]):
+        for evidence in ev.select(
+            ev.Needle.of(RATE), [retrieval("p", "u", snippet=snippet)]
+        ):
             assert 0 < evidence.score <= 1
 
 
@@ -287,7 +303,9 @@ def test_evidence_comes_back_strongest_first() -> None:
     )
     scores = [
         evidence.score
-        for evidence in ev.select(ev.Needle.of(RATE), [retrieval("p", "u", snippet=snippet)])
+        for evidence in ev.select(
+            ev.Needle.of(RATE), [retrieval("p", "u", snippet=snippet)]
+        )
     ]
 
     assert scores == sorted(scores, reverse=True)

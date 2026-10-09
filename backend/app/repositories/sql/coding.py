@@ -115,9 +115,7 @@ def load_verdict(data: dict[str, Any]) -> Verdict:
 
 
 def load_ledger(rows: Any) -> tuple[LedgerEntry, ...]:
-    return tuple(
-        LedgerEntry(key=row["key"], value=row["value"]) for row in rows or ()
-    )
+    return tuple(LedgerEntry(key=row["key"], value=row["value"]) for row in rows or ())
 
 
 def load_annotations(rows: Any) -> tuple[Annotation, ...]:

@@ -92,8 +92,12 @@ async def test_roster_order_does_not_change_the_record(client: AsyncClient) -> N
     Without normalisation the reports would come back in whichever order the caller
     happened to list the desks, and two identical submissions would differ.
     """
-    first = await client.post(f"{V1}/verify", json=text_body(desks=["text", "fact-check"]))
-    second = await client.post(f"{V1}/verify", json=text_body(desks=["fact-check", "text"]))
+    first = await client.post(
+        f"{V1}/verify", json=text_body(desks=["text", "fact-check"])
+    )
+    second = await client.post(
+        f"{V1}/verify", json=text_body(desks=["fact-check", "text"])
+    )
 
     assert first.json()["desks"] == second.json()["desks"]
     assert first.json()["desks"] == ["text", "fact-check", "decision"]
@@ -206,7 +210,9 @@ async def test_validation_errors_use_the_error_envelope(client: AsyncClient) -> 
     assert body["error"]["request_id"] == response.headers["X-Request-ID"]
 
 
-async def test_text_over_the_limit_is_413(client: AsyncClient, tiny_limit: Settings) -> None:
+async def test_text_over_the_limit_is_413(
+    client: AsyncClient, tiny_limit: Settings
+) -> None:
     """A size ceiling is not a schema violation, so it is not a 422."""
     response = await client.post(f"{V1}/verify", json=text_body("x" * 50))
 
@@ -314,7 +320,11 @@ async def test_the_failed_desk_is_marked_and_the_rest_are_not(
     response = await client.get(f"{V1}/verification/{submitted.json()['id']}")
 
     progress = {d["desk"]: d["status"] for d in response.json()["desks"]}
-    assert progress == {"text": "failed", "fact-check": "pending", "decision": "pending"}
+    assert progress == {
+        "text": "failed",
+        "fact-check": "pending",
+        "decision": "pending",
+    }
 
 
 async def test_a_failure_is_never_reported_as_an_error(client: AsyncClient) -> None:

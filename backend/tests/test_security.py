@@ -242,9 +242,7 @@ async def test_a_refresh_token_does_not_authenticate_a_request(
     with pytest.raises(AuthenticationError):
         decode_token(issued.token, settings=settings)
 
-    accepted = decode_token(
-        issued.token, settings=settings, expected=TokenType.REFRESH
-    )
+    accepted = decode_token(issued.token, settings=settings, expected=TokenType.REFRESH)
     assert accepted.token_type is TokenType.REFRESH
 
 

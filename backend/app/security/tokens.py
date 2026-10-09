@@ -133,9 +133,7 @@ def decode_token(
             leeway=LEEWAY_SECONDS,
         )
     except jwt.ExpiredSignatureError as exc:
-        raise AuthenticationError(
-            "This session has expired. Sign in again."
-        ) from exc
+        raise AuthenticationError("This session has expired. Sign in again.") from exc
     except jwt.InvalidTokenError as exc:
         # The base class of every PyJWT rejection, so one branch covers a forged
         # signature, a malformed token and a missing required claim alike. The

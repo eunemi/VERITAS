@@ -77,9 +77,7 @@ def sent(monkeypatch: pytest.MonkeyPatch) -> list[str]:
     """
     urls: list[str] = []
 
-    async def send(
-        client: httpx.AsyncClient, request: httpx.Request
-    ) -> httpx.Response:
+    async def send(client: httpx.AsyncClient, request: httpx.Request) -> httpx.Response:
         urls.append(str(request.url))
         status, headers, body = SCRIPT.pop(0)
         return httpx.Response(status, headers=headers, content=body, request=request)

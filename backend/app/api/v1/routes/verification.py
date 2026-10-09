@@ -88,9 +88,7 @@ async def submit_verification(
     # When the store becomes session-backed this stops being a BackgroundTask and
     # becomes a queue enqueue of `record.id`; `run(id)` is already that signature.
     background.add_task(service.run, record.id)
-    response.headers["Location"] = (
-        f"{settings.API_V1_PREFIX}/verification/{record.id}"
-    )
+    response.headers["Location"] = f"{settings.API_V1_PREFIX}/verification/{record.id}"
     return VerificationAccepted.from_domain(record)
 
 

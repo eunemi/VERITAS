@@ -142,9 +142,7 @@ class TavilyClient(Http):
             url = item.get("url")
             if not isinstance(url, str) or not url:
                 continue
-            published_at, basis, date_text = _date(
-                item.get("published_date"), now=now
-            )
+            published_at, basis, date_text = _date(item.get("published_date"), now=now)
             results.append(
                 SearchResult(
                     url=url,

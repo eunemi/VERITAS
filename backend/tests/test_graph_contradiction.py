@@ -60,7 +60,7 @@ async def test_a_rival_figure_is_a_conflict() -> None:
 
 
 async def test_a_passage_carrying_both_figures_is_context_and_not_a_conflict() -> None:
-    """"Held at 4.75%, down from 5.25%" elaborates on the claim; it does not dispute it.
+    """ "Held at 4.75%, down from 5.25%" elaborates on the claim; it does not dispute it.
 
     The guard this test protects is the difference between an agent that finds
     disagreement and one that flags every source giving background.

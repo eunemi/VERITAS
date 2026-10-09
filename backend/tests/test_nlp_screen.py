@@ -123,7 +123,7 @@ def test_it_refuses_with_the_right_reason(
 
 
 def test_a_question_is_reported_as_a_question(nlp_resources: Resources) -> None:
-    """"Why?" trips three rules. Only one of them tells the writer anything."""
+    """ "Why?" trips three rules. Only one of them tells the writer anything."""
     checkable, reason = verdict(nlp_resources, "Why?")
 
     assert checkable is False
