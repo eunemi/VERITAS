@@ -556,7 +556,7 @@ class Settings(BaseSettings):
     #: Off, because a URL supplied by a caller and fetched by this server is a
     #: request-forgery primitive: see ``app/media/fetch.py``. Turn it on only for
     #: a local fixture server.
-    MEDIA_ALLOW_PRIVATE_HOSTS: bool = True
+    MEDIA_ALLOW_PRIVATE_HOSTS: bool = False
 
     # ------------------------------------------------------------- vision ----
 
@@ -774,6 +774,11 @@ class Settings(BaseSettings):
                 raise ConfigurationError(
                     "DEBUG cannot be enabled in production.",
                     details={"setting": "DEBUG"},
+                )
+            if self.MEDIA_ALLOW_PRIVATE_HOSTS:
+                raise ConfigurationError(
+                    "MEDIA_ALLOW_PRIVATE_HOSTS cannot be enabled in production.",
+                    details={"setting": "MEDIA_ALLOW_PRIVATE_HOSTS"},
                 )
 
         return self
