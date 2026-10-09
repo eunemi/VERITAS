@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Give a parallel preview its own generated output; never share runtime chunks
+  // between the host dev server and a sandbox or a different bundler.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   async headers() {
     return [
       {
