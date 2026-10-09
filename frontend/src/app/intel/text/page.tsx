@@ -5,7 +5,7 @@ import { GalleyProof } from "@/components/agents/instruments/GalleyProof";
 import { Determination } from "@/components/agents/shared/Determination";
 import { DeskFailure } from "@/components/agents/shared/DeskFailure";
 import { DeskPage } from "@/components/agents/shared/DeskPage";
-import { FindingLedger } from "@/components/agents/shared/FindingLedger";
+import { FindingLedger, SignalTable } from "@/components/agents/shared/FindingLedger";
 import { LedgerBand } from "@/components/agents/shared/LedgerBand";
 import { CopyField, SubmissionBench } from "@/components/agents/shared/SubmissionBench";
 import { useExamination } from "@/components/agents/shared/useExamination";
