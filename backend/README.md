@@ -130,12 +130,11 @@ fallback to anonymous — otherwise an expired session would go on submitting re
 its owner could never list.
 
 `artifact` is a union discriminated on `kind`. `text` and `claim` carry `content`;
-`url` carries `url`; `image`, `audio` and `video` carry `url` and an optional
+`url` carries `url`; `image` carries `url` and an optional
 `filename`. Anything else in the object is rejected rather than ignored.
 
 `desks` is optional. Omitted, the roster follows the artifact's kind — copy opens
-the text and fact-check desks, footage opens the video and audio desks, because
-footage is two artifacts in one file. Supplied, it is checked against that table and
+the text and fact-check desks, for instance. Supplied, it is checked against that table and
 normalised, so `["fact-check", "text"]` and `["text", "fact-check"]` produce the same
 record. The `decision` desk cannot be named: it reads the other desks' records and is
 appended to every verification.
