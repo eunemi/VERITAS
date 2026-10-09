@@ -147,9 +147,7 @@ class VerificationService:
         reports already filed are kept, so the record shows what was found before
         the break — but it is recorded as failed rather than signed, because a
         determination reached without one of the desks the roster promised is not
-        the determination the roster describes. A video artifact takes this path
-        today: its roster names :data:`app.domain.Desk.VIDEO`, which is not built,
-        so the run fails with code ``not_implemented`` after the audio desk reports.
+        the determination the roster describes.
         """
         desk: Desk | None = None
         try:
