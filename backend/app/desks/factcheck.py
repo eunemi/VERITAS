@@ -1,7 +1,7 @@
 """The fact-check desk: run the graph, publish what it found, store the gathering.
 
-This desk is the pipeline with nothing in front of it. The image and audio desks
-recover text and hand it here; a submitted string arrives here directly. Everything
+This desk is the pipeline with nothing in front of it. The image desk
+recovers text and hands it here; a submitted string arrives here directly. Everything
 between the claim and the verdict —
 :class:`~app.services.claims.ClaimExtractionService`, web search, the fact-check
 lookup, evidence selection, source credibility, contradiction detection, the judge,
