@@ -1,7 +1,7 @@
 """Shared plumbing for the desks that run the verification graph.
 
-Three desks end in the same place. The image desk and the audio desk recover text and
-send it into the text pipeline; :class:`app.desks.factcheck.FactCheckDesk` *is* that
+Two desks end in the same place. The image desk recovers text and
+sends it into the text pipeline; :class:`app.desks.factcheck.FactCheckDesk` *is* that
 pipeline with nothing in front of it. None of them can import the graph at module
 scope, for two separate reasons — compiling it imports langgraph, which is slow and is
 paid at startup because ``app.desks`` imports every desk; and it reaches
