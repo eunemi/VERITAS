@@ -34,7 +34,9 @@ export interface DeskDefinition {
   stages: string[];
 }
 
-export const DESK_ISSUE = "22 Aug 2026";
+const d = new Date();
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+export const DESK_ISSUE = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
 
 export const DESKS: Record<string, DeskDefinition> = {
   text: {
