@@ -89,7 +89,7 @@ export default function Footer() {
   return (
     <footer className={`${styles.footer} w-full text-parchment`}>
       <Spread>
-        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-parchment/15 py-6">
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-parchment/15 py-5">
           <p className={`${styles.eyebrow} flex items-center gap-3`}>
             <span aria-hidden="true" className="h-1.5 w-1.5 bg-[#d88876]" />
             The pursuit of truth
@@ -99,8 +99,8 @@ export default function Footer() {
           </p>
         </div>
 
-        <div className="grid items-end gap-9 border-b border-parchment/20 py-10 md:py-14 lg:grid-cols-[1.5fr_1fr] lg:gap-20">
-          <h2 className="font-headline-lg text-[clamp(2.5rem,5.1vw,4.6rem)] leading-[1.12] font-normal tracking-[-0.045em]">
+        <div className="grid items-end gap-9 border-b border-parchment/20 py-10 md:py-12 lg:grid-cols-[1.5fr_1fr] lg:gap-20">
+          <h2 className={`${styles.editorial} text-[clamp(2.5rem,4.6vw,4.125rem)] leading-[1.12] font-normal tracking-[-0.045em]`}>
             Question the story.
             <br />
             <em className="font-normal text-[#d88876]">Find the truth.</em>
@@ -120,11 +120,11 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="grid gap-10 py-10 md:py-12 lg:grid-cols-[1.05fr_2fr] lg:gap-14">
-          <div className="flex items-start gap-5 lg:flex-col lg:gap-4">
+        <div className="grid gap-10 py-10 lg:grid-cols-[1.05fr_2fr] lg:gap-14">
+          <div className="flex items-start gap-5 lg:flex-col lg:gap-4 xl:flex-row xl:gap-5">
             <Monogram />
             <div>
-              <p className="font-headline-md max-w-[16rem] text-[24px] leading-[1.3] tracking-[-0.02em]">
+              <p className={`${styles.editorial} max-w-[16rem] text-[24px] leading-[1.3] tracking-[-0.02em]`}>
                 Clarity in a world<br className="hidden lg:block" /> of noise.
               </p>
               <p className="mt-3 max-w-[16rem] text-[13px] leading-[1.8] text-parchment/60">
@@ -146,7 +146,7 @@ export default function Footer() {
                     <li key={link.href}>
                       <Link href={link.href} className={styles.navLink}>
                         {link.number ? (
-                          <span className="font-mono-label text-[10px] tabular-nums text-parchment/50">
+                          <span className="text-[12px] tabular-nums text-parchment/60">
                             {link.number}
                           </span>
                         ) : null}
@@ -191,7 +191,9 @@ export default function Footer() {
         <div className={styles.signature}>
           <div className="flex items-center justify-between gap-4">
             <span className={`${styles.eyebrow} text-parchment/60`}>All truth is traceable</span>
-            <span aria-hidden="true" className="font-headline-md text-[22px] leading-none text-[#d88876]">✳</span>
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 shrink-0 text-[#d88876]">
+              <path d="M12 2v20M2 12h20M5 5l14 14M5 19 19 5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
           </div>
           <Link href="/" aria-label="Veritas — home" className={styles.wordmark}>
             <span aria-hidden="true" className="flex w-full justify-between">
@@ -200,13 +202,13 @@ export default function Footer() {
           </Link>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3 border-t border-parchment/20 py-5 text-[12px] leading-6 text-parchment/60">
+        <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3 border-t border-parchment/20 py-4 text-[12px] leading-6 text-parchment/60">
           <p>&copy; 2026 Veritas AI</p>
-          <p className="hidden font-headline-md text-[14px] italic sm:block">The last word belongs to the evidence.</p>
-          <Link href="#" className={`${styles.backToTop} flex min-h-11 items-center gap-3`}>
+          <p className={`${styles.editorial} hidden text-[14px] italic sm:block`}>The last word belongs to the evidence.</p>
+          <a href="#" className={`${styles.backToTop} flex min-h-11 items-center gap-3`}>
             Back to top
             <Arrow className="h-3.5 w-3.5 -rotate-45" />
-          </Link>
+          </a>
         </div>
       </Spread>
     </footer>
