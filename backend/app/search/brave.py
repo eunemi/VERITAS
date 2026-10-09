@@ -92,7 +92,7 @@ class BraveClient(Http):
         """Results for ``query``, in Brave's relevance order.
 
         ``result_filter=web`` asks for only the web results, since the
-        discussions, FAQ, news and video blocks are not what evidence is sliced
+        discussions, FAQ, and news blocks are not what evidence is sliced
         out of and each one costs response size.
         """
         payload = await self.fetch(
