@@ -38,12 +38,11 @@ function requireApiBaseUrl(): string {
 export type Desk =
   | "text"
   | "image"
-  | "audio"
-  | "video"
+
   | "fact-check"
   | "decision";
 
-export type ArtifactKind = "text" | "claim" | "url" | "image" | "audio" | "video";
+export type ArtifactKind = "text" | "claim" | "url" | "image";
 
 export type Status = "pending" | "running" | "completed" | "failed";
 
@@ -103,26 +102,9 @@ export interface ImageDetailOut {
   regions: PlateRegionOut[];
 }
 
-export interface TranscriptCueOut {
-  ref: number;
-  start: number;
-  end: number;
-  timecode: string;
-  text: string;
-}
 
-export interface AudioDetailOut {
-  duration: number;
-  runtime: string;
-  language: string;
-  text: string;
-  envelope: number[];
-  /** `[start, end]` fractions of the duration where the recording is voiced. */
-  spans: number[][];
-  cues: TranscriptCueOut[];
-}
 
-export type DeskDetailOut = ImageDetailOut | AudioDetailOut;
+export type DeskDetailOut = ImageDetailOut;
 
 export interface DeskReportOut {
   desk: Desk;
@@ -228,7 +210,7 @@ export interface UrlArtifactIn {
  * built, so a file sitting on the reader's disk cannot be examined yet.
  */
 export interface MediaArtifactIn {
-  kind: "image" | "audio" | "video";
+  kind: "image";
   url: string;
   filename?: string | null;
 }
