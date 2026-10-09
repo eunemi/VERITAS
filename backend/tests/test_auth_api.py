@@ -11,8 +11,8 @@ must be indistinguishable, and so must somebody else's verification and one that
 never submitted. Both properties survive a refactor only if something checks them.
 
 ``ASGITransport`` awaits background tasks, so a ``POST /verify`` here has already run
-its examination — to a failure, since no desks are built — by the time the response
-is in hand. The history tests read that failed record, which is a real record.
+its examination — to a completed record — by the time the response
+is in hand. The history tests read that completed record, which is a real record.
 """
 
 from __future__ import annotations
@@ -535,7 +535,7 @@ async def test_a_history_row_carries_no_reports(client: AsyncClient) -> None:
 
     row = history.json()["items"][0]
     assert "reports" not in row
-    assert row["status"] == "failed"
+    assert row["status"] == "completed"
     assert row["terminal"] is True
 
 
