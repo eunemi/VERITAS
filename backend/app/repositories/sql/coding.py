@@ -3,7 +3,7 @@
 Written out rather than generated. The obvious alternative — a pydantic
 ``TypeAdapter`` per shape — would be shorter, but it puts pydantic underneath the
 repository (the domain is deliberately framework-free, see :mod:`app.domain`) and
-it resolves ``ImageDetail | AudioDetail`` by trying members in order, which turns
+it resolves unions by trying members in order, which turns
 a shape the encoder got slightly wrong into a silently mis-typed object instead of
 an error.
 
@@ -30,7 +30,6 @@ from typing import Any
 
 from app.domain import (
     Annotation,
-    AudioDetail,
     Axis,
     Credibility,
     DateBasis,
@@ -51,7 +50,6 @@ from app.domain import (
     Role,
     Signal,
     Stance,
-    TranscriptCue,
     Verdict,
 )
 
@@ -163,14 +161,14 @@ def load_exhibits(rows: Any) -> tuple[Exhibit, ...]:
 DETAIL_TYPE = "type"
 
 
-def dump_detail(detail: ImageDetail | AudioDetail | None) -> dict[str, Any] | None:
+def dump_detail(detail: ImageDetail | None) -> dict[str, Any] | None:
     if detail is None:
         return None
-    kind = "image" if isinstance(detail, ImageDetail) else "audio"
+    kind = "image"
     return {DETAIL_TYPE: kind, **plain(detail)}
 
 
-def load_detail(data: Any) -> ImageDetail | AudioDetail | None:
+def load_detail(data: Any) -> ImageDetail | None:
     if not data:
         return None
     kind = data.get(DETAIL_TYPE)
@@ -191,25 +189,7 @@ def load_detail(data: Any) -> ImageDetail | AudioDetail | None:
                 for region in data.get("regions") or ()
             ),
         )
-    if kind == "audio":
-        return AudioDetail(
-            duration=float(data["duration"]),
-            language=data["language"],
-            text=data["text"],
-            envelope=_floats(data.get("envelope")),
-            spans=tuple(
-                (float(start), float(end)) for start, end in data.get("spans") or ()
-            ),
-            cues=tuple(
-                TranscriptCue(
-                    ref=int(cue["ref"]),
-                    start=float(cue["start"]),
-                    end=float(cue["end"]),
-                    text=cue["text"],
-                )
-                for cue in data.get("cues") or ()
-            ),
-        )
+
     # An unknown discriminator is a desk this build does not have. Dropping the
     # exhibit keeps the rest of the report readable; raising would make one
     # unfamiliar row poison every read of the verification it belongs to.
