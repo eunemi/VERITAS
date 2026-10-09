@@ -33,7 +33,7 @@ export default function AgentsSection() {
         className="fixed inset-0 h-full w-full pointer-events-none"
         style={{
           opacity,
-          backgroundImage: "url('/agents-bg.png')",
+          backgroundImage: "url('/bg.jpg')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",

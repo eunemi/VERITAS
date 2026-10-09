@@ -51,6 +51,13 @@ def _render(
     message: str,
     details: dict[str, Any] | None = None,
 ) -> JSONResponse:
+    headers: dict[str, str] = {}
+    origin = request.headers.get("origin")
+    if origin:
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+        headers["Access-Control-Expose-Headers"] = "X-Request-ID, Location, Retry-After"
+
     return JSONResponse(
         status_code=status,
         content=error_response(
@@ -59,6 +66,7 @@ def _render(
             details=details,
             request_id=_request_id_for(request),
         ),
+        headers=headers if headers else None,
     )
 
 

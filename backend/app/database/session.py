@@ -31,14 +31,45 @@ _engine: AsyncEngine | None = None
 _session_factory: async_sessionmaker[AsyncSession] | None = None
 
 
+def _clean_database_url(raw_url: str) -> tuple[str, dict[str, Any]]:
+    """Sanitize database URL and resolve driver-specific connection arguments."""
+    url = make_url(raw_url)
+    connect_args: dict[str, Any] = {}
+
+    if "postgresql" in url.get_backend_name():
+        query_dict = dict(url.query)
+        has_ssl = False
+        if "sslmode" in query_dict:
+            val = query_dict.pop("sslmode")
+            if val in ("require", "verify-ca", "verify-full"):
+                has_ssl = True
+        if "channel_binding" in query_dict:
+            query_dict.pop("channel_binding")
+        if "ssl" in query_dict:
+            val = query_dict.pop("ssl")
+            if str(val).lower() in ("true", "1", "require"):
+                has_ssl = True
+
+        if (url.host and url.host not in ("localhost", "127.0.0.1", "postgres")) or has_ssl:
+            connect_args["ssl"] = True
+
+        url = url.set(query=query_dict)
+
+    return url.render_as_string(hide_password=False), connect_args
+
+
 def _create_engine(settings: Settings) -> AsyncEngine:
-    kwargs: dict[str, Any] = {"echo": settings.DATABASE_ECHO}
+    clean_url, connect_args = _clean_database_url(settings.DATABASE_URL)
+    kwargs: dict[str, Any] = {
+        "echo": settings.DATABASE_ECHO,
+        "connect_args": connect_args,
+    }
 
     # SQLite's async driver is backed by a pool that accepts none of the sizing
     # arguments below, and passing them raises at engine construction. Guarding
     # here is what makes this module's promise — that changing database is a URL
     # change — true for the one URL a developer is most likely to try locally.
-    if make_url(settings.DATABASE_URL).get_backend_name() != "sqlite":
+    if make_url(clean_url).get_backend_name() != "sqlite":
         kwargs.update(
             pool_size=settings.DATABASE_POOL_SIZE,
             max_overflow=settings.DATABASE_MAX_OVERFLOW,
@@ -49,7 +80,7 @@ def _create_engine(settings: Settings) -> AsyncEngine:
             pool_pre_ping=True,
         )
 
-    return create_async_engine(settings.DATABASE_URL, **kwargs)
+    return create_async_engine(clean_url, **kwargs)
 
 
 def get_engine() -> AsyncEngine:
