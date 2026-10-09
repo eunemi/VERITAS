@@ -709,12 +709,22 @@ class Settings(BaseSettings):
         pydantic reports as an ordinary validation error naming the field,
         instead of the loader-level ``SettingsError`` it used to produce.
         """
-        if not isinstance(value, str):
-            return value
-        stripped = value.strip()
-        if stripped.startswith("["):
-            return json.loads(stripped)
-        return [origin.strip() for origin in stripped.split(",") if origin.strip()]
+        parsed_origins = []
+        if isinstance(value, str):
+            stripped = value.strip()
+            if stripped.startswith("["):
+                parsed_origins = json.loads(stripped)
+            else:
+                parsed_origins = [origin.strip() for origin in stripped.split(",") if origin.strip()]
+        elif isinstance(value, list):
+            parsed_origins = value
+            
+        # Ensure Vercel domain is always allowed
+        vercel_domain = "https://veritasreal.vercel.app"
+        if vercel_domain not in parsed_origins:
+            parsed_origins.append(vercel_domain)
+            
+        return parsed_origins
 
     @field_validator("SEARCH_PROVIDERS", mode="before")
     @classmethod
