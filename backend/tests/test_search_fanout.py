@@ -24,7 +24,6 @@ from datetime import UTC, datetime
 from app.core.config import SearchProvider, Settings
 from app.core.errors import SearchError
 from app.domain import ProviderStatus
-from app.search.base import SearchResult
 from app.search.fanout import Task, harvest
 from tests.search_bench import Fake, bench, found
 
