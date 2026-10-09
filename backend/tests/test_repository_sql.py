@@ -43,7 +43,6 @@ from app.domain import (
     Annotation,
     Artifact,
     ArtifactKind,
-    AudioDetail,
     Axis,
     ClaimResearch,
     Credibility,
@@ -72,7 +71,6 @@ from app.domain import (
     Source,
     Stance,
     Status,
-    TranscriptCue,
     User,
     Verdict,
     Verification,
@@ -345,19 +343,11 @@ async def test_a_report_s_interior_survives_the_json_columns(factory) -> None:
             text="REOPENS TUESDAY",
             regions=(PlateRegion(ref=1, x=0.1, y=0.2, w=0.3, h=0.1, label="banner"),),
         ),
-        AudioDetail(
-            duration=12.5,
-            language="en",
-            text="The crossing reopens Tuesday.",
-            envelope=(0.1, 0.4, 0.2),
-            spans=((0.0, 4.5), (4.5, 12.5)),
-            cues=(TranscriptCue(ref=1, start=0.0, end=4.5, text="The crossing"),),
-        ),
     ],
-    ids=["image", "audio"],
+    ids=["image"],
 )
 async def test_either_detail_comes_back_as_its_own_type(factory, detail) -> None:
-    """`ImageDetail | AudioDetail` is a union a JSON document cannot describe on its
+    """`ImageDetail` is a union a JSON document cannot describe on its
     own, which is why `coding.DETAIL_TYPE` is written alongside it. Without the
     discriminator a decoder has to guess, and a wrong guess is a silently mistyped
     exhibit rather than an error."""
@@ -413,7 +403,7 @@ async def test_a_desk_not_on_the_roster_is_a_no_op(factory) -> None:
     record = submission()
     await store.create(record)
 
-    await store.start_desk(record.id, Desk.VIDEO)
+    await store.start_desk(record.id, Desk.IMAGE)
 
     stored = await store.get(record.id)
     assert stored is not None
