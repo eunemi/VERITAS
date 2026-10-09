@@ -1,6 +1,6 @@
 """Test doubles for the desk and claim-extraction seams.
 
-Only the image and audio desks are implemented, so anything that tests the
+Only the image desk is implemented, so anything that tests the
 orchestration across several desks has to supply the rest. These are stubs, not
 implementations: each returns a report it was handed or a canned one, and none of
 them examines anything. They live here rather than in ``conftest.py`` because they
@@ -12,7 +12,7 @@ stub left registered after a test would make a later test pass for the wrong rea
 the hardest kind of failure to trace back. The context managers make the cleanup
 unconditional, and both restore what they displaced rather than clearing the key:
 ``app.nlp`` registers a real extractor at import and ``app.desks`` now registers
-real image and audio examiners, and unregistering either would leave the seam
+a real image examiner, and unregistering it would leave the seam
 emptier than it was found and turn every later test in the session into a 501.
 """
 
