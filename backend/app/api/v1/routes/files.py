@@ -24,16 +24,6 @@ MEDIA_EXTENSIONS = frozenset(
         ".png",
         ".webp",
         ".gif",
-        ".mp3",
-        ".wav",
-        ".m4a",
-        ".ogg",
-        ".aac",
-        ".flac",
-        ".mp4",
-        ".mov",
-        ".webm",
-        ".mkv",
     }
 )
 _STORED_NAME = re.compile(r"^[0-9a-f]{32}(?:\.[a-z0-9]{1,10})?$")
@@ -106,7 +96,7 @@ async def upload_media(
     extension = _extension(file)
     if extension not in MEDIA_EXTENSIONS:
         raise HTTPException(
-            status_code=415, detail="Upload a supported image, audio, or video file."
+            status_code=415, detail="Upload a supported image file."
         )
     content = await _read_limited(file, settings.MAX_UPLOAD_BYTES)
     directory = Path(settings.UPLOAD_DIRECTORY).resolve()  # noqa: ASYNC240
