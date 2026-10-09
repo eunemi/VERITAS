@@ -57,7 +57,6 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from itertools import pairwise
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:  # pragma: no cover - spaCy is imported only by the pipeline
@@ -341,7 +340,7 @@ def _detokenize(tokens: tuple[Token, ...]) -> str:
         return ""
 
     parts: list[str] = [tokens[0].text]
-    for previous, token in pairwise(tokens):
+    for previous, token in zip(tokens, tokens[1:], strict=False):
         adjacent = token.idx == previous.idx + len(previous.text)
         if not adjacent and not token.is_punct:
             parts.append(" ")
