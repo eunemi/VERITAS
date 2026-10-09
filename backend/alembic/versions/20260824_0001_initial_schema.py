@@ -35,8 +35,6 @@ ID = sa.String(36)
 DESK = sa.Enum(
     "text",
     "image",
-    "audio",
-    "video",
     "fact-check",
     "decision",
     name="desk",
@@ -45,8 +43,6 @@ DESK = sa.Enum(
 FAILURE_DESK = sa.Enum(
     "text",
     "image",
-    "audio",
-    "video",
     "fact-check",
     "decision",
     name="failure_desk",
@@ -57,8 +53,6 @@ ARTIFACT_KIND = sa.Enum(
     "claim",
     "url",
     "image",
-    "audio",
-    "video",
     name="artifact_kind",
     native_enum=False,
 )
