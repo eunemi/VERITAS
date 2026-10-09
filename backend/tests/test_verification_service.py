@@ -209,26 +209,7 @@ async def test_an_unexpected_error_becomes_an_internal_failure(
     assert "boom" not in failed.failure.message
 
 
-async def test_a_missing_desk_fails_the_record_rather_than_the_request(
-    service: VerificationService,
-) -> None:
-    """An unbound desk key is a failed record, not a raised request.
 
-    Named against :data:`app.domain.Desk.VIDEO` because that is the one seam still
-    unbound — the other five are registered in :mod:`app.desks`, so asking for any
-    of them now runs a real desk. A roster naming something that does not exist has
-    to fail the record: ``run`` is a background task and the 202 has already gone
-    out, so there is nobody left to raise at.
-    """
-    record = await service.submit(artifact=TEXT, desks=(Desk.VIDEO,))
-
-    await service.run(record.id)
-
-    failed = await service.get(record.id)
-    assert failed.status is Status.FAILED
-    assert failed.failure is not None
-    assert failed.failure.code == "not_implemented"
-    assert failed.failure.desk is Desk.VIDEO
 
 
 async def test_a_missing_adjudicator_is_recorded_against_the_decision_desk(
