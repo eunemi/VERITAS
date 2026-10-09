@@ -53,8 +53,6 @@ def report(desk: Desk) -> DeskReport:
         (ArtifactKind.CLAIM, (Desk.TEXT, Desk.FACT_CHECK)),
         (ArtifactKind.URL, (Desk.TEXT, Desk.FACT_CHECK)),
         (ArtifactKind.IMAGE, (Desk.IMAGE,)),
-        (ArtifactKind.AUDIO, (Desk.AUDIO,)),
-        (ArtifactKind.VIDEO, (Desk.AUDIO, Desk.VIDEO)),
     ],
 )
 def test_default_roster_per_kind(
@@ -253,7 +251,7 @@ def test_a_desk_not_on_the_roster_is_ignored() -> None:
     against the wrong desk still records the failure."""
     record = Verification.submitted(artifact=TEXT, desks=(Desk.TEXT,))
 
-    advanced = record.desk_started(Desk.VIDEO)
+    advanced = record.desk_started(Desk.IMAGE)
 
     assert [p.desk for p in advanced.desks] == [Desk.TEXT, ADJUDICATOR]
     assert all(p.status is Status.PENDING for p in advanced.desks)
@@ -282,5 +280,5 @@ def test_which_statuses_end_the_polling(status: Status, terminal: bool) -> None:
 
 
 def test_media_is_recognised_as_media() -> None:
-    assert Artifact(kind=ArtifactKind.VIDEO, url="https://a.test/c.mp4").is_media
+    assert Artifact(kind=ArtifactKind.IMAGE, url="https://a.test/c.png").is_media
     assert not TEXT.is_media
