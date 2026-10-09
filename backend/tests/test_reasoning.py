@@ -310,12 +310,12 @@ def test_an_unknown_evidence_id_is_refused() -> None:
 
 def test_an_outlet_that_is_not_a_source_is_refused() -> None:
     """The check that stops "according to Reuters" beside a dossier without it."""
-    with pytest.raises(Ungrounded, match=r"nytimes\.com"):
+    with pytest.raises(Ungrounded, match="nytimes.com"):
         read(answered(reasoning="nytimes.com reported the same decision."), dossier())
 
 
 def test_a_link_to_somewhere_the_dossier_never_went_is_refused() -> None:
-    with pytest.raises(Ungrounded, match=r"example\.org"):
+    with pytest.raises(Ungrounded, match="example.org"):
         read(
             answered(reasoning="See https://example.org/rates for the schedule."),
             dossier(),
@@ -384,7 +384,7 @@ def test_an_invented_statistic_is_refused() -> None:
     A fabricated percentage reads exactly like a real one, and it is the thing a
     reader carries away and repeats.
     """
-    with pytest.raises(Ungrounded, match=r"5\.25%"):
+    with pytest.raises(Ungrounded, match="5.25%"):
         read(
             answered(reasoning="The rate is 5.25% after the February meeting."),
             dossier(),
