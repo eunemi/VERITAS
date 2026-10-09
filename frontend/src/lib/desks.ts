@@ -91,59 +91,7 @@ export const DESKS: Record<string, DeskDefinition> = {
       "Drawing determination",
     ],
   },
-  audio: {
-    id: "audio",
-    number: "03",
-    name: "Audio",
-    titleLines: ["Audio", "Forensics"],
-    eyebrow: "Agent 03 — Speech desk",
-    standfirst:
-      "The desk transcribes the recording, takes the claims out of what was said, and checks those against the record — timecoded, so every line can be found again.",
-    file: "VT–0116",
-    method: [
-      { key: "Reads", value: "Interviews, calls, voice notes" },
-      { key: "Looks for", value: "Claims made aloud" },
-      { key: "Returns", value: "A timecoded transcript and slate" },
-      { key: "Does not", value: "Tell one voice from another" },
-    ],
-    prompt: "Give the address of the recording",
-    stages: [
-      "Fetching the recording",
-      "Measuring the waveform",
-      "Detecting speech",
-      "Transcribing",
-      "Discarding what the waveform will not carry",
-      "Checking what was said",
-      "Drawing determination",
-    ],
-  },
-  video: {
-    id: "video",
-    number: "04",
-    name: "Video",
-    titleLines: ["Video", "Forensics"],
-    eyebrow: "Agent 04 — Temporal desk",
-    standfirst:
-      "The footage goes on the plate. The desk recovers the text printed in its frames, checks what that text asserts, and rules each claim at the place on the frame it was read from. A clip's sound goes to the speech desk.",
-    file: "VT–0117",
-    method: [
-      { key: "Reads", value: "Video footage frames" },
-      { key: "Looks for", value: "Text printed in the frames" },
-      { key: "Returns", value: "A ruled plate and its readings" },
-      { key: "Does not", value: "Say whether the video is real" },
-    ],
-    prompt: "Give the address of the footage",
-    stages: [
-      "Fetching the footage",
-      "Pulling frames",
-      "Reading the page",
-      "Recovering text",
-      "Extracting claims",
-      "Searching the record",
-      "Checking what it says",
-      "Drawing determination",
-    ],
-  },
+
   "fact-check": {
     id: "fact-check",
     number: "05",
@@ -195,7 +143,7 @@ export const DESKS: Record<string, DeskDefinition> = {
   },
 };
 
-export const DESK_ORDER = ["text", "image", "audio", "video", "fact-check", "decision"];
+export const DESK_ORDER = ["text", "image", "fact-check", "decision"];
 
 export function neighboursOf(id: string): {
   previous: DeskDefinition | null;
