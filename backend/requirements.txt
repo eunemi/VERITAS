@@ -23,7 +23,7 @@ pydantic-settings>=2.7
 
 # --------------------------------------------------------------- auth ------
 # Both are imported inside function bodies in `app/security`, the same discipline
-# as the NLP, vision and audio blocks below — but for a different reason, and the
+# as the NLP and vision blocks below — but for a different reason, and the
 # difference matters. Those degrade: a missing library disables one desk. These do
 # not. There is no weaker hash and no unsigned token to fall back to, so a missing
 # install is a ConfigurationError on the first authenticated request rather than a
@@ -150,41 +150,6 @@ opencv-python-headless>=4.10
 # IMAGE_DETECTION_ENABLED=false.
 ultralytics>=8.3
 
-# -------------------------------------------------------------- audio ------
-# Audio and video verification — see app/audio. Same discipline as the vision
-# block: librosa, soundfile, numpy and whisper are all imported inside function
-# bodies, so the application starts and every other desk works with none of them
-# installed, and a missing one is a ConfigurationError naming its install command.
-#
-# Two artifacts are NOT installed by this file:
-#
-#   1. The ffmpeg binary. libsndfile reads wav, flac, ogg and mp3, but it does not
-#      demux a container — so every video submission, and any audio codec it does
-#      not carry, reaches ffmpeg over a pipe. There is no Python fallback: without
-#      it, an mp4 is a ConfigurationError naming this step.
-#
-#          brew install ffmpeg          # macOS
-#          apt-get install ffmpeg       # Debian/Ubuntu
-#
-#   2. The Whisper checkpoint. `whisper.load_model("base")` is resolved by
-#      DOWNLOADING IT FROM THE INTERNET on first use (~140 MB for base) and caching
-#      it under ~/.cache/whisper, which a sealed or air-gapped deployment will not
-#      tolerate. Warm that cache in the image and set WHISPER_DOWNLOAD_ROOT to it.
-
-# Resampling, silence detection, RMS envelope. app/audio/analyse.py uses
-# effects.split and feature.rms; app/audio/decode.py uses load() as the
-# no-external-binary path. 0.10 is the floor because load() accepts a file object
-# there, which is what lets a fetched clip be decoded without touching the disk.
-librosa>=0.10
-# libsndfile bindings. A dependency of librosa already; declared because it is
-# specifically the backend that decides whether the native decode path works, and
-# its absence changes behaviour rather than breaking an import.
-soundfile>=0.12
-# Whisper, and with it torch — several hundred megabytes, shared with ultralytics
-# above. `openai-whisper` is the reference implementation; TRANSCRIBER exists so a
-# deployment can swap in faster-whisper or a hosted endpoint without touching the
-# desk. Omit this line for a deployment that never receives audio or video.
-openai-whisper>=20231117
 
 # -------------------------------------------------------- file upload ------
 python-multipart>=0.0.9
