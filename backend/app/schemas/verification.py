@@ -29,7 +29,6 @@ from app.domain import (
     Annotation,
     Artifact,
     ArtifactKind,
-    AudioDetail,
     Desk,
     DeskProgress,
     DeskReport,
@@ -43,7 +42,6 @@ from app.domain import (
     Reliability,
     Signal,
     Status,
-    TranscriptCue,
     Verdict,
     Verification,
     desks_for,
@@ -166,7 +164,7 @@ class MediaArtifactIn(_ArtifactIn):
     ``MAX_UPLOAD_BYTES`` enforced against a stream, and is listed as not built.
     """
 
-    kind: Literal["image", "audio", "video"]
+    kind: Literal["image"]
     url: UrlString = Field(description="Where the artifact can be fetched.")
     filename: str | None = Field(
         default=None,
@@ -399,58 +397,6 @@ class ImageDetailOut(BaseModel):
         )
 
 
-class TranscriptCueOut(BaseModel):
-    """One timed line of transcript.
-
-    ``timecode`` is the formatted form the record prints; ``start`` and ``end``
-    stay as seconds beside it, because a client that only receives ``"0:12"``
-    cannot seek, sort or line a cue up against the waveform.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    ref: int
-    start: float
-    end: float
-    timecode: str
-    text: str
-
-    @classmethod
-    def from_domain(cls, cue: TranscriptCue) -> Self:
-        return cls(
-            ref=cue.ref,
-            start=cue.start,
-            end=cue.end,
-            timecode=format_timecode(cue.start),
-            text=cue.text,
-        )
-
-
-class AudioDetailOut(BaseModel):
-    """The audio desk's exhibit: the waveform, and what was heard in it."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    duration: float
-    runtime: str
-    language: str
-    text: str
-    envelope: list[float] = Field(default_factory=list)
-    spans: list[list[float]] = Field(default_factory=list)
-    cues: list[TranscriptCueOut] = Field(default_factory=list)
-
-    @classmethod
-    def from_domain(cls, detail: AudioDetail) -> Self:
-        return cls(
-            duration=detail.duration,
-            runtime=format_timecode(detail.duration),
-            language=detail.language,
-            text=detail.text,
-            envelope=list(detail.envelope),
-            spans=[[start, end] for start, end in detail.spans],
-            cues=[TranscriptCueOut.from_domain(c) for c in detail.cues],
-        )
-
 
 class DeskReportOut(BaseModel):
     """What one desk filed.
@@ -458,7 +404,7 @@ class DeskReportOut(BaseModel):
     These are the parts every desk has in common. Each desk also produces one
     exhibit peculiar to itself — the plate's regions, the slate's transcript, the
     strip's frames — which arrives in ``detail``, discriminated on ``desk``, as
-    each desk is built. The image and audio desks fill it today; a client should
+    each desk is built. The image desk fills it today; a client should
     tolerate unfamiliar shapes there rather than assume the union is closed.
     """
 
@@ -470,7 +416,7 @@ class DeskReportOut(BaseModel):
     annotations: list[AnnotationOut] = Field(default_factory=list)
     signals: list[SignalOut] = Field(default_factory=list)
     exhibits: list[ExhibitOut] = Field(default_factory=list)
-    detail: ImageDetailOut | AudioDetailOut | None = None
+    detail: ImageDetailOut | None = None
 
     @classmethod
     def from_domain(cls, report: DeskReport) -> Self:
@@ -486,8 +432,8 @@ class DeskReportOut(BaseModel):
 
 
 def _detail(
-    detail: ImageDetail | AudioDetail | None,
-) -> ImageDetailOut | AudioDetailOut | None:
+    detail: ImageDetail | None,
+) -> ImageDetailOut | None:
     """Dispatched on the domain type, not on ``report.desk``.
 
     Pydantic resolves a union by trying its members in order, and both shapes
@@ -497,8 +443,6 @@ def _detail(
     """
     if isinstance(detail, ImageDetail):
         return ImageDetailOut.from_domain(detail)
-    if isinstance(detail, AudioDetail):
-        return AudioDetailOut.from_domain(detail)
     return None
 
 
