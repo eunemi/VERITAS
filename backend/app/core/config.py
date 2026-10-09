@@ -97,16 +97,6 @@ class VisionProvider(StrEnum):
     YOLO = "yolo"
 
 
-class SpeechProvider(StrEnum):
-    """Which transcriber the ``audio`` package should resolve.
-
-    One member, for the same reason :class:`FactCheckProvider` has one: the seam is
-    the setting. ``faster-whisper`` is the obvious second — same weights, a
-    different runtime — and a hosted endpoint the third, so which one runs stays a
-    string in a settings file rather than an import in the audio desk.
-    """
-
-    WHISPER = "whisper"
 
 
 class StoreBackend(StrEnum):
@@ -603,78 +593,6 @@ class Settings(BaseSettings):
     #: Confidence below which a detection is discarded.
     YOLO_MIN_CONFIDENCE: float = Field(default=0.40, ge=0.0, le=1.0)
 
-    # -------------------------------------------------------------- audio ----
-
-    TRANSCRIBER: SpeechProvider = SpeechProvider.WHISPER
-
-    #: Which Whisper checkpoint to load, or an absolute path to a ``.pt`` file. A
-    #: bare name is resolved by whisper, which *downloads it from the internet on
-    #: first use* and caches it under :attr:`WHISPER_DOWNLOAD_ROOT` — the same trap
-    #: as :attr:`YOLO_WEIGHTS`, so a sealed deployment ships the file and names it
-    #: here. ``base`` is roughly 140 MB and transcribes clean speech well; ``small``
-    #: and ``medium`` are markedly better on accents and cross-talk and cost
-    #: proportionally more CPU.
-    WHISPER_MODEL: str = "base"
-
-    #: Where whisper caches downloaded checkpoints. ``None`` leaves its default
-    #: (``~/.cache/whisper``), which is per-user and therefore lost on a container
-    #: restart — set it to a mounted path to download once rather than per deploy.
-    WHISPER_DOWNLOAD_ROOT: str | None = None
-
-    #: ``cpu`` or ``cuda``. Not auto-detected: a process that silently falls back to
-    #: CPU turns a 30-second transcription into a ten-minute one, and the deployment
-    #: should say which it expects.
-    WHISPER_DEVICE: str = "cpu"
-
-    #: ISO code of the spoken language, or ``None`` to let whisper detect it from
-    #: the first 30 seconds. Naming it is both faster and more accurate; detection
-    #: is what a mixed-language intake needs.
-    WHISPER_LANGUAGE: str | None = None
-
-    #: Whisper's own probability that a segment contains no speech, above which the
-    #: segment is discarded. Its decoder emits a most-likely continuation even for
-    #: audio with nothing in it, and this is the model's own signal that it did.
-    WHISPER_NO_SPEECH_CEILING: float = Field(default=0.60, ge=0.0, le=1.0)
-
-    #: Seconds of audio read from one submission. The decoder truncates rather than
-    #: refusing, and the report says it did: half an hour of a two-hour recording
-    #: still yields checkable claims, whereas rejecting the file yields none. This
-    #: also bounds memory — decoded audio is 64 KB per second, so the default is
-    #: about 115 MB of samples.
-    AUDIO_MAX_SECONDS: float = Field(default=1800.0, gt=0)
-
-    #: How long to let ffmpeg run before killing it. A malformed container can make
-    #: a decoder spin, and without this the worker thread never comes back.
-    AUDIO_DECODE_TIMEOUT_SECONDS: float = Field(default=120.0, gt=0)
-
-    #: Decibels below the clip's peak at which audio counts as silence, for
-    #: ``librosa.effects.split``. 35 keeps room tone out of the speech spans without
-    #: clipping the quiet end of a sentence; lower values split mid-word.
-    AUDIO_SILENCE_FLOOR_DB: float = Field(default=35.0, gt=0)
-
-    #: Seconds of detected speech below which the desk reports that it heard nothing
-    #: rather than loading a model. Checked before transcription, so a music bed or
-    #: a silent track costs a signal measurement instead of an inference.
-    AUDIO_MIN_SPEECH_SECONDS: float = Field(default=1.0, ge=0.0)
-
-    #: Fraction of a transcribed segment that must fall inside a detected speech
-    #: span for the words to be kept. This is the anti-hallucination gate; see
-    #: :func:`app.audio.analyse.voiced` for why it is not optional.
-    AUDIO_MIN_VOICED_RATIO: float = Field(default=0.35, ge=0.0, le=1.0)
-
-    #: Per-segment confidence below which words are dropped rather than reported,
-    #: for the reason :attr:`TESSERACT_MIN_CONFIDENCE` exists: a plausible mishearing
-    #: inside a sentence becomes a claim about something nobody said.
-    AUDIO_MIN_CONFIDENCE: float = Field(default=0.30, ge=0.0, le=1.0)
-
-    #: Characters of transcript below which the desk reports that it recovered no
-    #: checkable speech rather than sending fragments into the pipeline.
-    AUDIO_MIN_TEXT_CHARS: int = Field(default=24, ge=1)
-
-    #: How many buckets the published waveform is reduced to. The reader draws it at
-    #: a few hundred pixels wide, so anything finer is bytes it throws away. 0 omits
-    #: the envelope entirely.
-    AUDIO_ENVELOPE_BUCKETS: int = Field(default=160, ge=0)
 
     # ------------------------------------------------------------ uploads ----
 
