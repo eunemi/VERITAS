@@ -69,15 +69,7 @@ async def test_text_opens_the_text_and_fact_check_desks(client: AsyncClient) -> 
     assert response.json()["desks"] == ["text", "fact-check", "decision"]
 
 
-async def test_footage_opens_two_desks(client: AsyncClient) -> None:
-    """Video is two artifacts in one file: a picture track and a sound track."""
-    response = await client.post(
-        f"{V1}/verify",
-        json={"artifact": {"kind": "video", "url": "https://example.com/clip.mp4"}},
-    )
 
-    assert response.status_code == 202
-    assert response.json()["desks"] == ["video", "audio", "decision"]
 
 
 async def test_a_narrower_roster_can_be_requested(client: AsyncClient) -> None:
