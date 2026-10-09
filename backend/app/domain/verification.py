@@ -61,11 +61,8 @@ class Artifact:
 
     @property
     def is_media(self) -> bool:
-        """True for image, audio and video — the kinds that need fetching."""
         return self.kind in {
             ArtifactKind.IMAGE,
-            ArtifactKind.AUDIO,
-            ArtifactKind.VIDEO,
         }
 
 
@@ -158,38 +155,6 @@ class ImageDetail:
     regions: tuple[PlateRegion, ...] = ()
 
 
-@dataclass(frozen=True, slots=True)
-class TranscriptCue:
-    """One line of transcript, timed in seconds from the start of the clip.
-
-    No speaker field. There is no diarization in this pipeline, and a label reading
-    "Speaker 1" invites a reader to attribute a sentence to a person nobody
-    identified. What was said and when is what was actually established.
-    """
-
-    ref: int
-    start: float
-    end: float
-    text: str
-
-
-@dataclass(frozen=True, slots=True)
-class AudioDetail:
-    """The audio desk's own exhibit: the waveform, and what was heard in it.
-
-    ``envelope`` is one peak per bucket, each 0–1, for drawing a waveform; it says
-    nothing about content. ``spans`` are the stretches the signal analysis found
-    loud enough to be speech, as fractions of ``duration``, so a reader can see that
-    a quoted line sits over sound rather than over silence.
-    """
-
-    duration: float
-    language: str
-    text: str
-    envelope: tuple[float, ...] = ()
-    spans: tuple[tuple[float, float], ...] = ()
-    cues: tuple[TranscriptCue, ...] = ()
-
 
 @dataclass(frozen=True, slots=True)
 class Verdict:
@@ -230,8 +195,7 @@ class DeskReport:
     slate's envelope and transcript, the strip's frames and scenes.
 
     Those arrive as the optional ``detail`` field, discriminated on ``desk``, as
-    each desk is built — the image desk fills it with an :class:`ImageDetail`, the
-    audio desk with an :class:`AudioDetail`, and the union widens as later desks
+    each desk is built — the image desk fills it with an :class:`ImageDetail`, and the union widens as later desks
     land. Adding an optional field is not a breaking change, which is what let this
     shape ship before any desk did.
     """
@@ -242,7 +206,7 @@ class DeskReport:
     annotations: tuple[Annotation, ...] = ()
     signals: tuple[Signal, ...] = ()
     exhibits: tuple[Exhibit, ...] = ()
-    detail: ImageDetail | AudioDetail | None = None
+    detail: ImageDetail | None = None
 
 
 @dataclass(frozen=True, slots=True)
