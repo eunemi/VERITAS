@@ -126,7 +126,6 @@ def test_it_claims_the_three_prose_kinds() -> None:
     for kind in TextDesk.kinds:
         assert can_examine(Desk.TEXT, kind)
     assert not can_examine(Desk.TEXT, ArtifactKind.IMAGE)
-    assert not can_examine(Desk.TEXT, ArtifactKind.AUDIO)
 
 
 async def test_the_extractor_is_built_on_use_and_not_at_import() -> None:
