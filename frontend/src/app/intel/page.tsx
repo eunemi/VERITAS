@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CommissionTrigger } from "@/components/CommissionSlip";
 import { Band, SectionHead, Slug, Spread } from "@/components/agents/shared/layout";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DESK_ORDER, DESKS, type DeskDefinition } from "@/lib/desks";
@@ -7,7 +8,7 @@ import { DESK_ORDER, DESKS, type DeskDefinition } from "@/lib/desks";
 export const metadata: Metadata = {
   title: "The intelligence desk",
   description:
-    "The six examination desks, what each one reads, what it returns, and the order they work in.",
+    "The examination desks, what each one reads, what it returns, and the order they work in.",
 };
 
 /**
@@ -19,8 +20,8 @@ export const metadata: Metadata = {
  * copy comes from `@/lib/desks`, so the index cannot drift from the desks.
  */
 
-const REPORTING = DESK_ORDER.slice(0, 5).map((id) => DESKS[id]);
-const CORE = DESKS[DESK_ORDER[5]];
+const CORE = DESKS.decision;
+const REPORTING = DESK_ORDER.filter((id) => id !== CORE.id).map((id) => DESKS[id]);
 
 const MOVEMENTS = [
   {
@@ -91,13 +92,13 @@ export default function IntelPage() {
       <PageHeader
         section="Intelligence desk"
         standing="Register of desks"
-        kicker="Six desks, one record"
+        kicker={`${DESK_ORDER.length} desks, one record`}
         title={["How Veritas", "reads a thing."]}
         lede="Nothing here is a verdict machine. Each desk states what it looked at, what it found, and what it could not tell you."
       />
 
       <Spread className="pb-stack-xl">
-        <SectionHead title="The order of work" note="Five report, one signs" />
+        <SectionHead title="The order of work" note={`${REPORTING.length} report, one signs`} />
         <ol className="mt-stack-md grid gap-stack-md md:grid-cols-3 md:gap-gutter">
           {MOVEMENTS.map((movement, index) => (
             <li key={movement.heading} className="border-t border-ink-black/25 pt-stack-sm">
@@ -123,7 +124,7 @@ export default function IntelPage() {
       </Spread>
 
       <Spread className="pb-stack-xl">
-        <SectionHead title="Adjudication" note="Sits after the five have reported" />
+        <SectionHead title="Adjudication" note="Sits after the reporting desks" />
         <ol className="mt-stack-md">
           <RegisterEntry desk={CORE} />
         </ol>
@@ -132,17 +133,16 @@ export default function IntelPage() {
       <Band className="bg-ink-black text-parchment" inner="py-stack-lg">
         <div className="flex flex-wrap items-end justify-between gap-stack-md">
           <div>
-            <Slug className="text-parchment/70">All six on one artifact</Slug>
+            <Slug className="text-parchment/70">One shared record</Slug>
             <p className="font-headline-md mt-2.5 max-w-[26ch] text-[24px] leading-[1.25] font-normal italic md:text-[26px]">
               Open an investigation and let the desks report together.
             </p>
           </div>
-          <Link
-            href="/investigate"
-            className="border border-parchment px-6 py-3 transition-colors hover:bg-parchment hover:text-ink-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold-foil"
+          <CommissionTrigger
+            className="cursor-pointer border border-parchment px-6 py-3 transition-colors hover:bg-parchment hover:text-ink-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold-foil"
           >
             <Slug>Open the bench</Slug>
-          </Link>
+          </CommissionTrigger>
         </div>
       </Band>
     </main>
