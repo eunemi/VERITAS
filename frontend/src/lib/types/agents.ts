@@ -105,65 +105,10 @@ export interface ImageRecord extends RecordBase {
   regions: PlateRegion[];
   /** What the desk measured on the frame: recovered text, detections. */
   signals: Signal[];
+  extractedText: string;
 }
 
-/* --------------------------------------------------------------- audio ---- */
 
-/**
- * One line of the transcript.
- *
- * There is no speaker field. Nothing in the pipeline separates voices, and a label
- * reading "Speaker 1" would invite a reader to attribute a sentence to a person
- * nobody identified.
- */
-export interface TranscriptSegment {
-  ref: number | null;
-  timecode: string;
-  line: string;
-  flagged: boolean;
-}
-
-export interface AudioRecord extends RecordBase {
-  kind: "audio";
-  fileName: string;
-  duration: string;
-  /** Loudness per sample of the waveform, 0–1. */
-  envelope: number[];
-  /**
-   * Stretches where the recording carries speech, as fractions of the duration.
-   * These mark where the desk could hear something, not where it found a problem.
-   */
-  voicedSpans: { start: number; end: number }[];
-  /** The language the speech was recognised as. */
-  language: string;
-  transcript: TranscriptSegment[];
-  /** What the desk measured on the recording: speech recovered, density, discards. */
-  signals: Signal[];
-}
-
-/* --------------------------------------------------------------- video ---- */
-
-export interface VideoFrame {
-  index: number;
-  timecode: string;
-  /** Set when this cell carries an annotation. */
-  ref: number | null;
-}
-
-export interface VideoScene {
-  label: string;
-  /** Fraction of the running time this scene occupies. */
-  span: number;
-  determination: Determination;
-}
-
-export interface VideoRecord extends RecordBase {
-  kind: "video";
-  fileName: string;
-  runtime: string;
-  frames: VideoFrame[];
-  scenes: VideoScene[];
-}
 
 /* ---------------------------------------------------------- fact-check ---- */
 
@@ -218,8 +163,7 @@ export interface DecisionRecord extends RecordBase {
 export type AgentRecord =
   | TextRecord
   | ImageRecord
-  | AudioRecord
-  | VideoRecord
+
   | FactCheckRecord
   | DecisionRecord;
 
