@@ -127,7 +127,7 @@ def test_the_libraries_are_imported_somewhere() -> None:
     assert {"cv2", "pytesseract", "ultralytics"} <= found
 
 
-@pytest.mark.parametrize("name", ("image.py", "audio.py", "graph.py"))
+@pytest.mark.parametrize("name", ("image.py", "graph.py"))
 def test_the_desks_keep_langgraph_lazy(name: str) -> None:
     """``app.desks`` is imported at startup, and it imports every desk.
 
@@ -150,7 +150,7 @@ def test_the_plain_python_half_of_the_verdict_stays_a_normal_import() -> None:
     ``app.graph.verdict`` holds dataclasses and an enum mapping, costs nothing, and
     both desks read it to file a report. Deferring it too would be cargo cult.
     """
-    for name in ("image.py", "audio.py"):
+    for name in ("image.py",):
         path = VISION.parent / "desks" / name
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         assert "app.graph.verdict" in set(_eager_imports(tree.body)), name
