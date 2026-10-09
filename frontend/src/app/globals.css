@@ -310,6 +310,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   .animate-float-1,
   .animate-float-2,
   .animate-float-3,
