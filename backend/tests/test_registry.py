@@ -17,14 +17,11 @@ from __future__ import annotations
 from collections.abc import Iterator, Sequence
 
 import pytest
-
-from app.audio import transcribers
 from app.core.config import (
     FactCheckProvider,
     LLMProvider,
     SearchProvider,
     Settings,
-    SpeechProvider,
     VectorStoreProvider,
     VisionProvider,
 )
@@ -248,7 +245,6 @@ def test_the_seams_account_for_every_configurable_provider() -> None:
     }
     assert set(FactCheckProvider) == {FactCheckProvider.GOOGLE}
     assert set(VisionProvider) == {VisionProvider.TESSERACT, VisionProvider.YOLO}
-    assert set(SpeechProvider) == {SpeechProvider.WHISPER}
 
     assert set(llm_clients.registered()) == {LLMProvider.OPENAI, LLMProvider.OLLAMA}
     assert set(embedders.registered()) == {LLMProvider.HASHING}
@@ -263,7 +259,6 @@ def test_the_seams_account_for_every_configurable_provider() -> None:
     # first should not be selecting a detector to get it.
     assert set(readers.registered()) == {VisionProvider.TESSERACT}
     assert set(detectors.registered()) == {VisionProvider.YOLO}
-    assert set(transcribers.registered()) == {SpeechProvider.WHISPER}
 
 
 class FakeLLM:
