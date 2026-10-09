@@ -5,11 +5,16 @@
   background-color: var(--color-ink-black);
   background-image: radial-gradient(rgb(244 239 230 / 4%) 0.5px, transparent 0.5px);
   background-size: 5px 5px;
+  font-family: var(--font-inter), Arial, sans-serif;
+}
+
+.editorial {
+  font-family: var(--font-playfair), Georgia, serif;
 }
 
 .eyebrow {
   font-family: var(--font-jetbrains), monospace;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
   line-height: 1.6;
   letter-spacing: 0.1em;
@@ -26,7 +31,7 @@
   max-width: 100%;
   padding-block: 7px;
   color: rgb(244 239 230 / 72%);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
   transition: color 180ms ease;
 }
@@ -91,7 +96,7 @@
   padding-block: 18px 30px;
   color: var(--color-parchment);
   font-family: var(--font-playfair), Georgia, serif;
-  font-size: clamp(3.5rem, 18.5vw, 16.65rem);
+  font-size: clamp(3.5rem, 17vw, 15.3rem);
   font-weight: 500;
   line-height: 1;
   transition: color 250ms ease;
