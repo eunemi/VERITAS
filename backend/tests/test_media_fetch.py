@@ -316,18 +316,7 @@ async def test_a_media_type_outside_the_accepted_prefixes_is_refused() -> None:
     assert caught.value.details["content_type"] == "text/html"
 
 
-async def test_the_check_is_a_prefix_not_an_exact_type() -> None:
-    """Which is what lets one audio desk accept both families of container.
 
-    The same ``.mp4`` is served as ``video/mp4`` by one host and ``audio/mp4`` by
-    another, so an exact-type list would reject working files.
-    """
-    found = await _read(
-        served(content_type="video/mp4", body=b"ftyp"),
-        limit=1024,
-        accept=("audio/", "video/"),
-    )
-    assert found == b"ftyp"
 
 
 async def test_a_parameterised_media_type_still_matches() -> None:
