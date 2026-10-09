@@ -39,8 +39,6 @@ class Desk(StrEnum):
 
     TEXT = "text"
     IMAGE = "image"
-    AUDIO = "audio"
-    VIDEO = "video"
     FACT_CHECK = "fact-check"
     DECISION = "decision"
 
@@ -63,8 +61,6 @@ class ArtifactKind(StrEnum):
     CLAIM = "claim"
     URL = "url"
     IMAGE = "image"
-    AUDIO = "audio"
-    VIDEO = "video"
 
 
 class Determination(StrEnum):
@@ -131,28 +127,19 @@ class Reliability(StrEnum):
 #: Which desks examine which kind of artifact, and the roster used when a caller
 #: names none. Taken from ``KINDS`` in ``src/app/investigate/CommissionBench.tsx``
 #: rather than invented, so the roster the existing investigate page would send is
-#: accepted rather than rejected. Two rows are load-bearing and easy to get wrong:
+#: accepted rather than rejected. One row is load-bearing and easy to get wrong:
 #: copy opens two desks (one reads how it is written, the other checks what it
-#: asserts), and footage opens two because — in the page's own words — "footage is
-#: two artifacts in one file". :data:`ADJUDICATOR` appears in no row; see
+#: asserts). :data:`ADJUDICATOR` appears in no row; see
 #: :class:`Desk`.
 #:
 #: Each roster is in :class:`Desk` declaration order, which is what a *requested*
-#: roster is normalised to. Footage is the row where that matters rather than being
-#: cosmetic: the orchestrator runs the desks in the order it is handed and stops at
-#: the first that raises, ``Desk.VIDEO`` is not built yet, and the frontend's own
-#: ``["video", "audio"]`` normalises to audio first. A default that ran video first
-#: would fail a submitted video at 501 with no report on it, while the identical
-#: request naming its desks explicitly came back with the track transcribed and
-#: ruled on.
+#: roster is normalised to.
 DEFAULT_DESKS: Mapping[ArtifactKind, tuple[Desk, ...]] = {
     ArtifactKind.TEXT: (Desk.TEXT, Desk.FACT_CHECK),
     ArtifactKind.CLAIM: (Desk.TEXT, Desk.FACT_CHECK),
     # A link is fetched and read as copy, so it goes to the same desks as text.
     ArtifactKind.URL: (Desk.TEXT, Desk.FACT_CHECK),
     ArtifactKind.IMAGE: (Desk.IMAGE,),
-    ArtifactKind.AUDIO: (Desk.AUDIO,),
-    ArtifactKind.VIDEO: (Desk.AUDIO, Desk.VIDEO),
 }
 
 #: Declaration order, for normalising a requested roster.
