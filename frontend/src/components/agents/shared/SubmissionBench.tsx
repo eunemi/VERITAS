@@ -265,80 +265,9 @@ export function LinkField({
   return (
     <div>
       <div 
-        className="ticked relative overflow-hidden bg-parchment text-ink-black/25"
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={handleDrop}
+        className="ticked relative overflow-hidden bg-parchment text-ink-black/25 flex items-center justify-center h-48 border border-ink-black/20"
       >
-        {scanning || isUploading ? (
-          <span
-            aria-hidden
-            className="animate-proof-scan pointer-events-none absolute inset-x-0 z-10 h-px bg-secondary"
-          />
-        ) : null}
-        
-        {isUploading && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-parchment/80 backdrop-blur-sm">
-            <Slug className="animate-pulse text-ink-black">Uploading media...</Slug>
-          </div>
-        )}
-
-        <label className="block px-6 pt-6 pb-4">
-          <Slug className="text-ink-black/45">Address of the {kind}</Slug>
-          <input
-            type="url"
-            inputMode="url"
-            value={value}
-            onChange={(event) => onChange(event.target.value)}
-            placeholder="https://"
-            spellCheck={false}
-            disabled={scanning || isUploading}
-            className="font-proof text-proof mt-2.5 w-full border-b border-ink-black/25 bg-transparent pb-2 text-ink-black placeholder:text-ink-black/30 focus:border-secondary focus:outline-none disabled:opacity-50"
-          />
-        </label>
-
-        {preview ? (
-          <div className="px-6 pb-6">
-            {/* An address the reader supplied, on a host next/image has not been
-                configured for — so it cannot be routed through the optimiser. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={trimmed}
-              alt="The frame on the bench, as fetched from the address given"
-              onError={() => setBroken(trimmed)}
-              className="mx-auto max-h-[340px] w-auto object-contain"
-            />
-          </div>
-        ) : (
-          <p className="font-body-sm text-body-sm px-6 pb-6 text-ink-black/50">
-            {trimmed && !fetchable
-              ? "That is not an http or https address the desk could fetch."
-              : broken === trimmed && trimmed
-                ? "Nothing loaded from that address here. The desk will try it too, and will say so in the record if it cannot read it."
-                : `The desk fetches the ${kind} from this address or you can upload a file.`}
-          </p>
-        )}
-        
-        <div className="absolute bottom-4 right-6 z-10">
-          <input
-            type="file"
-            className="hidden"
-            ref={fileInputRef}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleFileUpload(file);
-            }}
-          />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={scanning || isUploading}
-            className="cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Slug className="text-ink-black/50 transition-colors hover:text-secondary">
-              [ UPLOAD FILE ]
-            </Slug>
-          </button>
-        </div>
+        <span className="font-mono-label text-ink-black/50 uppercase tracking-widest">Coming Soon</span>
       </div>
 
       <div className="mt-2.5 flex flex-wrap items-baseline justify-between gap-3">

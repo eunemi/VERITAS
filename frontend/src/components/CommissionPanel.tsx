@@ -98,48 +98,54 @@ export function CommissionPanel({ close }: Dismiss) {
 
             
 
-            <div 
-              className="relative"
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-            >
-              <textarea
-                className="w-full h-48 p-4 border-2 border-ink-black bg-transparent font-serif-body focus:outline-none disabled:opacity-50"
-                placeholder={inputType === "text" ? "Paste the news article or text here..." : `Paste the ${inputType} URL here...`}
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                disabled={isExtracting}
-                data-first
-              />
-              
-              {isExtracting && (
-                <div className="absolute inset-0 flex items-center justify-center bg-parchment/80 backdrop-blur-sm z-10 border-2 border-ink-black">
-                  <span className="font-mono-label text-ink-black uppercase tracking-widest text-sm animate-pulse">Extracting text...</span>
-                </div>
-              )}
+            {inputType === "text" ? (
+              <div 
+                className="relative"
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+              >
+                <textarea
+                  className="w-full h-48 p-4 border-2 border-ink-black bg-transparent font-serif-body focus:outline-none disabled:opacity-50"
+                  placeholder="Paste the news article or text here..."
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  disabled={isExtracting}
+                  data-first
+                />
+                
+                {isExtracting && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-parchment/80 backdrop-blur-sm z-10 border-2 border-ink-black">
+                    <span className="font-mono-label text-ink-black uppercase tracking-widest text-sm animate-pulse">Extracting text...</span>
+                  </div>
+                )}
 
                 <>
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  className="hidden" 
-                  accept={inputType === "text" ? ".pdf,.docx,.md" : inputType === "image" ? "image/*" : inputType === "audio" ? "audio/*" : "video/*"}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleFileUpload(file);
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isExtracting}
-                  className="absolute bottom-4 right-4 z-20 font-mono-label text-xs uppercase tracking-wider text-ink-black/50 hover:text-ink-black transition-colors disabled:opacity-50"
-                  title={`Upload ${inputType} file`}
-                >
-                  [ UPLOAD FILE ]
-                </button>
-              </>
-            </div>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    accept=".pdf,.docx,.md"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFileUpload(file);
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isExtracting}
+                    className="absolute bottom-4 right-4 z-20 font-mono-label text-xs uppercase tracking-wider text-ink-black/50 hover:text-ink-black transition-colors disabled:opacity-50"
+                    title="Upload text file"
+                  >
+                    [ UPLOAD FILE ]
+                  </button>
+                </>
+              </div>
+            ) : (
+              <div className="w-full h-48 flex items-center justify-center border-2 border-ink-black/20 bg-ink-black/5">
+                <span className="font-mono-label text-ink-black/50 uppercase tracking-widest">Coming Soon</span>
+              </div>
+            )}
 
             {extractError && (
               <div className="font-body-sm text-sm text-red-600 mt-[-1rem]">
@@ -149,7 +155,7 @@ export function CommissionPanel({ close }: Dismiss) {
             
             <button
               onClick={handleSubmit}
-              disabled={isExtracting}
+              disabled={isExtracting || inputType !== "text"}
               className="bg-ink-black text-parchment py-3 px-6 font-mono-label hover:bg-ink-black/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               ANALYZE NOW
