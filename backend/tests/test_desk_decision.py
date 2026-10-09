@@ -90,7 +90,7 @@ def test_every_determination_can_be_stated_to_a_reader() -> None:
     assert set(HEADLINES) == set(Determination)
 
 
-@pytest.mark.parametrize("adverse", list(GRAVITY[:4]))
+@pytest.mark.parametrize("adverse", [d for d in GRAVITY[:4]])
 async def test_one_adverse_finding_is_never_averaged_away(
     adverse: Determination,
 ) -> None:
@@ -114,7 +114,7 @@ async def test_insufficient_outranks_every_affirmative() -> None:
         signed = await DecisionDesk().adjudicate(
             [
                 filed(Desk.TEXT, affirmative, confidence=0.9),
-                filed(Desk.AUDIO, Determination.INSUFFICIENT, confidence=0.0),
+                filed(Desk.IMAGE, Determination.INSUFFICIENT, confidence=0.0),
             ]
         )
         assert signed.verdict.determination is Determination.INSUFFICIENT
@@ -157,7 +157,7 @@ async def test_confidence_is_the_mean_of_the_deciding_desks_only() -> None:
             filed(Desk.TEXT, Determination.SUPPORTED, confidence=0.4),
             filed(Desk.FACT_CHECK, Determination.SUPPORTED, confidence=0.8),
             # Not deciding, and very sure of itself. It must not reach the number.
-            filed(Desk.AUDIO, Determination.CLEAR, confidence=1.0),
+            filed(Desk.IMAGE, Determination.CLEAR, confidence=1.0),
         ]
     )
     assert signed.verdict.confidence == pytest.approx(0.6)
