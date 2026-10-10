@@ -149,6 +149,7 @@ function textRecordOf(report: DeskReportOut, artifact: ArtifactOut): TextRecord 
     ledger: report.ledger,
     annotations: report.annotations,
     signals: report.signals,
+    exhibits: report.exhibits,
     verdict: verdictOf(report.verdict),
   };
 }
@@ -180,6 +181,13 @@ function imageRecordOf(report: DeskReportOut, artifact: ArtifactOut): ImageRecor
     signals: report.signals,
     verdict: verdictOf(report.verdict),
     extractedText: detail?.text ?? "",
+    exhibits: report.exhibits,
+    description: detail?.description ?? "",
+    observations: detail?.observations ?? [],
+    provenance: detail?.provenance ?? "Image authenticity has not been established.",
+    webStatus: detail?.web_status ?? "not_searched",
+    limitations: detail?.limitations ?? [],
+    metadata: detail?.metadata ?? [],
   };
 }
 
@@ -310,10 +318,11 @@ export async function examineText(
 ): Promise<TextRecord> {
   const examination = await commission(
     { kind: "text", content: copy },
-    ["text"],
+    ["fact-check"],
     options,
   );
-  return filed<TextRecord>(examination, "text", "text");
+  const checked = filed<FactCheckRecord>(examination, "fact-check", "fact-check");
+  return { ...checked, kind: "text", copy };
 }
 
 export async function examineClaim(
@@ -332,9 +341,10 @@ export async function examineImage(
   url: string,
   filename: string | null = null,
   options: ExamineOptions = {},
+  caption = "",
 ): Promise<ImageRecord> {
   const examination = await commission(
-    { kind: "image", url, filename },
+    { kind: "image", url, filename, content: caption || null },
     ["image"],
     options,
   );
@@ -487,4 +497,3 @@ export async function retrieve(
   const { record } = await readVerification(id, { signal: options.signal });
   return examinationOf(record);
 }
-
