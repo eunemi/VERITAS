@@ -9,13 +9,12 @@ import { FindingLedger } from "@/components/agents/shared/FindingLedger";
 import { LedgerBand } from "@/components/agents/shared/LedgerBand";
 import { isFetchableUrl, SubmissionBench } from "@/components/agents/shared/SubmissionBench";
 import { useExamination } from "@/components/agents/shared/useExamination";
-import { MarkedSpread, Slug, Spread } from "@/components/agents/shared/layout";
+import { MarkedSpread, Spread } from "@/components/agents/shared/layout";
 import { DESKS } from "@/lib/desks";
 import { DESK_PACE_MS, examineUrl } from "@/lib/services/agentServices";
 import type { FactCheckRecord } from "@/lib/types/agents";
 
 const desk = DESKS.url;
-const SAMPLE = "https://www.example.com/news/article";
 
 export default function UrlDesk() {
   const [url, setUrl] = useState("");
@@ -54,11 +53,6 @@ export default function UrlDesk() {
               {url.trim() && !ready ? "That does not look like a complete web link." : "We only fetch publicly accessible pages."}
             </p>
           </div>
-          {status === "bench" && !url ? (
-            <button type="button" onClick={() => setUrl(SAMPLE)} className="mt-stack-md cursor-pointer border-b border-ink-black/30 pb-1 transition-colors hover:border-secondary hover:text-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black">
-              <Slug className="text-ink-black/50">Or set a sample page link on the bench</Slug>
-            </button>
-          ) : null}
         </SubmissionBench>
       }
       failure={<DeskFailure error={error} onRetry={reopen} />}
