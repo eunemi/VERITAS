@@ -1,5 +1,12 @@
 import { SectionHead, Slug } from "../shared/layout";
-import { TONE_RULE, TONE_TEXT, toneOf, type VideoRecord } from "@/lib/types/agents";
+import { TONE_RULE, TONE_TEXT, toneOf, type Determination } from "@/lib/types/agents";
+
+interface FilmstripRecord {
+  fileName: string;
+  runtime: string;
+  frames: { index: number; ref: number | null; timecode: string }[];
+  scenes: { label: string; span: number; determination: Determination }[];
+}
 
 /**
  * The strip.
@@ -9,7 +16,7 @@ import { TONE_RULE, TONE_TEXT, toneOf, type VideoRecord } from "@/lib/types/agen
  * their true length, so a finding in a nine-second scene doesn't read as loudly
  * as one in a forty-second scene.
  */
-export function Filmstrip({ record }: { record: VideoRecord }) {
+export function Filmstrip({ record }: { record: FilmstripRecord }) {
   const { frames, scenes, runtime, fileName } = record;
   const flagged = frames.filter((frame) => frame.ref !== null).length;
 
