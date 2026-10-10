@@ -90,6 +90,7 @@ export function CopyField({
   placeholder,
   rows = 9,
   scanning = false,
+  onBusy,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -97,6 +98,7 @@ export function CopyField({
   rows?: number;
   /** Draws the examination pass over the copy while the desk reads it. */
   scanning?: boolean;
+  onBusy?: (busy: boolean) => void;
 }) {
   const words = value.trim() ? value.trim().split(/\s+/).length : 0;
   
@@ -105,8 +107,9 @@ export function CopyField({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (file: File) => {
-    if (!file) return;
+    if (!file || scanning || isExtracting) return;
     setIsExtracting(true);
+    onBusy?.(true);
     setExtractError(null);
     try {
       const text = await extractTextFromFile(file);
@@ -116,6 +119,7 @@ export function CopyField({
       setExtractError(err.message || "Failed to extract text from file.");
     } finally {
       setIsExtracting(false);
+      onBusy?.(false);
       // Reset input value so the same file can be uploaded again if needed
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -160,14 +164,16 @@ export function CopyField({
           rows={rows}
           placeholder={placeholder}
           spellCheck={false}
-          disabled={isExtracting}
+          aria-label="Text to verify"
+          maxLength={100000}
+          disabled={isExtracting || scanning}
           className="font-proof text-proof relative w-full resize-y bg-transparent py-6 pr-6 pl-[72px] text-ink-black placeholder:text-ink-black/30 focus:outline-none disabled:opacity-50"
         />
         <input 
           type="file" 
           ref={fileInputRef} 
           className="hidden" 
-          accept=".pdf,.docx,.md"
+          accept=".pdf,.docx,.md,.txt"
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) handleFileUpload(file);
@@ -176,9 +182,9 @@ export function CopyField({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          disabled={isExtracting}
+          disabled={isExtracting || scanning}
           className="absolute bottom-4 right-4 z-10 font-mono-label text-xs uppercase tracking-wider text-ink-black/50 hover:text-ink-black transition-colors disabled:opacity-50"
-          title="Upload .pdf, .docx, or .md"
+          title="Upload .pdf, .docx, .md, or .txt"
         >
           [ UPLOAD FILE ]
         </button>
@@ -218,6 +224,7 @@ export function LinkField({
   kind,
   formats,
   scanning = false,
+  onBusy,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -226,6 +233,7 @@ export function LinkField({
   formats: string;
   /** Draws the examination pass over the artifact while the desk reads it. */
   scanning?: boolean;
+  onBusy?: (busy: boolean) => void;
 }) {
   // Holds the address that failed to load rather than a flag, so a new address
   // clears the failure without an effect to reset it.
@@ -239,8 +247,17 @@ export function LinkField({
   const preview = kind === "image" && fetchable && broken !== trimmed;
 
   const handleFileUpload = async (file: File) => {
-    if (!file) return;
+    if (!file || scanning || isUploading) return;
+    if (!/\.(jpe?g|png|webp|gif|avif)$/i.test(file.name)) {
+      setUploadError("Choose a JPG, PNG, WEBP, GIF or AVIF image.");
+      return;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      setUploadError("The image must be smaller than 50 MB.");
+      return;
+    }
     setIsUploading(true);
+    onBusy?.(true);
     setUploadError(null);
     try {
       const url = await uploadMediaFile(file);
@@ -250,6 +267,7 @@ export function LinkField({
       setUploadError(err.message || "Failed to upload media file.");
     } finally {
       setIsUploading(false);
+      onBusy?.(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -265,9 +283,23 @@ export function LinkField({
   return (
     <div>
       <div 
-        className="ticked relative overflow-hidden bg-parchment text-ink-black/25 flex items-center justify-center h-48 border border-ink-black/20"
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={handleDrop}
+        className="ticked relative overflow-hidden bg-parchment flex min-h-48 flex-col items-center justify-center gap-5 border border-ink-black/20 p-6"
       >
-        <span className="font-mono-label text-ink-black/50 uppercase tracking-widest">Coming Soon</span>
+        {preview ? (
+          // eslint-disable-next-line @next/next/no-img-element -- User-supplied image preview.
+          <img src={trimmed} alt="Image selected for verification" onError={() => setBroken(trimmed)} className="max-h-80 max-w-full object-contain" />
+        ) : <p className="text-center text-ink-black/60">Drop an image here or choose a file from your device.</p>}
+        <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" className="hidden" disabled={scanning || isUploading} onChange={(event) => { const file = event.target.files?.[0]; if (file) void handleFileUpload(file); }} />
+        <button type="button" disabled={scanning || isUploading} onClick={() => fileInputRef.current?.click()} className="border border-ink-black px-5 py-3 text-ink-black disabled:opacity-50 hover:bg-ink-black/5">
+          {isUploading ? "Uploading image…" : "Choose image"}
+        </button>
+        <label className="w-full text-sm text-ink-black/60">
+          Or paste a direct image URL
+          <input type="url" value={value} onChange={(event) => { onChange(event.target.value); setUploadError(null); }} disabled={scanning || isUploading} placeholder="https://example.com/photo.jpg" className="mt-2 w-full border-b border-ink-black/30 bg-transparent py-3 text-ink-black focus:outline-2 focus:outline-ink-black" />
+        </label>
+        {broken === trimmed ? <p className="text-sm text-secondary">The preview could not load. Check that this URL points directly to a public image.</p> : null}
       </div>
 
       <div className="mt-2.5 flex flex-wrap items-baseline justify-between gap-3">
@@ -277,7 +309,7 @@ export function LinkField({
             <span className="font-body-sm text-xs text-red-600">{uploadError}</span>
           )}
         </div>
-        {trimmed ? (
+        {trimmed && !scanning && !isUploading ? (
           <button
             type="button"
             onClick={() => onChange("")}
