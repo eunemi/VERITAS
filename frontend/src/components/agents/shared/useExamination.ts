@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { ExamineOptions } from "@/lib/services/agentServices";
+import type { VerificationOut } from "@/lib/api/client";
 import type { DeskStatus } from "./SlugBar";
 
 /**
@@ -16,25 +18,38 @@ export function useExamination<T>() {
   const [status, setStatus] = useState<DeskStatus>("bench");
   const [record, setRecord] = useState<T | null>(null);
   const [error, setError] = useState<unknown>(null);
+  const [progress, setProgress] = useState<VerificationOut | null>(null);
+  const controller = useRef<AbortController | null>(null);
 
-  const open = useCallback(async (examine: () => Promise<T>) => {
+  useEffect(() => () => controller.current?.abort(), []);
+
+  const open = useCallback(async (examine: (options: ExamineOptions) => Promise<T>) => {
+    controller.current?.abort();
+    const active = new AbortController();
+    controller.current = active;
     setStatus("working");
     setRecord(null);
     setError(null);
+    setProgress(null);
     try {
-      setRecord(await examine());
+      const result = await examine({ signal: active.signal, onReading: (reading) => { if (!active.signal.aborted) setProgress(reading); } });
+      if (active.signal.aborted) return;
+      setRecord(result);
       setStatus("record");
     } catch (cause) {
+      if (active.signal.aborted) return;
       setError(cause);
       setStatus("failed");
     }
   }, []);
 
   const reopen = useCallback(() => {
+    controller.current?.abort();
     setRecord(null);
     setError(null);
     setStatus("bench");
+    setProgress(null);
   }, []);
 
-  return { status, record, error, open, reopen, working: status === "working" };
+  return { status, record, error, open, reopen, progress, working: status === "working" };
 }
