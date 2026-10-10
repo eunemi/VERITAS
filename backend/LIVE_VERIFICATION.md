@@ -1,7 +1,8 @@
-# Live text and image verification
+# Live text, document, image and URL verification
 
-The homepage cards open `/intel/text` and `/intel/image`. Both submit a verification
-to FastAPI and poll the real job status; they do not render demo verdicts.
+The homepage cards open `/intel/text`, `/intel/image`, `/intel/docx`, `/intel/pdf` and
+`/intel/url`. Each submits a verification to FastAPI and polls the real job status; the
+pages do not render demo verdicts.
 
 ## Configuration
 
@@ -55,6 +56,13 @@ request back through the deployment's public address.
   location or date if known. The report includes visible observations, recovered
   text, file metadata, checks on the text/caption, related web search results and
   Cloud Vision matching pages when configured.
+- **Documents:** DOCX and text-based PDF uploads are extracted through the multipart
+  file endpoint and then sent through the same text claim/evidence pipeline. Scanned
+  PDFs without an embedded text layer need OCR before they can be checked.
+- **URLs:** the backend fetches the public page, strips non-readable markup, extracts
+  its claims and checks them against independent sources. Public redirects are
+  followed for up to three hops, with the same public-host check applied at each hop;
+  redirects to private hosts are refused.
 - **Scope:** related search pages are labelled separately from actual image
   matches. Matching pages can show reuse but do not by themselves establish the
   original capture date, publisher, pixel authenticity or AI generation. The claim
