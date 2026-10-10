@@ -18,6 +18,7 @@ from fastapi import FastAPI
 from httpx import AsyncClient
 
 from app.core.config import Settings, get_settings
+from app.core.errors import ConfigurationError
 from app.domain import ADJUDICATOR, Artifact, ArtifactKind, Desk, Verification
 from tests.stubs import (
     StubAdjudicator,
@@ -67,9 +68,6 @@ async def test_text_opens_the_text_and_fact_check_desks(client: AsyncClient) -> 
     response = await client.post(f"{V1}/verify", json=text_body())
 
     assert response.json()["desks"] == ["text", "fact-check", "decision"]
-
-
-
 
 
 async def test_a_narrower_roster_can_be_requested(client: AsyncClient) -> None:
@@ -278,19 +276,24 @@ async def test_an_unknown_id_is_404(client: AsyncClient) -> None:
 async def test_the_background_task_advances_the_record(client: AsyncClient) -> None:
     """Submit, then read: the task has already run by the time the 202 is in hand.
 
-    With no desks built, the first ``get_examiner`` call raises from the registry, so
-    the record reaches ``failed`` naming the desk that is missing. That is the
-    intended behaviour today, and the assertion that matters is the shape of it: the
-    task ran, the failure was recorded, and nothing is stuck on ``pending``.
+    An unavailable extractor is injected explicitly, independently of installed
+    models. The task must record the failure rather than stay pending.
     """
-    submitted = await client.post(f"{V1}/verify", json=text_body())
+    with desk_bench(
+        {
+            Desk.TEXT: StubExaminer(
+                Desk.TEXT, raises=ConfigurationError("Extractor unavailable")
+            )
+        }
+    ):
+        submitted = await client.post(f"{V1}/verify", json=text_body())
     response = await client.get(f"{V1}/verification/{submitted.json()['id']}")
 
     body = response.json()
     assert body["status"] == "failed"
     assert body["terminal"] is True
     assert body["failure"] == {
-        "code": "not_implemented",
+        "code": "configuration_error",
         "message": body["failure"]["message"],
         "desk": "text",
     }
@@ -382,6 +385,8 @@ async def test_a_report_carries_its_whole_interior(client: AsyncClient) -> None:
             "reliability": "VERIFIED",
             "determination": "CONTRADICTED",
             "extract": "The bridge opened in April.",
+            "url": "",
+            "claim_ref": None,
         }
     ]
 
