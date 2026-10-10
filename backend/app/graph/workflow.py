@@ -47,6 +47,7 @@ from app.graph.agents import (
     search,
     source,
 )
+from app.graph.agents.semantic import SemanticJudge
 from app.graph.state import AgentNote, GraphState
 from app.graph.verdict import Ruling, Thresholds
 
@@ -82,7 +83,7 @@ def build(
     graph.add_node(evidence.NAME, evidence.EvidenceAgent())
     graph.add_node(source.NAME, source.SourceAgent(settings=settings))
     graph.add_node(contradiction.NAME, contradiction.ContradictionAgent())
-    graph.add_node(judge.NAME, judge.JudgeAgent(thresholds=thresholds_from(settings)))
+    graph.add_node(judge.NAME, SemanticJudge(settings))
 
     graph.add_edge(START, claim.NAME)
     graph.add_conditional_edges(
