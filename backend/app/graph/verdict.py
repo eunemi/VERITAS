@@ -90,6 +90,7 @@ class Indication:
     #: what lets a desk publish *which* page disagreed rather than only that one did,
     #: without re-deriving the finding from the passages a second time.
     ref: int | None = None
+    quote: str = ""
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.weight <= 1.0:
