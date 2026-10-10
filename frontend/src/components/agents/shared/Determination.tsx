@@ -25,21 +25,21 @@ export function Determination({
 
 
   return (
-    <div className="border-t-2 border-ink-black bg-parchment pt-10 pb-16 px-6">
-      <div className="max-w-3xl mx-auto flex flex-col gap-6">
-        <p className="font-mono-label text-sm uppercase tracking-wider text-ink-black/60">{scope}</p>
-        <h2 className="text-4xl font-bold font-serif-heading uppercase tracking-wide text-ink-black">
+    <div className="border-t-2 border-ink-black bg-parchment px-5 pt-8 pb-10 sm:px-8">
+      <div className="mx-auto flex max-w-3xl flex-col gap-4">
+        <p className="font-mono-label text-label text-ink-black/60 uppercase">{scope}</p>
+        <h2 className="font-headline-md text-[clamp(26px,4vw,36px)] leading-tight font-bold uppercase tracking-wide text-ink-black">
           {titleText}
         </h2>
         
         {verdict.confidenceValue > 0 && verdict.determination !== "INSUFFICIENT" && (
-          <div className="text-lg font-serif-body font-bold text-ink-black">
+          <div className="font-body-md text-body-md font-bold text-ink-black">
             Assessment confidence: {verdict.confidence}
           </div>
         )}
 
-        <div className="font-serif-body text-lg italic bg-ink-black/5 p-6 rounded text-ink-black/85">
-          <p className="font-bold mb-2 uppercase text-sm font-mono-label tracking-wider not-italic">{verdict.headline}</p>
+        <div className="font-proof text-[17px] leading-7 italic rounded-sm bg-ink-black/5 p-5 text-ink-black/85">
+          <p className="font-mono-label mb-2 text-sm font-bold tracking-wider not-italic uppercase">{verdict.headline}</p>
           {verdict.rationale}
         </div>
         
@@ -48,17 +48,17 @@ export function Determination({
         </p>
 
         {exhibits && exhibits.length > 0 && (
-          <div className="mt-8 border-t-2 border-ink-black pt-6">
+          <div className="mt-5 border-t border-ink-black/25 pt-5">
             <details className="group">
-              <summary className="text-xl font-bold font-serif-heading mb-4 cursor-pointer list-none flex items-center gap-2 text-ink-black">
+              <summary className="font-headline-md mb-3 flex cursor-pointer list-none items-center gap-2 text-lg font-bold text-ink-black">
                 <span className="transform transition-transform group-open:rotate-90">▶</span>
                 Sources (Exhibits)
               </summary>
-              <ul className="flex flex-col gap-4 mt-4">
+              <ul className="mt-3 flex flex-col gap-3">
                 {exhibits.map((exhibit, idx) => (
-                  <li key={idx} className="border border-ink-black/20 p-4 bg-ink-black/5">
-                    <div className="font-bold font-mono-label text-ink-black">{exhibit.source}</div>
-                    <div className="font-serif-body text-sm mt-2 leading-relaxed text-ink-black/80">{exhibit.extract}</div>
+                  <li key={idx} className="border border-ink-black/15 bg-ink-black/5 p-3.5">
+                    <div className="font-mono-label text-sm font-bold text-ink-black">{exhibit.source}</div>
+                    <div className="font-proof mt-1.5 text-sm leading-relaxed text-ink-black/80">{exhibit.extract}</div>
                   </li>
                 ))}
               </ul>
