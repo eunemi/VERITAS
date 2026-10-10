@@ -22,7 +22,7 @@ export function DeskNavigation({ desk }: { desk: DeskDefinition }) {
         title: previous.titleLines.join(" "),
         href: `/intel/${previous.id}`,
       }
-    : { label: "Index", title: "All six desks", href: "/intel" };
+    : { label: "Index", title: "All five tools", href: "/intel" };
 
   const forward: Destination = next
     ? {
@@ -30,7 +30,7 @@ export function DeskNavigation({ desk }: { desk: DeskDefinition }) {
         title: next.titleLines.join(" "),
         href: `/intel/${next.id}`,
       }
-    : { label: "Every desk at once", title: "Open an investigation", href: "/investigate" };
+    : { label: "Index", title: "All five tools", href: "/intel" };
 
   return (
     <Band className="bg-ink-black text-parchment" inner="grid sm:grid-cols-2">
