@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { GalleyProof } from "@/components/agents/instruments/GalleyProof";
+import { ExhibitLedger } from "@/components/agents/instruments/ExhibitLedger";
 import { Determination } from "@/components/agents/shared/Determination";
 import { DeskFailure } from "@/components/agents/shared/DeskFailure";
 import { DeskPage } from "@/components/agents/shared/DeskPage";
@@ -17,13 +18,14 @@ import type { TextRecord } from "@/lib/types/agents";
 const desk = DESKS.text;
 
 /** Enough copy for the desk to have something to mark. */
-const MINIMUM = 80;
+const MINIMUM = 8;
 
-const SAMPLE = `Officials confirmed on Tuesday that the relief fund has already reached 4.1 million households across the northern districts. The figure was first published by the state disaster authority and has since been repeated by three national outlets. A senior official said the transfers were completed within nine days of the announcement, calling the rollout the fastest in the programme's history. Independent auditors have not yet been given access to the disbursement records.`;
+const SAMPLE = "Chandrayaan-3 successfully landed on the Moon on 23 August 2023.";
 
 export default function TextDesk() {
   const [copy, setCopy] = useState("");
-  const { status, record, error, open, reopen, working } = useExamination<TextRecord>();
+  const [uploading, setUploading] = useState(false);
+  const { status, record, error, open, reopen, working, progress } = useExamination<TextRecord>();
 
   const tooShort = copy.trim().length < MINIMUM;
 
@@ -31,25 +33,27 @@ export default function TextDesk() {
     <DeskPage
       desk={desk}
       status={status}
+      progress={progress}
       latencyMs={DESK_PACE_MS}
       onReopen={reopen}
       bench={
         <SubmissionBench
           prompt={desk.prompt}
-          note="Plain text · a paragraph or more"
+          note="Headlines · news · Hindi, English & Hinglish"
           hint={
             tooShort
-              ? "The desk needs a paragraph or two to find claims worth checking."
-              : "The desk marks the copy in place and answers each mark in the margin."
+              ? "Enter a claim or news report with at least 8 characters."
+              : "Claims are checked against live web evidence. Include dates and locations when available."
           }
-          actionLines={["Examine", "copy"]}
-          onSubmit={() => open(() => examineText(copy))}
-          disabled={tooShort || working}
+          actionLines={["Verify", "news"]}
+          onSubmit={() => open((options) => examineText(copy, options))}
+          disabled={tooShort || working || uploading}
         >
           <CopyField
             value={copy}
             onChange={setCopy}
             scanning={working}
+            onBusy={setUploading}
             placeholder="Paste the article, statement or caption to be examined."
           />
           {status === "bench" && !copy ? (
@@ -68,19 +72,19 @@ export default function TextDesk() {
         record ? (
           <>
             <LedgerBand entries={record.ledger} />
+            <div className="pt-stack-xl"><Determination verdict={record.verdict} signedBy="live fact-check desk" /></div>
             <Spread className="pt-stack-xl">
               <MarkedSpread
                 artifact={<GalleyProof copy={record.copy} annotations={record.annotations} />}
                 margin={
                   <div className="flex flex-col gap-stack-lg">
                     <FindingLedger annotations={record.annotations} />
+                    <SignalTable title="Verification coverage" signals={record.signals} />
                   </div>
                 }
               />
             </Spread>
-            <div className="pt-stack-xl">
-              <Determination verdict={record.verdict} signedBy="linguistic desk" />
-            </div>
+            <Spread className="py-stack-xl"><ExhibitLedger exhibits={record.exhibits} /></Spread>
           </>
         ) : null
       }
