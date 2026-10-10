@@ -8,10 +8,15 @@ step made explicit, so a caller can perform it on its own — which is what
 
 from __future__ import annotations
 
+import logging
+
 from app.core.config import LLMProvider, Settings
+from app.core.errors import VeritasError
 from app.domain import Extraction
 from app.nlp import get_claim_extractor
 from app.services.limits import ensure_within_limit
+
+logger = logging.getLogger(__name__)
 
 
 class ClaimExtractionService:
@@ -46,6 +51,16 @@ class ClaimExtractionService:
         ):
             from app.nlp.llm import extract
 
-            return await extract(text, self._settings)
+            try:
+                return await extract(text, self._settings)
+            except VeritasError as exc:
+                # Claim extraction has a deterministic spaCy implementation. A
+                # provider outage or an expired key should not turn a submitted news
+                # item into a missing record when the local extractor can still split
+                # its claims and the live evidence desks can continue.
+                logger.warning(
+                    "LLM claim extraction unavailable; using spaCy fallback",
+                    extra={"code": exc.code, "provider_message": exc.message},
+                )
         extractor = get_claim_extractor(self._settings)
         return await extractor.extract(text)
