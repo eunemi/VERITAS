@@ -32,11 +32,12 @@ export function Determination({
           {titleText}
         </h2>
         
-        {verdict.confidenceValue > 0 && verdict.determination !== "INSUFFICIENT" && (
-          <div className="font-body-md text-body-md font-bold text-ink-black">
-            Assessment confidence: {verdict.confidence}
-          </div>
-        )}
+        <div className="font-body-md text-body-md font-bold text-ink-black">
+          Assessment confidence: {verdict.confidence}
+          <span className="ml-2 font-normal text-sm text-ink-black/55">
+            (not a truth probability)
+          </span>
+        </div>
 
         <div className="font-proof text-[17px] leading-7 italic rounded-sm bg-ink-black/5 p-5 text-ink-black/85">
           <p className="font-mono-label mb-2 text-sm font-bold tracking-wider not-italic uppercase">{verdict.headline}</p>
