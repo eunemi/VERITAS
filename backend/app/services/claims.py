@@ -8,7 +8,7 @@ step made explicit, so a caller can perform it on its own — which is what
 
 from __future__ import annotations
 
-from app.core.config import Settings
+from app.core.config import LLMProvider, Settings
 from app.domain import Extraction
 from app.nlp import get_claim_extractor
 from app.services.limits import ensure_within_limit
@@ -40,5 +40,12 @@ class ClaimExtractionService:
         reason, which is a 200.
         """
         ensure_within_limit(text, limit=self._settings.MAX_TEXT_CHARS, field="text")
+        if self._settings.CLAIM_EXTRACTION_LLM and (
+            self._settings.OPENAI_API_KEY
+            or self._settings.LLM_PROVIDER is LLMProvider.OLLAMA
+        ):
+            from app.nlp.llm import extract
+
+            return await extract(text, self._settings)
         extractor = get_claim_extractor(self._settings)
         return await extractor.extract(text)
