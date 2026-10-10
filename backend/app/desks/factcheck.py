@@ -59,6 +59,7 @@ from app.graph.state import Case, cases, dossier
 from app.graph.verdict import Bearing, ClaimRuling, Ruling, as_determination
 from app.reasoning.answer import Reasoning
 from app.research.terms import squeeze
+from app.media import fetch
 
 if TYPE_CHECKING:
     from app.graph.workflow import Outcome, VerificationGraph
@@ -133,14 +134,46 @@ class FactCheckDesk:
     async def examine(
         self, artifact: Artifact, *, verification_id: str | None = None
     ) -> DeskReport:
-        if not (artifact.content or "").strip():
-            return self._unread(artifact.kind)
+        copy, fetch_error = await self._copy(artifact)
+        if not copy.strip():
+            return self._unread(artifact.kind, fetch_error)
 
-        outcome = await self._graph().run(artifact)
+        # Keep the original URL on the record while handing the fetched page copy to
+        # the graph. This lets the URL page show its source address and still checks
+        # the claims actually published at that address.
+        outcome = await self._graph().run(
+            artifact if artifact.content else Artifact(
+                # The graph's claim extractor accepts prose and claims. The URL is
+                # retained as provenance, but the fetched page itself is text.
+                kind=ArtifactKind.TEXT,
+                content=copy,
+                url=artifact.url,
+                filename=artifact.filename,
+            )
+        )
         found = cases(outcome.state)
         retrieved, indexed = await self._retrieved(found)
         await self._stored(outcome, verification_id=verification_id)
         return self._filed(outcome, found, retrieved, indexed)
+
+    async def _copy(self, artifact: Artifact) -> tuple[str, str | None]:
+        if artifact.content:
+            return artifact.content, None
+        if artifact.kind is not ArtifactKind.URL or not artifact.url:
+            return "", None
+        try:
+            return (
+                await fetch.fetch_text(
+                    artifact.url,
+                    timeout=self._settings.MEDIA_FETCH_TIMEOUT_SECONDS,
+                    limit=self._settings.MAX_UPLOAD_BYTES,
+                    max_chars=self._settings.MAX_TEXT_CHARS,
+                    allow_private=self._settings.MEDIA_ALLOW_PRIVATE_HOSTS,
+                ),
+                None,
+            )
+        except VeritasError as exc:
+            return "", exc.message
 
     # ------------------------------------------------------------ steps ----
 
@@ -210,10 +243,10 @@ class FactCheckDesk:
 
     # ----------------------------------------------------------- filing ----
 
-    def _unread(self, kind: ArtifactKind) -> DeskReport:
+    def _unread(self, kind: ArtifactKind, fetch_error: str | None = None) -> DeskReport:
         missing = (
-            "A link was submitted, and fetching the article behind it is not built "
-            "yet, so no claim was checked."
+            "A link was submitted, but the page could not be read. "
+            f"{fetch_error or 'The page returned no readable prose.'}"
             if kind is ArtifactKind.URL
             else "The submission carried nothing to check."
         )
