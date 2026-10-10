@@ -7,6 +7,7 @@ import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { CommissionButton, CommissionTrigger } from "@/components/CommissionSlip";
 import { AccountTrigger } from "@/components/auth/AccountSlip";
 import { Slug } from "@/components/agents/shared/layout";
+import { useRouter } from "next/navigation";
 
 const navLinks = [
   { href: "/world", label: "WORLD" },
@@ -18,6 +19,7 @@ const navLinks = [
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
 
   /* The sheet remembers which page it was opened on rather than being closed by an
      effect, so any navigation — link, back button, or slip — closes it for free. */
@@ -139,12 +141,19 @@ export default function Header() {
                 })}
               </ul>
 
-              <CommissionTrigger
-                onOpen={() => setOpenedAt(null)}
+              <button
+                onClick={() => {
+                  setOpenedAt(null);
+                  if (pathname !== "/") {
+                    router.push("/#agents-section");
+                  } else {
+                    document.getElementById("agents-section")?.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
                 className="font-mono-label text-mono-label mt-stack-md flex w-full cursor-pointer items-center justify-center border border-ink-black bg-ink-black px-6 py-4 text-parchment transition-colors duration-300 hover:bg-transparent hover:text-ink-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-black"
               >
                 START INVESTIGATION
-              </CommissionTrigger>
+              </button>
 
               <AccountTrigger
                 onOpen={() => setOpenedAt(null)}
