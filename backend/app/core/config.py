@@ -218,6 +218,11 @@ class Settings(BaseSettings):
 
     OPENAI_API_KEY: SecretStr | None = None
     OPENAI_MODEL: str = "gpt-4o-mini"
+    VISION_MODEL: str = "gpt-4o-mini"
+    VISION_API_KEY: SecretStr | None = None
+    VISION_BASE_URL: str | None = None
+    GOOGLE_VISION_API_KEY: SecretStr | None = None
+    CLAIM_EXTRACTION_LLM: bool = True
     #: Where the chat-completions shape is served. Overridable because that shape
     #: is spoken by more than OpenAI — vLLM, llama.cpp, LM Studio and several
     #: hosted vendors — so pointing at one of those is a setting, not a client.
@@ -615,6 +620,19 @@ class Settings(BaseSettings):
     MAX_TEXT_CHARS: int = 100_000
 
     # ------------------------------------------------------- validation ----
+
+    @field_validator(
+        "OPENAI_API_KEY", "VISION_API_KEY", "GOOGLE_VISION_API_KEY",
+        "TAVILY_API_KEY", "BRAVE_API_KEY", "SERPER_API_KEY",
+        "GOOGLE_FACT_CHECK_API_KEY", "JWT_SECRET_KEY", mode="before",
+    )
+    @classmethod
+    def _empty_secret_is_unconfigured(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return None
+        if isinstance(value, SecretStr) and not value.get_secret_value().strip():
+            return None
+        return value
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
