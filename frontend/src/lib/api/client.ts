@@ -216,9 +216,9 @@ export interface UrlArtifactIn {
 }
 
 /**
- * Media is fetched by the backend from a URL. There is no upload endpoint: that
- * needs multipart with a byte ceiling enforced against a stream, and it is not
- * built, so a file sitting on the reader's disk cannot be examined yet.
+ * Media is fetched by the backend from a URL. The multipart upload helpers below
+ * store a local file behind an opaque API URL before submitting that URL, so a file
+ * sitting on the reader's disk can use the same examination path as a public image.
  */
 export interface MediaArtifactIn {
   kind: "image";
