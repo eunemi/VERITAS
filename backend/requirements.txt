@@ -153,5 +153,6 @@ ultralytics>=8.3
 
 # -------------------------------------------------------- file upload ------
 python-multipart>=0.0.9
+pillow>=10.4
 pypdf>=4.3.0
 python-docx>=1.1.0
