@@ -165,6 +165,7 @@ class ClaimRuling:
     #: :attr:`Judgement.UNCERTAIN`, and never empty when it is.
     insufficiency: str = ""
     score: Score | None = None
+    explanation: str = ""
 
 
 @dataclass(frozen=True, slots=True)
