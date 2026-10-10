@@ -18,6 +18,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from app.core.config import Settings, get_settings
+from app.core.errors import VeritasError
 from app.domain import (
     Annotation,
     Artifact,
@@ -31,6 +32,7 @@ from app.domain import (
     Signal,
     Verdict,
 )
+from app.media import fetch
 
 if TYPE_CHECKING:
     from app.services.claims import ClaimExtractionService
@@ -57,9 +59,10 @@ class TextDesk:
     async def examine(
         self, artifact: Artifact, *, verification_id: str | None = None
     ) -> DeskReport:
-        text = (artifact.content or "").strip()
+        text, fetch_error = await self._copy(artifact)
+        text = text.strip()
         if not text:
-            return self._unread(artifact.kind)
+            return self._unread(artifact.kind, fetch_error)
 
         # A caller who submitted a claim submitted the assertion itself, so there is
         # nothing to find in it. Taken as read here for the same reason
@@ -69,6 +72,26 @@ class TextDesk:
             return self._submitted(text)
 
         return self._filed(await self._extractor().extract(text))
+
+    async def _copy(self, artifact: Artifact) -> tuple[str, str | None]:
+        """Resolve URL submissions to copy without changing the stored artifact."""
+        if artifact.content:
+            return artifact.content, None
+        if artifact.kind is not ArtifactKind.URL or not artifact.url:
+            return "", None
+        try:
+            return (
+                await fetch.fetch_text(
+                    artifact.url,
+                    timeout=self._settings.MEDIA_FETCH_TIMEOUT_SECONDS,
+                    limit=self._settings.MAX_UPLOAD_BYTES,
+                    max_chars=self._settings.MAX_TEXT_CHARS,
+                    allow_private=self._settings.MEDIA_ALLOW_PRIVATE_HOSTS,
+                ),
+                None,
+            )
+        except VeritasError as exc:
+            return "", exc.message
 
     def _extractor(self) -> ClaimExtractionService:
         # Imported here, not at module scope: `app.services` imports the
@@ -81,10 +104,10 @@ class TextDesk:
 
     # ----------------------------------------------------------- filing ----
 
-    def _unread(self, kind: ArtifactKind) -> DeskReport:
+    def _unread(self, kind: ArtifactKind, fetch_error: str | None = None) -> DeskReport:
         missing = (
-            "A link was submitted, and fetching the article behind it is not built "
-            "yet, so there was no prose to read."
+            "A link was submitted, but the page could not be read. "
+            f"{fetch_error or 'The page returned no readable prose.'}"
             if kind is ArtifactKind.URL
             else "The submission carried no text to read."
         )
