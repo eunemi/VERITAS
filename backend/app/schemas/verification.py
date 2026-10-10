@@ -166,6 +166,9 @@ class MediaArtifactIn(_ArtifactIn):
 
     kind: Literal["image"]
     url: UrlString = Field(description="Where the artifact can be fetched.")
+    content: str | None = Field(
+        default=None, max_length=5000, description="Caption or context to fact-check."
+    )
     filename: str | None = Field(
         default=None,
         description="Original file name, if there was one. Printed, not parsed.",
@@ -173,7 +176,10 @@ class MediaArtifactIn(_ArtifactIn):
 
     def to_domain(self) -> Artifact:
         return Artifact(
-            kind=ArtifactKind(self.kind), url=self.url, filename=self.filename
+            kind=ArtifactKind(self.kind),
+            url=self.url,
+            filename=self.filename,
+            content=self.content,
         )
 
 
@@ -339,6 +345,8 @@ class ExhibitOut(BaseModel):
     reliability: Reliability
     determination: Determination
     extract: str
+    url: str = ""
+    claim_ref: int | None = None
 
     @classmethod
     def from_domain(cls, exhibit: Exhibit) -> Self:
@@ -350,6 +358,8 @@ class ExhibitOut(BaseModel):
             reliability=exhibit.reliability,
             determination=exhibit.determination,
             extract=exhibit.extract,
+            url=exhibit.url,
+            claim_ref=exhibit.claim_ref,
         )
 
 
@@ -386,6 +396,12 @@ class ImageDetailOut(BaseModel):
     height: int
     text: str
     regions: list[PlateRegionOut] = Field(default_factory=list)
+    description: str = ""
+    observations: list[str] = Field(default_factory=list)
+    provenance: str = ""
+    web_status: str = "not_searched"
+    limitations: list[str] = Field(default_factory=list)
+    metadata: list[LedgerEntryOut] = Field(default_factory=list)
 
     @classmethod
     def from_domain(cls, detail: ImageDetail) -> Self:
@@ -394,8 +410,13 @@ class ImageDetailOut(BaseModel):
             height=detail.height,
             text=detail.text,
             regions=[PlateRegionOut.from_domain(r) for r in detail.regions],
+            description=detail.description,
+            observations=list(detail.observations),
+            provenance=detail.provenance,
+            web_status=detail.web_status,
+            limitations=list(detail.limitations),
+            metadata=[LedgerEntryOut.from_domain(e) for e in detail.metadata],
         )
-
 
 
 class DeskReportOut(BaseModel):
