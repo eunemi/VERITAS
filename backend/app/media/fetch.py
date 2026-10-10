@@ -17,6 +17,8 @@ from __future__ import annotations
 import ipaddress
 import re
 import socket
+from html import unescape
+from html.parser import HTMLParser
 
 import anyio.to_thread
 import httpx
@@ -37,6 +39,156 @@ MAX_REDIRECTS = 3
 
 PROVIDER = "media-fetch"
 _UPLOAD_PATH = re.compile(r".*/api/v1/files/media/[0-9a-f]{32}\.[a-z0-9]{1,10}$")
+
+
+class _PageTextParser(HTMLParser):
+    """Collect readable page copy while ignoring executable and presentational markup."""
+
+    _IGNORED = frozenset(
+        {"nav", "script", "style", "title", "noscript", "template", "svg"}
+    )
+    _BLOCKS = frozenset(
+        {
+            "address",
+            "article",
+            "aside",
+            "blockquote",
+            "br",
+            "dd",
+            "div",
+            "dl",
+            "dt",
+            "footer",
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
+            "header",
+            "li",
+            "main",
+            "nav",
+            "ol",
+            "p",
+            "pre",
+            "section",
+            "table",
+            "td",
+            "th",
+            "tr",
+            "ul",
+        }
+    )
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.parts: list[str] = []
+        self.content_parts: list[str] = []
+        self.fallback_parts: list[str] = []
+        self.fallback_content_parts: list[str] = []
+        self._ignored = 0
+        self._noscript = 0
+        self._content_depth = 0
+
+    def _target(self) -> list[str] | None:
+        if self._noscript and self._ignored == self._noscript:
+            return (
+                self.fallback_content_parts
+                if self._content_depth
+                else self.fallback_parts
+            )
+        if self._ignored:
+            return None
+        return self.content_parts if self._content_depth else self.parts
+
+    def _separator(self) -> None:
+        target = self._target()
+        if target and target[-1:] != [" "]:
+            target.append(" ")
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        tag = tag.lower()
+        if tag == "noscript":
+            self._noscript += 1
+            self._ignored += 1
+        elif tag in {"main", "article"}:
+            self._content_depth += 1
+            self._separator()
+        elif tag in self._IGNORED:
+            self._ignored += 1
+        elif tag in self._BLOCKS:
+            self._separator()
+
+    def handle_endtag(self, tag: str) -> None:
+        tag = tag.lower()
+        if tag == "noscript" and self._noscript:
+            self._noscript -= 1
+            self._ignored -= 1
+        elif tag in {"main", "article"} and self._content_depth:
+            self._separator()
+            self._content_depth -= 1
+        elif tag in self._IGNORED and self._ignored:
+            self._ignored -= 1
+        elif tag in self._BLOCKS:
+            self._separator()
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag.lower() in self._BLOCKS:
+            self._separator()
+
+    def handle_data(self, data: str) -> None:
+        target = self._target()
+        if target is not None and data.strip():
+            target.append(data)
+
+
+def _readable_page_text(data: bytes) -> str:
+    """Turn an HTML, JSON, or plain-text response into bounded readable copy."""
+    decoded = data.decode("utf-8", errors="replace")
+    if "<" not in decoded or ">" not in decoded:
+        return " ".join(unescape(decoded).split())
+
+    parser = _PageTextParser()
+    try:
+        parser.feed(decoded)
+        parser.close()
+    except Exception:
+        # Malformed markup is common on the public web. Returning its decoded text is
+        # still more useful to the examination than turning a readable page into a
+        # failed verification.
+        return " ".join(unescape(decoded).split())
+    parts = (
+        parser.content_parts
+        or parser.fallback_content_parts
+        or parser.parts
+        or parser.fallback_parts
+    )
+    return " ".join("".join(parts).split())
+
+
+async def fetch_text(
+    url: str,
+    *,
+    timeout: float,
+    limit: int,
+    max_chars: int,
+    allow_private: bool = False,
+) -> str:
+    """Fetch a public page and return only its readable text.
+
+    URL verification uses the same redirect and SSRF protections as media fetching.
+    The character ceiling is applied after decoding so a very large HTML response
+    cannot send an unbounded prompt to the claim and fact-check desks.
+    """
+    data = await fetch(
+        url,
+        timeout=timeout,
+        limit=limit,
+        accept=("text/", "application/xhtml+xml", "application/json", "application/xml"),
+        allow_private=allow_private,
+    )
+    return _readable_page_text(data)[:max_chars]
 
 
 def is_managed_upload_url(url: str, *, public_api_url: str) -> bool:
