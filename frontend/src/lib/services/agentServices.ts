@@ -351,6 +351,19 @@ export async function examineImage(
   return filed<ImageRecord>(examination, "image", "image");
 }
 
+/** Examine a public page URL using the same source-checking record as a claim. */
+export async function examineUrl(
+  url: string,
+  options: ExamineOptions = {},
+): Promise<FactCheckRecord> {
+  const examination = await commission(
+    { kind: "url", url },
+    ["fact-check"],
+    options,
+  );
+  return filed<FactCheckRecord>(examination, "fact-check", "fact-check");
+}
+
 
 
 /** What a submission that ran to a signed record comes back as. */
