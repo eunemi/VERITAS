@@ -91,6 +91,9 @@ def note(ruling: ClaimRuling, reading: Reasoning | None = None) -> str:
         return reading.reasoning
     if ruling.insufficiency:
         return ruling.insufficiency
+    semantic = next((i for i in ruling.indications if i.agent == "semantic"), None)
+    if semantic is not None:
+        return semantic.detail
     return f"{ruling.judgement} at {round(ruling.confidence * 100)}% confidence."
 
 
