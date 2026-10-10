@@ -21,7 +21,7 @@ from __future__ import annotations
 import pytest
 
 from app.domain.research import Retrieval
-from app.research import evidence as ev
+from app.research import evidence as ev, terms
 from tests.research_bench import BOILERPLATE, WIRE, claim, retrieval
 
 #: The claim every test here is matched against, with two entities, two keywords and
@@ -434,3 +434,8 @@ def test_figures_are_read_off_the_claim_text_not_the_entities() -> None:
     untagged = claim("The rate was held at 4.75% in March 2026.")
 
     assert ev.Needle.of(untagged).numbers == ("4.75%", "2026")
+
+
+def test_identifier_suffixes_are_not_treated_as_claim_figures() -> None:
+    """The 3 in Chandrayaan-3 identifies the mission; it is not a score or date."""
+    assert terms.numbers("Chandrayaan-3 landed on Mars.") == ()
