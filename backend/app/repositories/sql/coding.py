@@ -149,6 +149,8 @@ def load_exhibits(rows: Any) -> tuple[Exhibit, ...]:
             reliability=Reliability(row["reliability"]),
             determination=Determination(row["determination"]),
             extract=row["extract"],
+            url=row.get("url", ""),
+            claim_ref=row.get("claim_ref"),
         )
         for row in rows or ()
     )
@@ -177,6 +179,12 @@ def load_detail(data: Any) -> ImageDetail | None:
             width=int(data["width"]),
             height=int(data["height"]),
             text=data["text"],
+            description=data.get("description", ""),
+            observations=tuple(data.get("observations", ())),
+            provenance=data.get("provenance", "Image origin has not been established."),
+            web_status=data.get("web_status", "not_searched"),
+            limitations=tuple(data.get("limitations", ())),
+            metadata=load_ledger(data.get("metadata")),
             regions=tuple(
                 PlateRegion(
                     ref=int(region["ref"]),
