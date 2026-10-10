@@ -120,6 +120,8 @@ class Exhibit:
     reliability: Reliability
     determination: Determination
     extract: str
+    url: str = ""
+    claim_ref: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -153,6 +155,12 @@ class ImageDetail:
     height: int
     text: str
     regions: tuple[PlateRegion, ...] = ()
+    description: str = ""
+    observations: tuple[str, ...] = ()
+    provenance: str = "Image origin and pixel authenticity have not been established."
+    web_status: str = "not_searched"
+    limitations: tuple[str, ...] = ()
+    metadata: tuple[LedgerEntry, ...] = ()
 
 
 
