@@ -351,6 +351,20 @@ def test_openai_without_a_key_is_a_configuration_error() -> None:
         OpenAIClient(Settings(_env_file=None, OPENAI_API_KEY=None))
 
 
+def test_groq_endpoint_uses_its_provider_key_over_shell_openai_key() -> None:
+    settings = Settings(
+        _env_file=None,
+        OPENAI_API_KEY="wrong-shell-key",
+        GROQ_API_KEY="groq-key",
+        OPENAI_BASE_URL="https://api.groq.com/openai/v1",
+    )
+
+    client = OpenAIClient(settings)
+
+    assert client.name == "groq"
+    assert client._key == "groq-key"
+
+
 def test_ollama_without_a_base_url_is_a_configuration_error() -> None:
     """The only thing a credential-free provider can refuse at construction."""
     with pytest.raises(ConfigurationError, match="OLLAMA_BASE_URL"):
