@@ -46,13 +46,13 @@ export const DESKS: Record<string, DeskDefinition> = {
     titleLines: ["Text", "Examination"],
     eyebrow: "Agent 01 — Linguistic desk",
     standfirst:
-      "Paste the copy. The desk returns it marked up: every assertion specific enough to check underlined, and every one it set aside told you why in the margin.",
+      "Paste a headline, article or forwarded message. The desk checks its claims against live web sources and returns a verdict, an explanation and the evidence you can open yourself.",
     file: "VT–0114",
     method: [
       { key: "Reads", value: "Articles, captions, statements" },
-      { key: "Looks for", value: "Assertions specific enough to check" },
-      { key: "Returns", value: "An annotated galley proof" },
-      { key: "Does not", value: "Rule on whether they are true" },
+      { key: "Looks for", value: "Evidence supporting or contradicting each claim" },
+      { key: "Returns", value: "Verdicts, explanations and linked sources" },
+      { key: "Unclear evidence", value: "Reported as unverified" },
     ],
     prompt: "Submit copy for examination",
     stages: [
@@ -72,15 +72,15 @@ export const DESKS: Record<string, DeskDefinition> = {
     titleLines: ["Image", "Forensics"],
     eyebrow: "Agent 02 — Visual desk",
     standfirst:
-      "The frame goes on the plate. The desk recovers the text printed in it, checks what that text asserts, and rules each claim at the place on the frame it was read from.",
+      "Upload a photograph or screenshot. The desk reads its details and text, checks the caption against live sources, and looks for web context and matching images.",
     file: "VT–0115",
     method: [
       { key: "Reads", value: "Photographs, screenshots, stills" },
-      { key: "Looks for", value: "Text printed in the frame" },
-      { key: "Returns", value: "A ruled plate and its readings" },
-      { key: "Does not", value: "Say whether the picture is real" },
+      { key: "Looks for", value: "Visible details, claims and web context" },
+      { key: "Returns", value: "Image report, evidence and match status" },
+      { key: "Authenticity", value: "Unverified unless supported by provenance" },
     ],
-    prompt: "Give the address of the frame",
+    prompt: "Upload an image or paste its address",
     stages: [
       "Fetching the frame",
       "Reading the page",
