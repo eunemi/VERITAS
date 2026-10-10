@@ -55,7 +55,8 @@ def compiled(settings: Settings) -> VerificationGraph:
         built = VerificationGraph(
             settings=settings,
             extractor=ClaimExtractionService(settings=settings),
-            reasoning=_reasoning(settings),
+            # The semantic judge already explains and cites each finding.
+            reasoning=None,
         )
         _GRAPH = (settings, built)
         return built
