@@ -91,6 +91,9 @@ export function CopyField({
   rows = 9,
   scanning = false,
   onBusy,
+  allowUpload = true,
+  accept = ".pdf,.docx,.md,.txt",
+  uploadLabel = "[ UPLOAD FILE ]",
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -99,6 +102,9 @@ export function CopyField({
   /** Draws the examination pass over the copy while the desk reads it. */
   scanning?: boolean;
   onBusy?: (busy: boolean) => void;
+  allowUpload?: boolean;
+  accept?: string;
+  uploadLabel?: string;
 }) {
   const words = value.trim() ? value.trim().split(/\s+/).length : 0;
   
@@ -108,6 +114,11 @@ export function CopyField({
 
   const handleFileUpload = async (file: File) => {
     if (!file || scanning || isExtracting) return;
+    const allowed = accept.split(",").map((extension) => extension.trim().toLowerCase()).filter(Boolean);
+    if (allowed.length && !allowed.some((extension) => file.name.toLowerCase().endsWith(extension.replace("*", "")))) {
+      setExtractError(`Choose a supported file: ${allowed.join(", ")}.`);
+      return;
+    }
     setIsExtracting(true);
     onBusy?.(true);
     setExtractError(null);
@@ -143,8 +154,8 @@ export function CopyField({
     <div>
       <div 
         className="ticked relative overflow-hidden bg-parchment text-ink-black/25"
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
+        onDragOver={allowUpload ? handleDragOver : undefined}
+        onDrop={allowUpload ? handleDrop : undefined}
       >
         <span aria-hidden className="absolute inset-y-0 left-[52px] w-px bg-secondary/35" />
         {scanning || isExtracting ? (
@@ -169,29 +180,31 @@ export function CopyField({
           disabled={isExtracting || scanning}
           className="font-proof text-proof relative w-full resize-y bg-transparent py-6 pr-6 pl-[72px] text-ink-black placeholder:text-ink-black/30 focus:outline-none disabled:opacity-50"
         />
-        <input 
-          type="file" 
-          ref={fileInputRef} 
-          className="hidden" 
-          accept=".pdf,.docx,.md,.txt"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) handleFileUpload(file);
-          }}
-        />
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isExtracting || scanning}
-          className="absolute bottom-4 right-4 z-10 font-mono-label text-xs uppercase tracking-wider text-ink-black/50 hover:text-ink-black transition-colors disabled:opacity-50"
-          title="Upload .pdf, .docx, .md, or .txt"
-        >
-          [ UPLOAD FILE ]
-        </button>
+        {allowUpload ? <>
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept={accept}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFileUpload(file);
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isExtracting || scanning}
+            className="absolute bottom-4 right-4 z-10 font-mono-label text-xs uppercase tracking-wider text-ink-black/50 hover:text-ink-black transition-colors disabled:opacity-50"
+            title="Upload a document"
+          >
+            {uploadLabel}
+          </button>
+        </> : null}
       </div>
       <div className="mt-2.5 flex items-baseline justify-between">
         <div className="flex flex-col gap-1">
-          <Slug className="text-ink-black/35">Plain text · no formatting kept</Slug>
+          <Slug className="text-ink-black/35">{allowUpload ? "Plain text · no formatting kept" : "Paste plain text · no formatting kept"}</Slug>
           {extractError && (
             <span className="font-body-sm text-xs text-red-600">{extractError}</span>
           )}
