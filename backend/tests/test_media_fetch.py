@@ -32,7 +32,7 @@ from app.core.errors import (
     ValidationError,
 )
 from app.media import fetch as module
-from app.media.fetch import MAX_REDIRECTS, _permitted, _read, fetch
+from app.media.fetch import MAX_REDIRECTS, _permitted, _read, _readable_page_text, fetch
 
 #: A perfectly ordinary public address, for the cases that should be allowed.
 PUBLIC = ["93.184.216.34"]
@@ -371,3 +371,21 @@ async def test_an_empty_body_is_a_fetch_error() -> None:
     """Zero bytes is not an image with no text in it; it is a failed fetch."""
     with pytest.raises(MediaFetchError, match="returned nothing"):
         await _read(served(body=b""), limit=1024)
+
+
+def test_page_text_removes_markup_and_non_readable_blocks() -> None:
+    page = b"""
+    <html><head><title>Browser tab title</title><style>.hidden { display: none }</style></head>
+    <body><nav>Home - About - Contact</nav><main><h1>Bridge opened</h1><p>The bridge opened in March 2026.</p></main>
+    <script>do_not_submit_this()</script></body></html>
+    """
+
+    assert _readable_page_text(page) == "Bridge opened The bridge opened in March 2026."
+
+
+def test_page_text_keeps_inline_text_together_and_uses_noscript_as_fallback() -> None:
+    page = b"<p>1,<strong>000</strong></p><noscript><p>Fallback copy</p></noscript>"
+    assert _readable_page_text(page) == "1,000"
+    assert _readable_page_text(b"<noscript><p>Fallback copy</p></noscript>") == (
+        "Fallback copy"
+    )
