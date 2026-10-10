@@ -216,10 +216,18 @@ async def test_a_missing_adjudicator_is_recorded_against_the_decision_desk(
     service: VerificationService,
 ) -> None:
     """The examiners can all report and the record still fail at the last step."""
+    from app.desks import adjudicators
+
     record = await service.submit(artifact=TEXT, desks=(Desk.TEXT,))
 
-    with desk_bench({Desk.TEXT: StubExaminer(Desk.TEXT)}):
-        await service.run(record.id)
+    previous = adjudicators.factory(ADJUDICATOR)
+    adjudicators.unregister(ADJUDICATOR)
+    try:
+        with desk_bench({Desk.TEXT: StubExaminer(Desk.TEXT)}):
+            await service.run(record.id)
+    finally:
+        if previous is not None:
+            adjudicators.register(ADJUDICATOR, previous)
 
     failed = await service.get(record.id)
     assert failed.status is Status.FAILED
