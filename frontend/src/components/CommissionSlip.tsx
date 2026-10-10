@@ -1,23 +1,33 @@
 "use client";
 
-import { DrawerTrigger } from "@/components/ui/Drawer";
-import { CommissionPanel } from "@/components/CommissionPanel";
+import { useRouter, usePathname } from "next/navigation";
 
-/** Anything that opens the slip. */
+/** Anything that used to open the slip now scrolls to agents-section. */
 export function CommissionTrigger({
   className,
   children,
   onOpen,
 }: {
-  className: string;
+  className?: string;
   children: React.ReactNode;
-  /** Fires as the slip opens, so a host menu can close itself behind it. */
   onOpen?: () => void;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleScroll = () => {
+    if (onOpen) onOpen();
+    if (pathname !== "/") {
+      router.push("/#agents-section");
+    } else {
+      document.getElementById("agents-section")?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
-    <DrawerTrigger className={className} onOpen={onOpen} panel={CommissionPanel}>
+    <button onClick={handleScroll} className={className}>
       {children}
-    </DrawerTrigger>
+    </button>
   );
 }
 
