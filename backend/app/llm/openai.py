@@ -12,12 +12,9 @@ reply that makes a stored verdict reproducible. ``finish_reason`` is carried bec
 is then rejected, which is right, but without the reason the rejection looks like a
 model that cannot follow instructions rather than a ceiling set too low.
 
-**No JSON mode.** ``response_format`` would make the reply likelier to parse and is
-deliberately not set: :class:`~app.llm.base.LLMClient` is a two-method seam shared
-with a provider that spells the same idea differently, and the layer above validates
-every field against a closed table regardless. Native JSON mode buys fewer
-fallbacks, and it would be bought with a vendor-shaped parameter on a vendor-neutral
-protocol.
+Structured tasks from ``app.llm.structured`` request JSON mode through their system
+instruction. The resulting body is still validated against its schema; JSON mode
+alone does not validate citations or a model's interpretation of the evidence.
 """
 
 from __future__ import annotations
@@ -47,6 +44,8 @@ class OpenAIClient(Http):
     """Generates text through OpenAI's chat completions endpoint."""
 
     name = "openai"
+    # Background verifications can wait for a model's per-minute token window.
+    max_backoff_seconds = 60.0
     error = LLMError
 
     def __init__(self, settings: Settings) -> None:
@@ -79,6 +78,9 @@ class OpenAIClient(Http):
         }
         if max_tokens is not None:
             body[MAX_TOKENS_FIELD] = max_tokens
+        # Structured tasks should not depend on stripping prose or markdown fences.
+        if messages and "Return JSON only" in messages[0].content:
+            body["response_format"] = {"type": "json_object"}
         payload = await self.fetch(
             "POST",
             self.url,
