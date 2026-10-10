@@ -9,10 +9,10 @@ import { DESK_ISSUE, DESK_ORDER, DESKS } from "@/lib/desks";
 /**
  * The register of desks, as printed on the front.
  *
- * The six cards used to carry their own copy, a Material Symbols glyph each and a
+ * The public cards used to carry their own copy, a Material Symbols glyph each and a
  * status light reading ONLINE — none of which was true of anything. They now read
  * from `@/lib/desks`, the same register the desk pages and the commission slip
- * use, so a desk is described once and the front cannot drift from the desk it
+ * use, so a tool is described once and the front cannot drift from the desk it
  * links to. Each card prints what the desk actually reads in place of the status.
  */
 const DESKS_ON_THE_FRONT = DESK_ORDER.map((id) => DESKS[id]);
@@ -54,28 +54,21 @@ export default function AgentsSection() {
               Intelligence Assets
             </h2>
             <Slug className="tabular hidden text-ink-black/50 md:block">
-              Six desks · Issue {DESK_ISSUE}
+              Five tools · Issue {DESK_ISSUE}
             </Slug>
           </div>
 
           <div className="drop-cap text-body-md col-span-1 hidden border-r border-ink-black/20 pr-gutter text-on-surface-variant md:col-span-4 md:block lg:col-span-3">
-            The Veritas cluster reads an artifact at five desks that never see each other&rsquo;s
-            working. A sixth weighs what they filed and signs one determination. Each desk states
-            what it reads, what it looks for, and what it will not rule on.
+            The Veritas tools read an artifact in the form you hand it over. Each one states
+            what it reads, what it looks for, and what it can return with evidence.
           </div>
 
           <div className="col-span-1 grid grid-cols-1 gap-gutter sm:grid-cols-2 md:col-span-8 lg:col-span-9 lg:grid-cols-3">
             {DESKS_ON_THE_FRONT.map((desk) => {
-              /* The core is set in reverse: it signs, the others report. */
-              const core = desk.id === "decision";
               return (
                 <Link href={`/intel/${desk.id}`} key={desk.id} className="group block">
                   <article
-                    className={`glass-card relative flex h-full cursor-pointer flex-col border border-transparent p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
-                      core
-                        ? "bg-ink-black text-parchment hover:border-secondary/40"
-                        : "hover:border-secondary/20"
-                    }`}
+                    className="glass-card relative flex h-full cursor-pointer flex-col border border-transparent p-6 transition-all duration-300 hover:-translate-y-1 hover:border-secondary/20 hover:shadow-xl"
                   >
                     <div
                       aria-hidden
@@ -83,57 +76,41 @@ export default function AgentsSection() {
                     />
                     <div
                       aria-hidden
-                      className={`absolute top-0 right-0 mt-2 mr-2 h-4 w-4 border-t border-r transition-colors group-hover:border-secondary ${
-                        core ? "border-parchment/40" : "border-ink-black/40"
-                      }`}
+                      className="absolute top-0 right-0 mt-2 mr-2 h-4 w-4 border-t border-r border-ink-black/40 transition-colors group-hover:border-secondary"
                     />
 
                     {/* The desk's own number, set as a figure. It was a 3rem icon
                         glyph from a font the app never loaded. */}
                     <span
                       aria-hidden
-                      className={`font-masthead tabular block text-[52px] leading-none font-black tracking-[-0.04em] transition-colors group-hover:text-gold-foil ${
-                        core ? "text-secondary" : "text-ink-black/25"
-                      }`}
+                      className="font-masthead tabular block text-[52px] leading-none font-black tracking-[-0.04em] text-ink-black/25 transition-colors group-hover:text-gold-foil"
                     >
                       {desk.number}
                     </span>
 
-                    <Slug className={`mt-5 block ${core ? "text-parchment/60" : "text-ink-black/55"}`}>
+                    <Slug className="mt-5 block text-ink-black/55">
                       {desk.eyebrow}
                     </Slug>
                     {/* The desk's name is the card's heading; the eyebrow above it
                         is a label, so it is not marked up as one. */}
                     <h3
-                      className={`font-headline-md mt-2 mb-3 text-2xl transition-colors ${
-                        core
-                          ? "text-parchment group-hover:text-white"
-                          : "text-ink-black group-hover:text-primary"
-                      }`}
+                      className="font-headline-md mt-2 mb-3 text-2xl text-ink-black transition-colors group-hover:text-primary"
                     >
                       {desk.name}
                     </h3>
                     <p
-                      className={`font-body-sm mb-4 flex-grow text-sm ${
-                        core ? "text-parchment/80" : "text-on-surface-variant"
-                      }`}
+                      className="font-body-sm mb-4 flex-grow text-sm text-on-surface-variant"
                     >
                       {desk.standfirst}
                     </p>
 
-                    <div
-                      className={`mt-auto flex items-center justify-between gap-3 border-t pt-4 ${
-                        core ? "border-parchment/20" : "border-ink-black/10"
-                      }`}
-                    >
-                      <Slug className={core ? "text-parchment/55" : "text-ink-black/50"}>
+                    <div className="mt-auto flex items-center justify-between gap-3 border-t border-ink-black/10 pt-4">
+                      <Slug className="text-ink-black/50">
                         Reads {desk.method[0].value.toLowerCase()}
                       </Slug>
                       <span
                         aria-hidden
-                        className={`shrink-0 text-[15px] leading-none transition-transform group-hover:translate-x-1 group-hover:text-secondary ${
-                          core ? "text-parchment/40" : "text-ink-black/40"
-                        }`}
+                        className="shrink-0 text-[15px] leading-none text-ink-black/40 transition-transform group-hover:translate-x-1 group-hover:text-secondary"
                       >
                         &rarr;
                       </span>
