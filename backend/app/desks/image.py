@@ -69,7 +69,7 @@ class ImageDesk:
     ) -> DeskReport:
         data = await self._fetch(artifact)
         if (
-            self._settings.OPENAI_API_KEY
+            self._settings.chat_api_key()
             or self._settings.VISION_API_KEY
             or self._settings.GOOGLE_VISION_API_KEY
         ):
