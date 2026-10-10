@@ -259,11 +259,12 @@ def _has_subject(children: list[Token]) -> bool:
 
 
 def _content_tokens(clause: Clause) -> int:
-    """How many tokens carry content: words and numbers, not punctuation or space."""
+    """How many tokens carry content: words, named tokens and numbers."""
     return sum(
         1
         for token in clause.tokens
-        if (token.is_alpha or token.like_num) and not token.is_space
+        if (token.is_alpha or token.like_num or token.pos_ in {"NOUN", "PROPN"})
+        and not token.is_space
     )
 
 
