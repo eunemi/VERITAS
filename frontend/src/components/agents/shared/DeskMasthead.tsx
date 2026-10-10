@@ -37,10 +37,10 @@ export function MethodNote({ desk }: { desk: DeskDefinition }) {
  */
 export function DeskMasthead({ desk }: { desk: DeskDefinition }) {
   return (
-    <header className="grid gap-stack-lg pt-stack-lg pb-stack-md lg:grid-cols-12 lg:gap-gutter">
+    <header className="grid gap-stack-md pt-stack-md pb-stack-sm lg:grid-cols-12 lg:gap-gutter">
       <div className="lg:col-span-12">
         <Slug className="text-secondary">{desk.eyebrow}</Slug>
-        <h1 className="mt-stack-sm font-masthead text-[clamp(46px,8.5vw,100px)] leading-[0.92] font-black tracking-[-0.025em] text-ink-black">
+        <h1 className="mt-stack-sm font-masthead text-[clamp(42px,7vw,84px)] leading-[0.94] font-black tracking-[-0.025em] text-ink-black">
           {desk.titleLines.map((line, index) => (
             <span
               key={line}
@@ -50,7 +50,7 @@ export function DeskMasthead({ desk }: { desk: DeskDefinition }) {
             </span>
           ))}
         </h1>
-        <p className="mt-stack-md max-w-[52ch] font-headline-md text-[19px] leading-[31px] font-normal text-ink-black/70 italic">
+        <p className="mt-stack-sm max-w-[52ch] font-headline-md text-[18px] leading-[29px] font-normal text-ink-black/70 italic">
           {desk.standfirst}
         </p>
       </div>
