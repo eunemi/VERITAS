@@ -66,7 +66,7 @@ _WORD = re.compile(r"[^\W\d_]+(?:['’‐-][^\W\d_]+)*", re.UNICODE)
 #: :func:`words` already has it.
 _NUMBER = re.compile(
     r"""
-    (?<![\w.])
+     (?<![\w.‐-])
     [$£€¥]?
     (?P<digits>
         \d{1,3}(?:,\d{3})+(?:\.\d+)?      # 1,234 or 1,234,567.89
