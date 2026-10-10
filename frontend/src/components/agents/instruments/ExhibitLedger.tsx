@@ -9,20 +9,20 @@ import { TONE_TEXT, toneOf, type Exhibit } from "@/lib/types/agents";
  * relied on, and what it says. Nothing is filtered out for tidiness — a check
  * that only shows agreeing sources is not a check.
  */
-export function ExhibitLedger({ claim, exhibits }: { claim: string; exhibits: Exhibit[] }) {
+export function ExhibitLedger({ claim, exhibits }: { claim?: string; exhibits: Exhibit[] }) {
   return (
     <section>
-      <SectionHead title="The claim, as stated" note="Examined verbatim" />
+      {claim ? <><SectionHead title="The claim, as stated" note="Examined verbatim" />
 
       <blockquote className="mt-stack-md border-l-2 border-secondary pl-5 md:pl-7">
         <p className="font-headline-md text-[clamp(22px,2.6vw,31px)] leading-[1.28] font-normal text-ink-black italic">
           &ldquo;{claim}&rdquo;
         </p>
-      </blockquote>
+      </blockquote></> : null}
 
       <div className="mt-stack-xl">
         <SectionHead
-          title="Exhibits"
+          title="Web evidence & sources"
           note={`${String(exhibits.length).padStart(2, "0")} returned · listed as found`}
         />
 
@@ -52,9 +52,14 @@ export function ExhibitLedger({ claim, exhibits }: { claim: string; exhibits: Ex
 
                 <div>
                   <p className="font-body-md text-body-md leading-snug text-ink-black">
-                    {exhibit.source}
+                    {exhibit.url && /^https?:\/\//i.test(exhibit.url) ? (
+                      <a href={exhibit.url} target="_blank" rel="noopener noreferrer" className="underline decoration-ink-black/30 underline-offset-4 hover:text-secondary">
+                        {exhibit.source} ↗
+                      </a>
+                    ) : exhibit.source}
                   </p>
                   <Slug className={`mt-2 block ${TONE_TEXT[tone]}`}>{exhibit.determination}</Slug>
+                  {exhibit.claim_ref ? <Slug className="mt-1 block text-ink-black/50">Claim {exhibit.claim_ref}</Slug> : null}
                 </div>
 
                 <Slug className="tabular col-start-2 text-ink-black/45 lg:col-start-auto">
@@ -65,13 +70,18 @@ export function ExhibitLedger({ claim, exhibits }: { claim: string; exhibits: Ex
                   {exhibit.reliability} · {exhibit.relevance} relevance
                 </Slug>
 
-                <p className="font-proof col-start-2 max-w-[52ch] text-[16px] leading-[27px] text-ink-black/80 lg:col-start-auto">
-                  {exhibit.extract}
-                </p>
+                <div className="font-proof col-start-2 max-w-[52ch] break-words text-[16px] leading-[27px] text-ink-black/80 lg:col-start-auto">
+                  <p>{exhibit.extract.length > 450 ? `${exhibit.extract.slice(0, 450)}…` : exhibit.extract}</p>
+                  {exhibit.extract.length > 450 ? <details className="mt-2">
+                    <summary className="cursor-pointer text-sm underline underline-offset-4">Read full excerpt</summary>
+                    <p className="mt-2 whitespace-pre-wrap">{exhibit.extract}</p>
+                  </details> : null}
+                </div>
               </li>
             );
           })}
         </ol>
+        {exhibits.length === 0 ? <p className="py-5 text-ink-black/60">No usable web sources were returned. This does not establish whether the submission is true or false.</p> : null}
       </div>
     </section>
   );
