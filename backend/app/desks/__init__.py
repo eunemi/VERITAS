@@ -24,12 +24,10 @@ top-level import closes that loop and leaves whichever end was imported first
 half-initialised. The lazy import is load-bearing, not a style choice.
 """
 
-
-
 from __future__ import annotations
 
+from app.core.config import Settings
 from app.core.registry import ProviderRegistry
-
 from app.desks.base import Adjudicator, ArtifactDesk
 from app.desks.decision import DecisionDesk
 from app.desks.decision import build as build_decision
@@ -39,7 +37,6 @@ from app.desks.image import ImageDesk
 from app.desks.image import build as build_image
 from app.desks.text import TextDesk
 from app.desks.text import build as build_text
-
 from app.domain import Desk
 
 #: The five desks that read an artifact, keyed by which desk they are.
@@ -57,9 +54,13 @@ examiners.register(Desk.FACT_CHECK, build_factcheck)
 adjudicators.register(Desk.DECISION, build_decision)
 
 
-def get_examiner(desk: Desk) -> ArtifactDesk:
+def get_examiner(desk: Desk, settings: Settings | None = None) -> ArtifactDesk:
     """Return the desk that examines artifacts for ``desk``."""
-    return examiners.resolve(desk)
+    return (
+        examiners.resolve(desk, settings)
+        if settings is not None
+        else examiners.resolve(desk)
+    )
 
 
 def get_adjudicator(desk: Desk) -> Adjudicator:
@@ -70,12 +71,10 @@ def get_adjudicator(desk: Desk) -> Adjudicator:
 __all__ = [
     "Adjudicator",
     "ArtifactDesk",
-
     "DecisionDesk",
     "FactCheckDesk",
     "ImageDesk",
     "TextDesk",
-
     "adjudicators",
     "examiners",
     "get_adjudicator",
