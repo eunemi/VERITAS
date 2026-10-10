@@ -46,7 +46,7 @@ class ClaimExtractionService:
         """
         ensure_within_limit(text, limit=self._settings.MAX_TEXT_CHARS, field="text")
         if self._settings.CLAIM_EXTRACTION_LLM and (
-            self._settings.OPENAI_API_KEY
+            self._settings.chat_api_key()
             or self._settings.LLM_PROVIDER is LLMProvider.OLLAMA
         ):
             from app.nlp.llm import extract
