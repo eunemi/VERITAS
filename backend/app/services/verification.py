@@ -165,7 +165,7 @@ class VerificationService:
 
             for desk in record.examining_desks:
                 await self._repository.start_desk(verification_id, desk)
-                report = await get_examiner(desk).examine(
+                report = await get_examiner(desk, self._settings).examine(
                     record.artifact, verification_id=verification_id
                 )
                 await self._repository.add_report(verification_id, report)
