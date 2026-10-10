@@ -54,6 +54,7 @@ export default function TextDesk() {
             onChange={setCopy}
             scanning={working}
             onBusy={setUploading}
+            allowUpload={false}
             placeholder="Paste the article, statement or caption to be examined."
           />
           {status === "bench" && !copy ? (
