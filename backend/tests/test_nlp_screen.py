@@ -89,6 +89,16 @@ def test_a_false_claim_is_still_checkable(nlp_resources: Resources) -> None:
     assert reason == ""
 
 
+def test_a_hyphenated_named_subject_is_not_rejected_as_too_short(
+    nlp_resources: Resources,
+) -> None:
+    """Short news headlines often contain a hyphenated proper name."""
+    checkable, reason = verdict(nlp_resources, "Chandrayaan-3 landed on Mars.")
+
+    assert checkable is True
+    assert reason == ""
+
+
 # ------------------------------------------------------------------ it refuses ----
 
 
