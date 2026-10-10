@@ -4,38 +4,37 @@ export function Determination({
   verdict,
   signedBy,
   exhibits,
+  scope = "Verification result",
 }: {
   verdict: Verdict;
   signedBy: string;
   exhibits?: Exhibit[];
+  scope?: string;
 }) {
-  const isTrue = ["SUPPORTED", "CONSISTENT", "CLEAR"].includes(verdict.determination);
-  const isFalse = ["CONTRADICTED", "CONTESTED", "ANOMALOUS", "SYNTHETIC"].includes(verdict.determination);
-  
-  let titleText = isTrue ? "✅ TRUE" : isFalse ? "❌ FALSE" : "⚠️ UNVERIFIED";
-  
-  // If this is an extraction desk (not the final fact-check or decision desk), 
-  // REQUIRES VERIFICATION means it successfully extracted claims.
-  const isExtractionDesk = !signedBy.includes("decision core") && !signedBy.includes("source desk");
-  if (isExtractionDesk) {
-    if (verdict.determination === "REQUIRES VERIFICATION") {
-      titleText = "✅ EXTRACTION COMPLETE";
-    } else if (verdict.determination === "INSUFFICIENT") {
-      titleText = "⚠️ NO CLAIMS FOUND";
-    }
-  }
+  const titleText = {
+    SUPPORTED: "✅ TRUE — SUPPORTED",
+    CONTRADICTED: "❌ FALSE — CONTRADICTED",
+    CONTESTED: "⚖ MIXED / CONTESTED",
+    INSUFFICIENT: "⚠ UNVERIFIED",
+    "REQUIRES VERIFICATION": "VERIFICATION REQUIRED",
+    CONSISTENT: "CONSISTENT",
+    CLEAR: "CLEAR",
+    ANOMALOUS: "ANOMALIES FOUND",
+    SYNTHETIC: "SYNTHETIC",
+  }[verdict.determination];
 
 
   return (
     <div className="border-t-2 border-ink-black bg-parchment pt-10 pb-16 px-6">
       <div className="max-w-3xl mx-auto flex flex-col gap-6">
+        <p className="font-mono-label text-sm uppercase tracking-wider text-ink-black/60">{scope}</p>
         <h2 className="text-4xl font-bold font-serif-heading uppercase tracking-wide text-ink-black">
           {titleText}
         </h2>
         
-        {!isExtractionDesk && (
+        {verdict.confidenceValue > 0 && verdict.determination !== "INSUFFICIENT" && (
           <div className="text-lg font-serif-body font-bold text-ink-black">
-            Confidence: {verdict.confidence}
+            Assessment confidence: {verdict.confidence}
           </div>
         )}
 
