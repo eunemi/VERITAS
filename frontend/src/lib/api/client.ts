@@ -83,6 +83,8 @@ export interface ExhibitOut {
   reliability: Reliability;
   determination: Determination;
   extract: string;
+  url?: string;
+  claim_ref?: number | null;
 }
 
 /** Percentages of the frame. `ref` is 0 for a region that produced no claim. */
@@ -100,6 +102,12 @@ export interface ImageDetailOut {
   height: number;
   text: string;
   regions: PlateRegionOut[];
+  description?: string;
+  observations?: string[];
+  provenance?: string;
+  web_status?: string;
+  limitations?: string[];
+  metadata?: LedgerEntryOut[];
 }
 
 
@@ -213,6 +221,7 @@ export interface MediaArtifactIn {
   kind: "image";
   url: string;
   filename?: string | null;
+  content?: string | null;
 }
 
 export type ArtifactIn =
@@ -324,6 +333,9 @@ export async function request<T>(
   try {
     response = await fetch(`${apiBaseUrl}${path}`, {
       ...init,
+      signal: init.signal
+        ? AbortSignal.any([init.signal, AbortSignal.timeout(90_000)])
+        : AbortSignal.timeout(90_000),
       // Caller headers land last so an explicit one wins; the token is spread in
       // before them and never overwrites a header a call site set on purpose.
       headers: {
@@ -358,11 +370,11 @@ export async function request<T>(
   }
 
   if (!response.ok) {
-    const envelope = (parsed ?? {}) as ErrorEnvelope;
+    const envelope = (parsed ?? {}) as ErrorEnvelope & { detail?: string };
     const error = envelope.error ?? {};
     throw new ApiError(
       error.code ?? `http_${response.status}`,
-      error.message ?? `The service answered ${response.status}.`,
+      error.message ?? (typeof envelope.detail === "string" ? envelope.detail : `The service answered ${response.status}.`),
       response.status,
       error.details ?? null,
       error.request_id ?? requestId,
@@ -447,7 +459,7 @@ export async function readVerificationHistory(
 
 const FIRST_POLL_MS = 600;
 const MAX_POLL_MS = 2_500;
-const DEFAULT_DEADLINE_MS = 180_000;
+const DEFAULT_DEADLINE_MS = 300_000;
 
 export interface PollOptions extends CallOptions {
   /** Called with every reading, terminal one included. */
