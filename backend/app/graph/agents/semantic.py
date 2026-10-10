@@ -49,6 +49,12 @@ class SemanticJudge:
 
         rulings = tuple(await asyncio.gather(*(read(case) for case in found)))
         ruling = _overall(rulings)
+        explanations = [
+            f"Claim {item.ref}: {item.insufficiency or item.explanation}"
+            for item in rulings[:3]
+            if item.insufficiency or item.explanation
+        ]
+        ruling = replace(ruling, rationale=" ".join([ruling.rationale, *explanations]))
         capped = [
             s
             for s in state.get("skipped", ())
@@ -136,6 +142,12 @@ class SemanticJudge:
                     "The evidence reader is rate-limited. Live sources are shown "
                     "below; retry shortly to complete the verdict."
                 )
+            if exc.details and exc.details.get("status") in (401, 403):
+                return unknown(
+                    "The verification model rejected its credentials. Live sources "
+                    "were found, but a true/false assessment could not run. "
+                    "Check the API key for the configured provider."
+                )
             return unknown(
                 "Live sources were retrieved, but the evidence reader was "
                 f"unavailable ({exc.code}). Retry after checking model configuration."
@@ -209,6 +221,7 @@ class SemanticJudge:
             else "",
             support=sum(c.stance == "supports" for c in valid),
             refute=sum(c.stance == "refutes" for c in valid),
+            explanation=result.explanation,
         )
 
 
