@@ -73,6 +73,11 @@ Text-only deployments without a model can retain spaCy extraction by setting
 the configured language model. OCR falls back to Tesseract when visual analysis is
 unavailable. The online vision path does not require Tesseract or YOLO.
 
+If the configured language-model key expires or the provider is unavailable, text
+claim extraction automatically falls back to the installed spaCy extractor. The
+verification still completes and publishes the live sources it found; the semantic
+verdict is reported as insufficient until a working language-model key is configured.
+
 ## Checks
 
 ```bash
