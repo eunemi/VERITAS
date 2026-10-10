@@ -66,7 +66,7 @@ export function SubmissionBench({
           type="button"
           onClick={onSubmit}
           disabled={disabled}
-          className="wax-seal font-mono-label text-mono-label flex h-28 w-28 shrink-0 cursor-pointer items-center justify-center rounded-full text-center leading-[1.4] tracking-widest text-parchment uppercase transition-all duration-300 hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:scale-100"
+          className="wax-seal font-mono-label text-mono-label flex h-24 w-24 shrink-0 cursor-pointer items-center justify-center rounded-full text-center leading-[1.4] tracking-widest text-parchment uppercase transition-all duration-300 hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:scale-100"
         >
           {actionLines[0]}
           <br />
