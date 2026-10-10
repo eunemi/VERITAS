@@ -195,16 +195,35 @@ async def test_empty_prose_is_an_insufficiency(body: str) -> None:
     assert report.annotations == ()
 
 
-async def test_a_url_says_the_fetch_is_not_built_rather_than_that_it_was_empty() -> (
-    None
-):
-    """Two different states, and a reader who cannot tell them apart is misinformed."""
+async def test_a_url_reports_when_the_page_cannot_be_read(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A reachable URL and an unreadable page remain distinct from empty copy."""
+    async def no_page(*args: Any, **kwargs: Any) -> str:
+        return ""
+
+    monkeypatch.setattr("app.desks.text.fetch.fetch_text", no_page)
     report = await desk().examine(
         Artifact(kind=ArtifactKind.URL, url="https://example.test/story")
     )
-    assert "fetching the article behind it is not built yet" in (
-        report.verdict.rationale
+    assert "page could not be read" in report.verdict.rationale
+
+
+async def test_a_url_page_is_fetched_before_claim_extraction(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fetched(*args: Any, **kwargs: Any) -> str:
+        return SAMPLE_TEXT
+
+    monkeypatch.setattr("app.desks.text.fetch.fetch_text", fetched)
+    stub = StubClaimExtractor(extraction=sample_extraction())
+
+    report = await seated(stub).examine(
+        Artifact(kind=ArtifactKind.URL, url="https://example.test/story")
     )
+
+    assert report.verdict.determination is Determination.REQUIRES_VERIFICATION
+    assert stub.seen == [SAMPLE_TEXT]
 
 
 async def test_empty_prose_never_reaches_the_extractor() -> None:
