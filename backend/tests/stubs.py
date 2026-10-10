@@ -173,8 +173,9 @@ def desk_bench(
     later resolve in the session into a 501.
     """
     was = {desk: examiners.factory(desk) for desk in examining}
+    was_adjudicator = adjudicators.factory(ADJUDICATOR)
     for desk, stub in examining.items():
-        examiners.register(desk, lambda stub=stub: stub)
+        examiners.register(desk, lambda _settings=None, stub=stub: stub)
     if adjudicator is not None:
         adjudicators.register(ADJUDICATOR, lambda: adjudicator)
     try:
@@ -186,7 +187,10 @@ def desk_bench(
             else:
                 examiners.register(desk, previous)
         if adjudicator is not None:
-            adjudicators.unregister(ADJUDICATOR)
+            if was_adjudicator is not None:
+                adjudicators.register(ADJUDICATOR, was_adjudicator)
+            else:
+                adjudicators.unregister(ADJUDICATOR)
 
 
 # --------------------------------------------------- claim extraction ----
