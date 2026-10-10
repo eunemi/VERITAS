@@ -352,17 +352,36 @@ async def test_empty_content_is_an_insufficiency_and_never_reaches_the_graph(
     assert report.exhibits == ()
 
 
-async def test_a_url_says_the_fetch_is_not_built_rather_than_that_it_was_empty() -> (
-    None
-):
-    """Two different states, and a reader who cannot tell them apart is misinformed."""
+async def test_a_url_reports_when_the_page_cannot_be_read(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A URL failure is reported as insufficient evidence, not a fake verdict."""
+    async def no_page(*args: Any, **kwargs: Any) -> str:
+        return ""
+
+    monkeypatch.setattr("app.desks.factcheck.fetch.fetch_text", no_page)
     examiner, _ = desk(await judged(state(PAIR)))
     report = await examiner.examine(
         Artifact(kind=ArtifactKind.URL, url="https://example.test/story")
     )
-    assert "fetching the article behind it is not built yet" in (
-        report.verdict.rationale
-    )
+    assert "page could not be read" in report.verdict.rationale
+
+
+async def test_a_fetched_url_reaches_the_graph_as_text(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fetched(*args: Any, **kwargs: Any) -> str:
+        return CLAIM
+
+    monkeypatch.setattr("app.desks.factcheck.fetch.fetch_text", fetched)
+    examiner, graph = desk(await judged(state(PAIR)))
+
+    await examiner.examine(Artifact(kind=ArtifactKind.URL, url="https://example.test/story"))
+
+    assert len(graph.seen) == 1
+    assert graph.seen[0].kind is ArtifactKind.TEXT
+    assert graph.seen[0].content == CLAIM
+    assert graph.seen[0].url == "https://example.test/story"
 
 
 async def test_the_artifact_reaches_the_graph_unchanged() -> None:
