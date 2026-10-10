@@ -21,6 +21,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from typing import Any
+from urllib.parse import urlsplit
 
 from app.core.config import Settings
 from app.core.errors import ConfigurationError, LLMError
@@ -49,11 +50,15 @@ class OpenAIClient(Http):
     error = LLMError
 
     def __init__(self, settings: Settings) -> None:
-        if settings.OPENAI_API_KEY is None:
+        if urlsplit(settings.OPENAI_BASE_URL).hostname == "api.groq.com":
+            self.name = "groq"
+        key = settings.chat_api_key()
+        if key is None:
             raise ConfigurationError(
-                "OPENAI_API_KEY is not set", details={"provider": self.name}
+                "GROQ_API_KEY is not set" if self.name == "groq" else "OPENAI_API_KEY is not set",
+                details={"provider": self.name},
             )
-        self._key = settings.OPENAI_API_KEY.get_secret_value()
+        self._key = key.get_secret_value()
         super().__init__(
             timeout=settings.LLM_TIMEOUT_SECONDS,
             # Attempts, not retries: the setting counts retries, so a configured 2
