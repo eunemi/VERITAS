@@ -8,6 +8,7 @@ import re
 from pathlib import Path
 from uuid import uuid4
 
+import anyio.to_thread
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse
 
@@ -24,6 +25,7 @@ MEDIA_EXTENSIONS = frozenset(
         ".png",
         ".webp",
         ".gif",
+        ".avif",
     }
 )
 _STORED_NAME = re.compile(r"^[0-9a-f]{32}(?:\.[a-z0-9]{1,10})?$")
@@ -70,10 +72,12 @@ async def extract_text(
             ) from exc
     try:
         if extension == ".pdf":
-            import pdfplumber
+            from pypdf import PdfReader
 
-            with pdfplumber.open(io.BytesIO(content)) as pdf:
-                text = "\n".join(page.extract_text() or "" for page in pdf.pages)
+            text = "\n".join(
+                page.extract_text() or ""
+                for page in PdfReader(io.BytesIO(content)).pages
+            )
         else:
             import docx
 
@@ -95,10 +99,11 @@ async def upload_media(
     """Store accepted media and return an API-served URL for verification."""
     extension = _extension(file)
     if extension not in MEDIA_EXTENSIONS:
-        raise HTTPException(
-            status_code=415, detail="Upload a supported image file."
-        )
+        raise HTTPException(status_code=415, detail="Upload a supported image file.")
     content = await _read_limited(file, settings.MAX_UPLOAD_BYTES)
+    from app.vision.context import prepare
+
+    await anyio.to_thread.run_sync(prepare, content)
     directory = Path(settings.UPLOAD_DIRECTORY).resolve()  # noqa: ASYNC240
     directory.mkdir(parents=True, exist_ok=True)
     stored_name = f"{uuid4().hex}{extension}"
