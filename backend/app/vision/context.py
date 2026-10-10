@@ -76,7 +76,8 @@ def prepare(data: bytes) -> Prepared:
 
 
 async def describe(image: Prepared, settings: Settings) -> Scene:
-    key = settings.VISION_API_KEY or settings.OPENAI_API_KEY
+    base_url = settings.VISION_BASE_URL or settings.OPENAI_BASE_URL
+    key = settings.VISION_API_KEY or settings.chat_api_key(base_url)
     if key is None:
         raise ConfigurationError(
             "Set VISION_API_KEY and VISION_MODEL to enable visual analysis."
@@ -84,8 +85,9 @@ async def describe(image: Prepared, settings: Settings) -> Scene:
     configured = settings.model_copy(
         update={
             "OPENAI_API_KEY": key,
+            "GROQ_API_KEY": key if urlsplit(base_url).hostname == "api.groq.com" else None,
             "OPENAI_MODEL": settings.VISION_MODEL,
-            "OPENAI_BASE_URL": settings.VISION_BASE_URL or settings.OPENAI_BASE_URL,
+            "OPENAI_BASE_URL": base_url,
         }
     )
     client = OpenAIClient(configured)
