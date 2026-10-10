@@ -156,6 +156,7 @@ class Http:
     #: Registered provider name. Also what appears in
     #: :attr:`~app.domain.research.Retrieval.provider`, so it is part of the API.
     name: str = "http"
+    max_backoff_seconds: float = MAX_BACKOFF_SECONDS
 
     #: The :class:`~app.core.errors.ProviderError` subclass this client's failures
     #: are raised as, and therefore the ``code`` a client sees on a partial result.
@@ -358,7 +359,7 @@ class Http:
             asked = _retry_after(response)
             if asked is not None:
                 backoff = max(backoff, asked)
-        await asyncio.sleep(min(backoff, MAX_BACKOFF_SECONDS))
+        await asyncio.sleep(min(backoff, self.max_backoff_seconds))
 
 
 def _message(response: httpx.Response) -> str:
