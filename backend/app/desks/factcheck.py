@@ -237,7 +237,6 @@ class FactCheckDesk:
     ) -> DeskReport:
         ruling = outcome.ruling
         rulings = {claim.ref: claim for claim in ruling.claims}
-        read = readings(ruling.claims, outcome.reasoning)
         exhibits, dropped = _exhibits(
             found, retrieved, rulings, limit=self._settings.EVIDENCE_TOP_K
         )
@@ -253,13 +252,40 @@ class FactCheckDesk:
                 *_ledger(outcome, found, indexed=indexed, dropped=dropped),
                 *model_ledger(outcome.reasoning),
             ),
-            annotations=_annotations(found, rulings, read),
+            annotations=claim_annotations(outcome),
             signals=_signals(found, ruling, retrieved),
             exhibits=exhibits,
         )
 
 
 # ------------------------------------------------------------------ exhibits ---
+
+
+def evidence_exhibits(outcome: Outcome, limit: int = 8) -> tuple[Exhibit, ...]:
+    return _exhibits(
+        cases(outcome.state), {}, {r.ref: r for r in outcome.ruling.claims}, limit=limit
+    )[0]
+
+
+def claim_annotations(outcome: Outcome) -> tuple[Annotation, ...]:
+    checked = _annotations(
+        cases(outcome.state),
+        {r.ref: r for r in outcome.ruling.claims},
+        readings(outcome.ruling.claims, outcome.reasoning),
+    )
+    start = max((a.ref for a in checked), default=0) + 1
+    artifact = outcome.state.get("artifact")
+    copy = artifact.content or "" if artifact else ""
+    skipped = tuple(
+        Annotation(
+            ref=start + n,
+            quote=item.claim if item.claim in copy else "",
+            note=f"Not checked: {item.claim} — {item.reason}",
+            determination=Determination.INSUFFICIENT,
+        )
+        for n, item in enumerate(outcome.state.get("skipped", ()))
+    )
+    return (*checked, *skipped)
 
 
 def _exhibits(
@@ -282,7 +308,14 @@ def _exhibits(
     for case in found:
         nearest = _nearest(retrieved.get(case.claim.ref, ()))
         ordered = _ordered(case.sources, nearest)
-        bearings = _bearings(rulings.get(case.claim.ref))
+        claim_ruling = rulings.get(case.claim.ref)
+        bearings = _bearings(claim_ruling)
+        cited = (
+            {i.ref: i.quote for i in claim_ruling.indications if i.ref and i.quote}
+            if claim_ruling
+            else {}
+        )
+        ordered.sort(key=lambda s: s.ref not in cited)
         for source in ordered[:limit]:
             _, quote = nearest.get(source.ref, (0.0, ""))
             exhibits.append(
@@ -293,7 +326,9 @@ def _exhibits(
                     relevance=_relevance(source),
                     reliability=_reliability(case.credibility_of(source.ref)),
                     determination=_bears(bearings.get(source.ref, frozenset()), source),
-                    extract=quote or _extract(source),
+                    extract=cited.get(source.ref) or quote or _extract(source),
+                    url=source.url,
+                    claim_ref=case.claim.ref,
                 )
             )
         dropped += max(0, len(ordered) - limit)
@@ -474,6 +509,12 @@ def _ledger(
     skipped = outcome.state.get("skipped", ())
 
     entries = [
+        LedgerEntry(
+            "Checked at",
+            outcome.state["now"].strftime("%d %b %Y, %H:%M UTC")
+            if outcome.state.get("now")
+            else "Not recorded",
+        ),
         LedgerEntry("Claims checked", str(len(found))),
         LedgerEntry("Sources found", str(len(sources))),
         LedgerEntry("Publishers", str(len({s.domain for s in sources}))),
@@ -493,6 +534,14 @@ def _ledger(
         entries.append(LedgerEntry("Passages indexed", str(indexed)))
     if dropped:
         entries.append(LedgerEntry("Sources not shown", str(dropped)))
+    for provider in providers:
+        if provider.status not in (ProviderStatus.SEARCHED, ProviderStatus.PARTIAL):
+            entries.append(
+                LedgerEntry(
+                    f"Search: {provider.provider}",
+                    provider.detail or str(provider.status),
+                )
+            )
     return tuple(entries)
 
 
