@@ -77,6 +77,7 @@ export interface TextRecord extends RecordBase {
   /** The copy as submitted. Annotated in place by the galley proof. */
   copy: string;
   signals: Signal[];
+  exhibits: Exhibit[];
 }
 
 /* --------------------------------------------------------------- image ---- */
@@ -106,6 +107,13 @@ export interface ImageRecord extends RecordBase {
   /** What the desk measured on the frame: recovered text, detections. */
   signals: Signal[];
   extractedText: string;
+  exhibits: Exhibit[];
+  description: string;
+  observations: string[];
+  provenance: string;
+  webStatus: string;
+  limitations: string[];
+  metadata: LedgerEntry[];
 }
 
 
@@ -126,6 +134,8 @@ export interface Exhibit {
   reliability: Reliability;
   determination: Determination;
   extract: string;
+  url?: string;
+  claim_ref?: number | null;
 }
 
 export interface FactCheckRecord extends RecordBase {
