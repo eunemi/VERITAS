@@ -112,6 +112,7 @@ class _Outcome:
     def __init__(self, ruling: Ruling, reasoning: tuple[Reasoning, ...] = ()) -> None:
         self.ruling = ruling
         self.reasoning = reasoning
+        self.state = {}
 
 
 @contextmanager
