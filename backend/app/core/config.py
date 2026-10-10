@@ -18,6 +18,7 @@ from enum import StrEnum
 from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Literal
+from urllib.parse import urlsplit
 
 from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
@@ -217,6 +218,9 @@ class Settings(BaseSettings):
     LLM_MAX_RETRIES: int = 2
 
     OPENAI_API_KEY: SecretStr | None = None
+    # A Groq key must not be replaced by an unrelated OPENAI_API_KEY exported by
+    # the terminal. Keep the credential tied to its provider's exact hostname.
+    GROQ_API_KEY: SecretStr | None = None
     OPENAI_MODEL: str = "gpt-4o-mini"
     VISION_MODEL: str = "gpt-4o-mini"
     VISION_API_KEY: SecretStr | None = None
@@ -227,6 +231,11 @@ class Settings(BaseSettings):
     #: is spoken by more than OpenAI — vLLM, llama.cpp, LM Studio and several
     #: hosted vendors — so pointing at one of those is a setting, not a client.
     OPENAI_BASE_URL: str = "https://api.openai.com/v1"
+
+    def chat_api_key(self, base_url: str | None = None) -> SecretStr | None:
+        if urlsplit(base_url or self.OPENAI_BASE_URL).hostname == "api.groq.com":
+            return self.GROQ_API_KEY
+        return self.OPENAI_API_KEY
 
     #: Local Llama 3 via Ollama. No key; the base URL is the whole config.
     OLLAMA_BASE_URL: str = "http://localhost:11434"
@@ -622,7 +631,7 @@ class Settings(BaseSettings):
     # ------------------------------------------------------- validation ----
 
     @field_validator(
-        "OPENAI_API_KEY", "VISION_API_KEY", "GOOGLE_VISION_API_KEY",
+        "OPENAI_API_KEY", "GROQ_API_KEY", "VISION_API_KEY", "GOOGLE_VISION_API_KEY",
         "TAVILY_API_KEY", "BRAVE_API_KEY", "SERPER_API_KEY",
         "GOOGLE_FACT_CHECK_API_KEY", "JWT_SECRET_KEY", mode="before",
     )
