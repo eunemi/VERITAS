@@ -54,7 +54,9 @@ export default function TextDesk() {
             onChange={setCopy}
             scanning={working}
             onBusy={setUploading}
-            allowUpload={false}
+            allowUpload
+            accept=".pdf,.docx,.md,.txt"
+            uploadLabel="[ UPLOAD TEXT / DOC ]"
             placeholder="Paste the article, statement or caption to be examined."
           />
           {status === "bench" && !copy ? (
