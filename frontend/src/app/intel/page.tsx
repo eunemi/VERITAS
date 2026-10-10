@@ -20,21 +20,20 @@ export const metadata: Metadata = {
  * copy comes from `@/lib/desks`, so the index cannot drift from the desks.
  */
 
-const CORE = DESKS.decision;
-const REPORTING = DESK_ORDER.filter((id) => id !== CORE.id).map((id) => DESKS[id]);
+const REPORTING = DESK_ORDER.map((id) => DESKS[id]);
 
 const MOVEMENTS = [
   {
     heading: "The artifact is typed",
-    body: "Whatever you hand over is read for what it is first — copy, a single claim, a frame or a recording. Only the desks that can read that type open a file on it.",
+    body: "Whatever you hand over is read for what it is first — copy, a document, a frame or a page link. The matching tool opens a file on it.",
   },
   {
     heading: "Each desk reads it alone",
     body: "No desk sees another's working. Each marks what it finds on the artifact itself, by exhibit number, so every finding has a place on the page. A desk that finds nothing files that too.",
   },
   {
-    heading: "The core signs one record",
-    body: "Agent 06 reads what was filed and publishes the gravest determination among them, at the confidence of the desks that filed it. A single adverse finding is never averaged away by desks that found nothing.",
+    heading: "The record stays traceable",
+    body: "Each result explains what was checked, what the evidence says, and where the sources came from. Nothing is hidden behind a single status light.",
   },
 ];
 
@@ -92,13 +91,13 @@ export default function IntelPage() {
       <PageHeader
         section="Intelligence desk"
         standing="Register of desks"
-        kicker={`${DESK_ORDER.length} desks, one record`}
+        kicker={`${DESK_ORDER.length} tools, one record`}
         title={["How Veritas", "reads a thing."]}
         lede="Nothing here is a verdict machine. Each desk states what it looked at, what it found, and what it could not tell you."
       />
 
       <Spread className="pb-stack-xl">
-        <SectionHead title="The order of work" note={`${REPORTING.length} report, one signs`} />
+        <SectionHead title="The order of work" note={`${REPORTING.length} tools, one record`} />
         <ol className="mt-stack-md grid gap-stack-md md:grid-cols-3 md:gap-gutter">
           {MOVEMENTS.map((movement, index) => (
             <li key={movement.heading} className="border-t border-ink-black/25 pt-stack-sm">
@@ -115,18 +114,11 @@ export default function IntelPage() {
       </Spread>
 
       <Spread className="pb-stack-xl">
-        <SectionHead title="The reporting desks" note="Each works on the artifact itself" />
+        <SectionHead title="The verification tools" note="Choose the form you have" />
         <ol className="mt-stack-md">
           {REPORTING.map((desk) => (
             <RegisterEntry key={desk.id} desk={desk} />
           ))}
-        </ol>
-      </Spread>
-
-      <Spread className="pb-stack-xl">
-        <SectionHead title="Adjudication" note="Sits after the reporting desks" />
-        <ol className="mt-stack-md">
-          <RegisterEntry desk={CORE} />
         </ol>
       </Spread>
 
