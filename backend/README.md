@@ -136,6 +136,11 @@ its owner could never list.
 `url` carries `url`; `image` carries `url` and an optional
 `filename`. Anything else in the object is rejected rather than ignored.
 
+URL submissions are fetched by the text and fact-check desks with the same public-host,
+redirect and byte-limit protections used for media. HTML is reduced to readable page
+copy before claims are extracted, so a URL result checks the claims actually published
+on that page rather than the address string itself.
+
 `desks` is optional. Omitted, the roster follows the artifact's kind — copy opens
 the text and fact-check desks, for instance. Supplied, it is checked against that table and
 normalised, so `["fact-check", "text"]` and `["text", "fact-check"]` produce the same
