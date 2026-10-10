@@ -17,7 +17,7 @@ from app.graph.verdict import Judgement
 from app.repositories.sql.coding import dump_detail, load_detail
 from app.schemas.verification import MediaArtifactIn
 from app.vision import context
-from tests.graph_bench import state
+from tests.graph_bench import reported, state
 from tests.research_bench import source
 
 
@@ -87,6 +87,19 @@ async def test_model_outage_does_not_turn_word_overlap_into_truth(monkeypatch):
         semantic, "ask", AsyncMock(side_effect=ConfigurationError("model unavailable"))
     )
     result = await SemanticJudge(Settings(_env_file=None))(gathered())
+    assert result["ruling"].judgement is Judgement.UNCERTAIN
+    assert result["ruling"].confidence == 0
+    assert "evidence reader was unavailable" in result["ruling"].rationale
+
+
+async def test_model_outage_cannot_turn_matching_figures_into_truth(monkeypatch):
+    monkeypatch.setattr(
+        semantic, "ask", AsyncMock(side_effect=ConfigurationError("model unavailable"))
+    )
+    result = await SemanticJudge(Settings(_env_file=None))(state(
+        (reported("https://reuters.com/bridge"), reported("https://bbc.com/bridge"))
+    ))
+
     assert result["ruling"].judgement is Judgement.UNCERTAIN
     assert result["ruling"].confidence == 0
 
