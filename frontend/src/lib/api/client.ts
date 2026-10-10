@@ -38,6 +38,9 @@ function requireApiBaseUrl(): string {
 export type Desk =
   | "text"
   | "image"
+  | "docx"
+  | "pdf"
+  | "url"
 
   | "fact-check"
   | "decision";
