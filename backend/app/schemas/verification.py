@@ -160,8 +160,9 @@ class MediaArtifactIn(_ArtifactIn):
     ``Literal`` is a legal discriminator member, and the OpenAPI document simply
     points three tags at this one schema.
 
-    Media arrives by URL rather than as a file upload. Upload is multipart, needs
-    ``MAX_UPLOAD_BYTES`` enforced against a stream, and is listed as not built.
+    Media arrives at the verification endpoint by URL. The frontend may first use
+    the multipart upload route, which stores the file behind an opaque API URL and
+    then submits that URL here.
     """
 
     kind: Literal["image"]
