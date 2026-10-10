@@ -1,5 +1,9 @@
 # Veritas backend
 
+**Live Text/Image desks:** see [LIVE_VERIFICATION.md](LIVE_VERIFICATION.md) for
+current provider setup, capabilities, limits and checks. The historical API design
+notes below predate the implemented desks.
+
 FastAPI service behind the Veritas frontend. The HTTP surface is complete —
 four endpoints, their schemas, validation, error handling, the domain model and the
 service layer that orchestrates a verification. **Claim extraction is implemented**:
@@ -11,10 +15,9 @@ quotes evidence verbatim or not at all.
 Tools index for reviews already published on each claim, and returns each one's
 verdict, publisher, URL and date as evidence beside the web sources — never folded
 into them, never summed into a rating.
-**No desk is implemented yet**: the examining itself, and the LLM and vector-store
-providers behind it, are deliberately empty. A submitted verification therefore runs
-to a recorded `not_implemented` failure rather than to a verdict, which is what the
-tests assert.
+**Text and image verification are implemented:** live evidence is assessed by a
+semantic reader, with validated citations and uncertainty when evidence is missing.
+Images include visual description, OCR, caption checking and configured web matching.
 
 ## Requirements
 
