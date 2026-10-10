@@ -12,7 +12,8 @@ from __future__ import annotations
 import pytest
 
 from app.core.config import Settings
-from app.core.errors import PayloadTooLargeError
+from app.core.errors import LLMError, PayloadTooLargeError
+from app.domain import Extraction
 from app.services.claims import ClaimExtractionService
 from tests.stubs import SAMPLE_TEXT, StubClaimExtractor, extractor_bench
 
@@ -87,3 +88,27 @@ async def test_whitespace_only_text_is_not_an_error(
         await service.extract("   ")
 
     assert stub.seen == ["   "]
+
+
+async def test_a_failed_llm_extractor_falls_back_to_the_local_extractor(
+    settings: Settings,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An expired provider key must not prevent live evidence from being gathered."""
+    configured = settings.model_copy(
+        update={"CLAIM_EXTRACTION_LLM": True, "OPENAI_API_KEY": "provider-key"}
+    )
+    service = ClaimExtractionService(settings=configured)
+    fallback = StubClaimExtractor()
+
+    async def failed(*args: object, **kwargs: object) -> Extraction:
+        raise LLMError("provider rejected the key", provider="openai")
+
+    from app.nlp import llm
+
+    monkeypatch.setattr(llm, "extract", failed)
+    with extractor_bench(fallback):
+        result = await service.extract(SAMPLE_TEXT)
+
+    assert result.sentences == 2
+    assert fallback.seen == [SAMPLE_TEXT]
