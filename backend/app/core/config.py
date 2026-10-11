@@ -198,20 +198,19 @@ class Settings(BaseSettings):
     DATABASE_POOL_TIMEOUT_SECONDS: float = Field(default=10.0, gt=0)
 
     #: Which store holds verifications. ``memory`` needs no database at all — see
-    #: :class:`StoreBackend`. Set it before starting the API without PostgreSQL up,
-    #: or every request will fail on connection rather than on anything meaningful.
-    VERIFICATION_STORE: StoreBackend = StoreBackend.DATABASE
+    #: :class:`StoreBackend`. Defaults to ``memory`` so environments without a dedicated
+    #: PostgreSQL instance can serve examinations without connection stalls.
+    VERIFICATION_STORE: StoreBackend = StoreBackend.MEMORY
 
     # --------------------------------------------------------- examinations ----
-    #: One active graph per small Render process by default. Operators can raise
-    #: this when memory measurements show the instance has headroom.
-    VERIFICATION_MAX_CONCURRENT: int = Field(default=1, ge=1)
+    #: Active examination concurrency and queue limits.
+    VERIFICATION_MAX_CONCURRENT: int = Field(default=2, ge=1)
     #: Accepted jobs waiting behind active work. Requests beyond this bound are
     #: rejected before persistence. In-process work does not survive a restart.
-    VERIFICATION_MAX_QUEUED: int = Field(default=2, ge=0)
+    VERIFICATION_MAX_QUEUED: int = Field(default=10, ge=0)
     #: Active examination budget, including provider and storage work. Queue wait
     #: is separate; failure persistence gets its own database command budget.
-    VERIFICATION_TIMEOUT_SECONDS: float = Field(default=300.0, gt=0)
+    VERIFICATION_TIMEOUT_SECONDS: float = Field(default=180.0, gt=0)
 
     # -------------------------------------------------------------- auth ----
 
