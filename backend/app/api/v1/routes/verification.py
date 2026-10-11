@@ -22,12 +22,13 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, BackgroundTasks, Path, Query, Response, status
+from fastapi import APIRouter, Path, Query, Response, status
 
 from app.api.deps import (
     CurrentUserDep,
     OptionalUserDep,
     SettingsDep,
+    VerificationRunnerDep,
     VerificationServiceDep,
 )
 from app.api.responses import COMMON_ERRORS, error, set_poll_hint
@@ -50,13 +51,14 @@ router = APIRouter(tags=["verification"], responses=COMMON_ERRORS)
     responses={
         401: error("A bearer token was sent, but it is invalid or expired."),
         413: error("The artifact's text is longer than MAX_TEXT_CHARS."),
+        503: error("The bounded examination queue is full; retry shortly."),
     },
 )
 async def submit_verification(
     payload: VerifyRequest,
     service: VerificationServiceDep,
+    runner: VerificationRunnerDep,
     settings: SettingsDep,
-    background: BackgroundTasks,
     response: Response,
     user: OptionalUserDep,
 ) -> VerificationAccepted:
@@ -76,18 +78,20 @@ async def submit_verification(
     while the generated document goes on advertising it, so the two would silently
     drift apart.
     """
-    artifact, desks = payload.to_domain()
-    record = await service.submit(
-        artifact=artifact, desks=desks, user_id=user.id if user else None
-    )
-    # Only the id crosses into the task. `service.run` is a bound method, and what it
-    # closes over is the app-lifetime store on `app.state`, not a request-scoped
-    # resource — which is the whole of the rule. FastAPI closes a `yield` dependency's
-    # exit stack *before* the response is sent and background tasks run after, so a
-    # per-request session handed to a task is already closed when the task uses it.
-    # When the store becomes session-backed this stops being a BackgroundTask and
-    # becomes a queue enqueue of `record.id`; `run(id)` is already that signature.
-    background.add_task(service.run, record.id)
+    await runner.reserve()
+    try:
+        artifact, desks = payload.to_domain()
+        record = await service.submit(
+            artifact=artifact, desks=desks, user_id=user.id if user else None
+        )
+    except BaseException:
+        # Cancelled submissions must return admission capacity as well.
+        await runner.release()
+        raise
+    # Only the id crosses into the task. The service closes over the app-lifetime
+    # repository rather than a request-scoped database session, so this remains safe
+    # after the response has returned. The runner owns the task and its admission slot.
+    runner.schedule(service, record.id)
     response.headers["Location"] = f"{settings.API_V1_PREFIX}/verification/{record.id}"
     return VerificationAccepted.from_domain(record)
 
