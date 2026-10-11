@@ -7,7 +7,7 @@ import { DESK_ISSUE } from "@/lib/desks";
 export const metadata: Metadata = {
   title: "Economy",
   description:
-    "Verified financial intelligence: the readings as filed, the anomaly index behind them, and the desk record for every story.",
+    "Illustrative financial intelligence: the readings as presented, the anomaly index behind them, and the evidence desk for each example.",
 };
 
 /**
@@ -108,10 +108,10 @@ export default function EconomyPage() {
     <main className="min-h-screen bg-background">
       <PageHeader
         section="Economy"
-        standing="Financial intelligence"
-        kicker="Four readings, as filed"
+         standing="Illustrative financial intelligence"
+         kicker="Four example readings"
         title={["The economy,", "without the noise."]}
-        lede="Market figures read against the record: what the desks could verify, what they could not, and the anomaly index sitting behind the numbers."
+         lede="Example market figures read against an illustrative record: what the desks could verify, what they could not, and the anomaly index sitting behind the numbers."
       />
 
       <Spread className="pb-stack-xl">
@@ -182,17 +182,17 @@ export default function EconomyPage() {
       </Spread>
 
       <Spread className="pb-stack-xl">
-        <SectionHead title="Market intelligence" note="Two records filed this week" />
+         <SectionHead title="Market intelligence examples" note="Two editorial examples" />
 
         <div className="mt-stack-md grid grid-cols-1 gap-x-gutter gap-y-stack-lg md:grid-cols-2">
           <StoryCard
             category="Markets"
-            headline="Flash crash traced to a coordinated deepfake audio release"
-            description="A $200 billion wipeout in the semiconductor sector was triggered by an algorithmic response to synthetic audio clips attributed to four chief executives. The audio desk found the recordings were generated end to end."
+             headline="Flash crash traced to a coordinated synthetic-media release"
+             description="This illustrative scenario describes a market reaction to synthetic media. The example is included to show how a claim could be routed for source checking."
             source="Bloomberg / Veritas audit"
             date="21 Aug 2026"
             verificationStatus="VERIFIED"
-            desk="audio"
+             desk="fact-check"
           />
           <StoryCard
             category="Currency"
