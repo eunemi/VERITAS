@@ -92,11 +92,13 @@
 .signature::after { right: 0; }
 
 .wordmark {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 3rem);
   padding-block: 18px 30px;
   color: var(--color-parchment);
   font-family: var(--font-playfair), Georgia, serif;
-  font-size: clamp(3.5rem, 17vw, 15.3rem);
+  font-size: clamp(3.5rem, 15vw, 15.3rem);
   font-weight: 500;
   line-height: 1;
   transition: color 250ms ease;
@@ -143,7 +145,8 @@
 
 @media (max-width: 639px) {
   .navLink { min-height: 44px; }
-  .wordmark { padding-block: 22px; }
+  .wordmark { gap: 12px; padding-block: 22px; }
+  .wordmark img { width: 52px; height: 52px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
