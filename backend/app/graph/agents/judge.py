@@ -5,32 +5,23 @@ from __future__ import annotations
 from datetime import datetime
 
 from app.domain import Band, Credibility, FactCheck, ProviderStatus, Source
-from app.graph import scoring
+from app.graph import rollup, scoring
+from app.graph.rollup import nothing_to_check as _nothing_to_check
+from app.graph.rollup import overall as _overall
 from app.graph.state import AgentNote, Case, GraphState, cases
 from app.graph.verdict import (
     PASSAGE_WEIGHT,
     STANCE_WEIGHTS,
-    Assessment,
     Bearing,
     ClaimRuling,
     Indication,
-    Judgement,
-    Ruling,
     Score,
     Thresholds,
 )
 
 NAME = "judge"
-
-#: How firmly the judge holds an UNCERTAIN, on the 0–1 scale the domain uses. The same
-#: two numbers :mod:`app.graph.scoring` publishes, divided down rather than restated, so
-#: the score on a ruling and its confidence cannot come to disagree.
-SETTLED_UNCERTAINTY = scoring.SETTLED_SHORTFALL / 100
-UNGROUNDED_UNCERTAINTY = scoring.UNGROUNDED_SHORTFALL / 100
-
-#: The ceiling on any confidence. Nothing assembled from search snippets and other
-#: people's ratings earns a number that reads as settled fact.
-MAX_CONFIDENCE = scoring.MAX_SCORE / 100
+SETTLED_UNCERTAINTY = rollup.SETTLED_UNCERTAINTY
+UNGROUNDED_UNCERTAINTY = rollup.UNGROUNDED_UNCERTAINTY
 
 
 class JudgeAgent:
@@ -242,60 +233,6 @@ def _ruling(
     )
 
 
-def _overall(rulings: tuple[ClaimRuling, ...]) -> Ruling:
-    """One finding for the artifact, from the findings on its claims.
-
-    The worst outcome carries. An artifact holding one refuted claim among four
-    supported ones is not mostly true, and averaging the four would report it that
-    way; a reader needs the refutation to survive the summary.
-    """
-    order = (
-        Judgement.REFUTED,
-        Judgement.MIXED,
-        Judgement.UNCERTAIN,
-        Judgement.SUPPORTED,
-    )
-    counts = {j: sum(1 for r in rulings if r.judgement is j) for j in order}
-    judgement = next(j for j in order if counts[j])
-    decided = [r for r in rulings if r.judgement is judgement]
-    confidence = round(sum(r.confidence for r in decided) / len(decided), 4)
-
-    parts = [f"{counts[j]} {j.value.lower()}" for j in order if counts[j]]
-    return Ruling(
-        judgement=judgement,
-        confidence=confidence,
-        headline=_HEADLINES[judgement],
-        rationale=f"{len(rulings)} claim(s) examined: {', '.join(parts)}.",
-        claims=rulings,
-        score=_carried(decided),
-    )
-
-
-def _carried(decided: list[ClaimRuling]) -> Score | None:
-    """The artifact's score, from the claims that set its judgement and no others.
-
-    Averaged over that group rather than over everything examined, for the same reason
-    the judgement takes the worst rather than the mean: the confidence on the summary
-    has to be the confidence in *the finding being summarised*. Folding three
-    comfortably supported claims into a refutation's number would report the artifact as
-    barely refuted when nothing about the refutation was marginal.
-
-    The assessment is the most adverse in the group, which within a single judgement is
-    also the least decisive one on the supported side — MOSTLY_TRUE beside TRUE reads as
-    MOSTLY_TRUE, and FALSE beside MOSTLY_FALSE reads as FALSE.
-    """
-    scores = [r.score for r in decided if r.score is not None]
-    if not scores:
-        return None
-    worst = min(scores, key=lambda s: _SEVERITY[s.assessment])
-    return Score(
-        value=round(sum(s.value for s in scores) / len(scores)),
-        assessment=worst.assessment,
-        insufficiency=worst.insufficiency,
-        contested=worst.contested,
-    )
-
-
 def _searched(state: GraphState) -> bool:
     """Whether any provider actually answered.
 
@@ -310,23 +247,6 @@ def _searched(state: GraphState) -> bool:
     )
 
 
-def _nothing_to_check(state: GraphState) -> Ruling:
-    skipped = state.get("skipped", ())
-    reason = (
-        f"{len(skipped)} clause(s) were set aside as not checkable"
-        if skipped
-        else "nothing checkable was found in the artifact"
-    )
-    rationale = f"{reason}, so no claim was searched for and none can be ruled on."
-    return Ruling(
-        judgement=Judgement.UNCERTAIN,
-        confidence=UNGROUNDED_UNCERTAINTY,
-        headline="No checkable claim was examined",
-        rationale=rationale,
-        score=scoring.declined(rationale, searched=False),
-    )
-
-
 def _stands(grade: Credibility | None, floor: float) -> bool:
     """Whether a source clears the standing floor.
 
@@ -338,21 +258,3 @@ def _stands(grade: Credibility | None, floor: float) -> bool:
     if grade.band is Band.UNKNOWN:
         return False
     return grade.standing is not None and grade.standing >= floor
-
-
-#: Most adverse first, for picking the assessment that carries a whole artifact.
-_SEVERITY: dict[Assessment, int] = {
-    Assessment.FALSE: 0,
-    Assessment.MOSTLY_FALSE: 1,
-    Assessment.UNCERTAIN: 2,
-    Assessment.MOSTLY_TRUE: 3,
-    Assessment.TRUE: 4,
-}
-
-
-_HEADLINES: dict[Judgement, str] = {
-    Judgement.SUPPORTED: "The claims examined are supported by the sources found",
-    Judgement.REFUTED: "The sources found contradict at least one claim examined",
-    Judgement.MIXED: "The sources found are divided on at least one claim examined",
-    Judgement.UNCERTAIN: "The evidence found does not settle the claims examined",
-}
