@@ -13,6 +13,7 @@ from app.core.middleware import REQUEST_ID_HEADER, RequestContextMiddleware
 # Both mounts are the same route object; the point of testing both is that the
 # factory actually included it twice, at the paths documented in the route module.
 HEALTH_PATHS = ["/health", "/api/v1/health"]
+PUBLIC_HEALTH_PATH = "/api/health"
 
 
 @pytest.mark.parametrize("path", HEALTH_PATHS)
@@ -49,6 +50,22 @@ async def test_health_is_not_versioned_away(client: AsyncClient) -> None:
     assert {k: v for k, v in unversioned.items() if k != "timestamp"} == {
         k: v for k, v in versioned.items() if k != "timestamp"
     }
+
+
+async def test_public_health_is_minimal_and_does_not_require_auth(
+    client: AsyncClient,
+) -> None:
+    """The uptime-monitor contract is public and contains no deployment metadata."""
+    response = await client.get(PUBLIC_HEALTH_PATH)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "ok"
+    assert body["service"] == "running"
+    assert set(body) == {"status", "service", "timestamp"}
+    moment = datetime.fromisoformat(body["timestamp"])
+    assert moment.tzinfo is not None
+    assert moment.utcoffset() is not None
 
 
 async def test_response_carries_a_request_id(client: AsyncClient) -> None:
