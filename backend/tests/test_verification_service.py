@@ -13,6 +13,7 @@ the only visible symptom would be a record stuck on ``pending`` forever.
 
 from __future__ import annotations
 
+import asyncio
 import inspect
 
 import pytest
@@ -30,7 +31,7 @@ from app.domain import (
 )
 from app.repositories import InMemoryVerificationRepository
 from app.services.verification import VerificationService
-from tests.stubs import StubAdjudicator, StubExaminer, desk_bench
+from tests.stubs import StubAdjudicator, StubExaminer, canned, desk_bench
 
 TEXT = Artifact(kind=ArtifactKind.TEXT, content="The bridge opened in March.")
 
@@ -117,6 +118,27 @@ async def test_every_desk_gets_the_artifact(service: VerificationService) -> Non
     assert stubs[Desk.FACT_CHECK].seen == [TEXT]
 
 
+async def test_resuming_a_partially_filed_record_does_not_duplicate_reports(
+    service: VerificationService,
+    store: InMemoryVerificationRepository,
+) -> None:
+    record = await service.submit(artifact=TEXT, desks=(Desk.TEXT,))
+    examiner = StubExaminer(Desk.TEXT)
+    decision = StubAdjudicator()
+
+    await store.mark_running(record.id)
+    await store.start_desk(record.id, Desk.TEXT)
+    await store.add_report(record.id, canned(Desk.TEXT))
+
+    with desk_bench({Desk.TEXT: examiner}, decision):
+        await service.run(record.id)
+
+    finished = await service.get(record.id)
+    assert finished.status is Status.COMPLETED
+    assert examiner.seen == []
+    assert [report.desk for report in decision.seen[0]] == [Desk.TEXT]
+
+
 async def test_the_adjudicator_sees_the_reports_as_filed(
     service: VerificationService,
 ) -> None:
@@ -188,6 +210,30 @@ async def test_a_desk_raising_is_recorded_against_that_desk(
     )
 
 
+async def test_an_examination_timeout_is_recorded_as_terminal_failure(
+    store: InMemoryVerificationRepository, settings
+) -> None:
+    class SlowExaminer:
+        desk = Desk.TEXT
+
+        async def examine(self, artifact, *, verification_id=None):
+            await asyncio.sleep(0.02)
+
+    service = VerificationService(
+        repository=store,
+        settings=settings.model_copy(update={"VERIFICATION_TIMEOUT_SECONDS": 0.001}),
+    )
+    record = await service.submit(artifact=TEXT, desks=(Desk.TEXT,))
+
+    with desk_bench({Desk.TEXT: SlowExaminer()}, StubAdjudicator()):
+        await service.run(record.id)
+
+    failed = await service.get(record.id)
+    assert failed.status is Status.FAILED
+    assert failed.failure is not None
+    assert failed.failure.code == "verification_timeout"
+
+
 async def test_an_unexpected_error_becomes_an_internal_failure(
     service: VerificationService,
 ) -> None:
@@ -207,9 +253,6 @@ async def test_an_unexpected_error_becomes_an_internal_failure(
     assert failed.failure is not None
     assert failed.failure.code == "internal_error"
     assert "boom" not in failed.failure.message
-
-
-
 
 
 async def test_a_missing_adjudicator_is_recorded_against_the_decision_desk(
