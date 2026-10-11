@@ -10,36 +10,38 @@
  * and the alternative is an English month table that is wrong for everybody else.
  */
 
-/** `25 August 2026, 14:32` — the full moment, for a single record. */
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+/** `25 August 2026, 14:32 UTC` — the full moment, for a single record. */
 export function stamp(at: string | number): string {
   const moment = new Date(at);
   if (Number.isNaN(moment.getTime())) return String(at);
-  return moment.toLocaleString(undefined, {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const d = moment.getUTCDate();
+  const m = MONTHS[moment.getUTCMonth()];
+  const y = moment.getUTCFullYear();
+  const hh = String(moment.getUTCHours()).padStart(2, "0");
+  const mm = String(moment.getUTCMinutes()).padStart(2, "0");
+  return `${d} ${m} ${y}, ${hh}:${mm} UTC`;
 }
 
 /** `25 August 2026` — the day, for the heading over a day's filings. */
 export function day(at: string | number): string {
   const moment = new Date(at);
   if (Number.isNaN(moment.getTime())) return String(at);
-  return moment.toLocaleDateString(undefined, {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const d = moment.getUTCDate();
+  const m = MONTHS[moment.getUTCMonth()];
+  const y = moment.getUTCFullYear();
+  return `${d} ${m} ${y}`;
 }
 
-/** `14:32` — the time alone, once the day is already printed above. */
+/** `14:32 UTC` — the time alone, once the day is already printed above. */
 export function clock(at: string | number): string {
   const moment = new Date(at);
   if (Number.isNaN(moment.getTime())) return "";
-  return moment.toLocaleTimeString(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const hh = String(moment.getUTCHours()).padStart(2, "0");
+  const mm = String(moment.getUTCMinutes()).padStart(2, "0");
+  return `${hh}:${mm} UTC`;
 }
