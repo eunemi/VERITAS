@@ -32,5 +32,14 @@
     ".next-preview/types/**/*.ts",
     ".next-preview/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "claude-skills", "backend"]
+  "exclude": [
+    "node_modules",
+    "claude-skills",
+    "backend",
+    ".next-final-tools",
+    ".next-light-polish",
+    ".next-live-build",
+    ".next-tools-build",
+    ".next-upload-only"
+  ]
 }
