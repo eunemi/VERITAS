@@ -17,6 +17,14 @@ from app.core.middleware import REQUEST_ID_HEADER
 ENVELOPE_KEYS = {"code", "message", "details", "request_id"}
 
 
+class ClaimSubmission(BaseModel):
+    claim: str
+
+
+class WeightSubmission(BaseModel):
+    weight: float
+
+
 async def test_application_error_renders_the_envelope(
     app: FastAPI, client: AsyncClient
 ) -> None:
@@ -32,6 +40,26 @@ async def test_application_error_renders_the_envelope(
     assert error["code"] == "not_found"
     assert error["message"] == "No such investigation."
     assert error["details"] == {"id": "abc"}
+
+
+async def test_error_cors_only_allows_configured_origins(
+    app: FastAPI, client: AsyncClient
+) -> None:
+    """An error response must not reflect an arbitrary caller's Origin header."""
+
+    @app.get("/_test/cors-error")
+    async def _cors_error() -> None:
+        raise NotFoundError("No such record.")
+
+    blocked = await client.get(
+        "/_test/cors-error", headers={"Origin": "https://attacker.example"}
+    )
+    assert "access-control-allow-origin" not in blocked.headers
+
+    allowed = await client.get(
+        "/_test/cors-error", headers={"Origin": "http://localhost:3000"}
+    )
+    assert allowed.headers["access-control-allow-origin"] == "http://localhost:3000"
 
 
 async def test_provider_error_reports_which_provider(
@@ -129,11 +157,8 @@ async def test_method_not_allowed_uses_the_envelope(client: AsyncClient) -> None
 async def test_request_validation_names_the_bad_field(
     app: FastAPI, client: AsyncClient
 ) -> None:
-    class Submission(BaseModel):
-        claim: str
-
     @app.post("/_test/submit")
-    async def _submit(payload: Submission) -> dict[str, str]:
+    async def _submit(payload: ClaimSubmission) -> dict[str, str]:
         return {"claim": payload.claim}
 
     response = await client.post("/_test/submit", json={})
@@ -154,11 +179,8 @@ async def test_validation_details_are_serialisable(
     it raises, the client gets nothing at all.
     """
 
-    class Submission(BaseModel):
-        weight: float
-
     @app.post("/_test/weigh")
-    async def _weigh(payload: Submission) -> dict[str, float]:
+    async def _weigh(payload: WeightSubmission) -> dict[str, float]:
         return {"weight": payload.weight}
 
     response = await client.post("/_test/weigh", json={"weight": "not-a-number"})
