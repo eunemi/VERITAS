@@ -31,6 +31,11 @@ export const metadata: Metadata = {
   },
   description:
     "Veritas examines text, documents, images and public pages against cited evidence, then signs a record of what its desks found.",
+  icons: {
+    icon: "/veritas-mark.svg",
+    shortcut: "/veritas-mark.svg",
+    apple: "/veritas-mark.svg",
+  },
 };
 
 export default function RootLayout({
