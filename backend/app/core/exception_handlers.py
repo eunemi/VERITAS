@@ -50,8 +50,11 @@ def _render(
     code: str,
     message: str,
     details: dict[str, Any] | None = None,
+    retry_after: int | None = None,
 ) -> JSONResponse:
     headers: dict[str, str] = {}
+    if retry_after is not None:
+        headers["Retry-After"] = str(retry_after)
     origin = request.headers.get("origin")
     settings = getattr(request.app.state, "settings", None)
     if origin and settings is not None and origin in settings.CORS_ORIGINS:
@@ -100,6 +103,7 @@ async def handle_veritas_error(request: Request, exc: Exception) -> JSONResponse
         code=exc.code,
         message=exc.message,
         details=exc.details,
+        retry_after=1 if exc.code == "service_busy" else None,
     )
 
 
