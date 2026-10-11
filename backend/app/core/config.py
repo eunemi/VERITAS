@@ -98,8 +98,6 @@ class VisionProvider(StrEnum):
     YOLO = "yolo"
 
 
-
-
 class StoreBackend(StrEnum):
     """Which verification store :func:`app.main.create_app` builds.
 
@@ -182,7 +180,6 @@ class Settings(BaseSettings):
             "http://127.0.0.1:3002",
             "http://localhost:3003",
             "http://127.0.0.1:3003",
-            "https://veritasreal.vercel.app",
         ]
     )
 
@@ -607,7 +604,6 @@ class Settings(BaseSettings):
     #: Confidence below which a detection is discarded.
     YOLO_MIN_CONFIDENCE: float = Field(default=0.40, ge=0.0, le=1.0)
 
-
     # ------------------------------------------------------------ uploads ----
 
     #: Ceiling on artifact size, in bytes. Enforced by the upload dependency
@@ -631,9 +627,16 @@ class Settings(BaseSettings):
     # ------------------------------------------------------- validation ----
 
     @field_validator(
-        "OPENAI_API_KEY", "GROQ_API_KEY", "VISION_API_KEY", "GOOGLE_VISION_API_KEY",
-        "TAVILY_API_KEY", "BRAVE_API_KEY", "SERPER_API_KEY",
-        "GOOGLE_FACT_CHECK_API_KEY", "JWT_SECRET_KEY", mode="before",
+        "OPENAI_API_KEY",
+        "GROQ_API_KEY",
+        "VISION_API_KEY",
+        "GOOGLE_VISION_API_KEY",
+        "TAVILY_API_KEY",
+        "BRAVE_API_KEY",
+        "SERPER_API_KEY",
+        "GOOGLE_FACT_CHECK_API_KEY",
+        "JWT_SECRET_KEY",
+        mode="before",
     )
     @classmethod
     def _empty_secret_is_unconfigured(cls, value: object) -> object:
@@ -660,15 +663,12 @@ class Settings(BaseSettings):
             if stripped.startswith("["):
                 parsed_origins = json.loads(stripped)
             else:
-                parsed_origins = [origin.strip() for origin in stripped.split(",") if origin.strip()]
+                parsed_origins = [
+                    origin.strip() for origin in stripped.split(",") if origin.strip()
+                ]
         elif isinstance(value, list):
             parsed_origins = value
-            
-        # Ensure Vercel domain is always allowed
-        vercel_domain = "https://veritasreal.vercel.app"
-        if vercel_domain not in parsed_origins:
-            parsed_origins.append(vercel_domain)
-            
+
         return parsed_origins
 
     @field_validator("SEARCH_PROVIDERS", mode="before")
