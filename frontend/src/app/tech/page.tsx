@@ -8,7 +8,7 @@ import { DESK_ORDER, DESKS, type DeskDefinition } from "@/lib/desks";
 export const metadata: Metadata = {
   title: "Technology",
   description:
-    "Reporting on the systems that structure reality — and the desks Veritas uses to read what they produce.",
+    "Editorial examples about the systems that structure reality — and the desks Veritas uses to read what they produce.",
 };
 
 /** The five desks that read an artifact. The core signs after them. */
@@ -28,14 +28,14 @@ export default function TechPage() {
     <main className="min-h-screen bg-background">
       <PageHeader
         section="Technology"
-        standing="Digital culture"
-        kicker="Five desks read the systems"
+         standing="Editorial examples in digital culture"
+         kicker="Five public tools read the systems"
         title={["Technology", "shapes the story."]}
-        lede="Reporting on the systems that structure what we are shown — and on the methods Veritas uses to read back out of them."
+         lede="Illustrative reporting about the systems that structure what we are shown — and the methods Veritas uses to read back out of them."
       />
 
       <Spread className="pb-stack-xl">
-        <SectionHead title="The lead" note="Signed at the text desk" />
+         <SectionHead title="The lead example" note="Editorial example" />
         <div className="mt-stack-md">
           <StoryCard
             featured
@@ -96,7 +96,7 @@ export default function TechPage() {
       </Spread>
 
       <Spread className="pb-stack-xl">
-        <SectionHead title="Also reported" note="Three records filed this week" />
+         <SectionHead title="Also reported" note="Three editorial examples" />
 
         <div className="mt-stack-md grid grid-cols-1 gap-x-gutter gap-y-stack-lg md:grid-cols-2 lg:grid-cols-3">
           <StoryCard
