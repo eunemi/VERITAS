@@ -9,7 +9,7 @@ import { TONE_TEXT, toneOf } from "@/lib/types/agents";
 export const metadata: Metadata = {
   title: "World",
   description:
-    "Reporting from across the globe, with the desk record behind each story — and where the signed records have come from.",
+    "Editorial examples from across the globe, with the evidence desk behind each story and the source record made clear.",
 };
 
 /**
@@ -33,31 +33,31 @@ export default function WorldPage() {
     <main className="min-h-screen bg-background">
       <PageHeader
         section="World"
-        standing="Reporting from the regions"
-        kicker={`${REGIONS.length} regions on the index`}
+         standing="Editorial examples by region"
+         kicker={`${REGIONS.length} example regions`}
         title={["The world,", "under analysis."]}
-        lede="Signals, stories and developments from across the globe, each one carrying the desk record that was signed behind it."
+         lede="Illustrative signals and stories from across the globe, each one marked as an example rather than live monitoring."
       />
 
       <Spread className="pb-stack-xl">
-        <SectionHead title="The lead" note="Examined at four desks" />
+         <SectionHead title="The lead example" note="Editorial example" />
         <div className="mt-stack-md">
           <StoryCard
             featured
             category="Geopolitics"
             location="Geneva"
             headline="New treaties questioned as synthetic media clouds negotiations"
-            description="A comprehensive analysis of the recent summit reveals overlapping inconsistencies in the official broadcast feeds. Veritas desks detected audio-visual desyncs consistent with deepfake injection, raising questions about the authenticity of the primary accord."
+             description="An illustrative analysis of a proposed summit reveals inconsistencies in the published record. The example shows how a fact-check desk can separate a claim from the evidence available for it."
             source="Reuters / Veritas Intel"
             date="21 Aug 2026"
             verificationStatus="CONTESTED"
-            desk="video"
+             desk="fact-check"
           />
         </div>
       </Spread>
 
       <Spread className="pb-stack-xl">
-        <SectionHead title="Also reported" note="Three records filed this week" />
+         <SectionHead title="Also reported" note="Three editorial examples" />
         <div className="mt-stack-md grid grid-cols-1 gap-x-gutter gap-y-stack-lg md:grid-cols-2 lg:grid-cols-3">
           <StoryCard
             category="Climate"
@@ -83,11 +83,11 @@ export default function WorldPage() {
             category="Election"
             location="Brasília"
             headline="Audio leak authenticated despite candidate's denial"
-            description="The audio desk has processed the leaked recording, finding continuous spectral signatures and no evidence of AI generation."
+             description="The example claim describes a leaked media artifact; the source claim is shown for fact-checking context only."
             source="Veritas Intel"
             date="18 Aug 2026"
             verificationStatus="VERIFIED"
-            desk="audio"
+             desk="fact-check"
           />
         </div>
       </Spread>
@@ -95,7 +95,7 @@ export default function WorldPage() {
       <Spread className="pb-stack-xl">
         <SectionHead
           title="Where the records come from"
-          note={`${ARCHIVE.length} signed records across ${REGIONS.length} regions`}
+           note={`${ARCHIVE.length} example records across ${REGIONS.length} regions`}
         />
 
         {/* One row used to carry seven separately-styled fragments across twelve
@@ -129,8 +129,8 @@ export default function WorldPage() {
         </ol>
 
         <p className="font-body-md text-body-md mt-stack-md max-w-measure text-ink-black/70">
-          Counted from the records the desks have signed, not from live monitoring — Veritas watches
-          what it is handed.{" "}
+           Counted from the published example records, not from live monitoring — Veritas watches
+           what it is handed.{" "}
           <Link
             href="/archive"
             className="border-b border-secondary text-ink-black transition-colors hover:text-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black"
