@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
+import asyncio
+import time
 from datetime import datetime
 
 import pytest
+from fastapi import FastAPI
 from httpx import AsyncClient
 
 from app.core.config import Settings
 from app.core.middleware import REQUEST_ID_HEADER, RequestContextMiddleware
+from app.services.verification import VerificationRunner
 
 # Both mounts are the same route object; the point of testing both is that the
 # factory actually included it twice, at the paths documented in the route module.
@@ -66,6 +70,45 @@ async def test_public_health_is_minimal_and_does_not_require_auth(
     moment = datetime.fromisoformat(body["timestamp"])
     assert moment.tzinfo is not None
     assert moment.utcoffset() is not None
+
+
+async def test_health_handles_concurrent_probe_requests(client: AsyncClient) -> None:
+    started = time.perf_counter()
+    responses = await asyncio.gather(
+        *(client.get(PUBLIC_HEALTH_PATH) for _ in range(25))
+    )
+
+    assert all(response.status_code == 200 for response in responses)
+    assert time.perf_counter() - started < 1.0
+
+
+async def test_health_stays_responsive_during_a_running_verification(
+    app: FastAPI, client: AsyncClient
+) -> None:
+    class SlowWork:
+        def __init__(self) -> None:
+            self.started = asyncio.Event()
+            self.release = asyncio.Event()
+
+        async def run(self, verification_id: str) -> None:
+            self.started.set()
+            await self.release.wait()
+
+    runner = VerificationRunner(max_concurrent=1, max_queued=0)
+    work = SlowWork()
+    app.state.verification_runner = runner
+    await runner.reserve()
+    task = asyncio.create_task(runner.run(work, "health-concurrency"))
+    await work.started.wait()
+
+    try:
+        responses = await asyncio.gather(
+            *(client.get(PUBLIC_HEALTH_PATH) for _ in range(25))
+        )
+        assert all(response.status_code == 200 for response in responses)
+    finally:
+        work.release.set()
+        await task
 
 
 async def test_response_carries_a_request_id(client: AsyncClient) -> None:
