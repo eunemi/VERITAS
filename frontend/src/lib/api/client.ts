@@ -463,6 +463,13 @@ export async function readVerificationHistory(
 const FIRST_POLL_MS = 600;
 const MAX_POLL_MS = 2_500;
 const DEFAULT_DEADLINE_MS = 300_000;
+/**
+ * A freshly accepted job can briefly be invisible when the API is behind a
+ * proxy or is waking a new application instance. Do not turn that small read
+ * race into a failed examination; a persistent 404 still escapes after a few
+ * short attempts with the server's original error.
+ */
+const INITIAL_NOT_FOUND_RETRIES = 4;
 
 export interface PollOptions extends CallOptions {
   /** Called with every reading, terminal one included. */
@@ -508,19 +515,43 @@ export async function pollVerification(
   const { signal, onReading, timeoutMs = DEFAULT_DEADLINE_MS } = options;
   const started = performance.now();
   let backoff = FIRST_POLL_MS;
+  let notFoundRetries = 0;
+  let hasReadRecord = false;
+  const timeoutError = () =>
+    new ApiError(
+      POLL_TIMEOUT,
+      `The examination was still running after ${Math.round(timeoutMs / 1000)}s.`,
+      0,
+      { id },
+    );
 
   for (;;) {
-    const { record, retryAfter } = await readVerification(id, { signal });
+    let reading: Read;
+    try {
+      reading = await readVerification(id, { signal });
+      hasReadRecord = true;
+    } catch (cause) {
+      if (
+        cause instanceof ApiError &&
+        cause.code === "not_found" &&
+        !hasReadRecord &&
+        notFoundRetries < INITIAL_NOT_FOUND_RETRIES
+      ) {
+        notFoundRetries += 1;
+        const remaining = timeoutMs - (performance.now() - started);
+        if (remaining <= 0) throw timeoutError();
+        await wait(Math.min(1_200, 250 * notFoundRetries, remaining), signal);
+        if (performance.now() - started >= timeoutMs) throw timeoutError();
+        continue;
+      }
+      throw cause;
+    }
+    const { record, retryAfter } = reading;
     onReading?.(record);
     if (record.terminal) return record;
 
     if (performance.now() - started > timeoutMs) {
-      throw new ApiError(
-        POLL_TIMEOUT,
-        `The examination was still running after ${Math.round(timeoutMs / 1000)}s.`,
-        0,
-        { id, status: record.status },
-      );
+      throw timeoutError();
     }
 
     const hinted = retryAfter === null ? 0 : retryAfter * 1000;
