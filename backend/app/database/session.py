@@ -50,7 +50,9 @@ def _clean_database_url(raw_url: str) -> tuple[str, dict[str, Any]]:
             if str(val).lower() in ("true", "1", "require"):
                 has_ssl = True
 
-        if (url.host and url.host not in ("localhost", "127.0.0.1", "postgres")) or has_ssl:
+        if (
+            url.host and url.host not in ("localhost", "127.0.0.1", "postgres")
+        ) or has_ssl:
             connect_args["ssl"] = True
 
         url = url.set(query=query_dict)
@@ -70,9 +72,14 @@ def _create_engine(settings: Settings) -> AsyncEngine:
     # here is what makes this module's promise — that changing database is a URL
     # change — true for the one URL a developer is most likely to try locally.
     if make_url(clean_url).get_backend_name() != "sqlite":
+        connect_args.update(
+            timeout=settings.DATABASE_CONNECT_TIMEOUT_SECONDS,
+            command_timeout=settings.DATABASE_COMMAND_TIMEOUT_SECONDS,
+        )
         kwargs.update(
             pool_size=settings.DATABASE_POOL_SIZE,
             max_overflow=settings.DATABASE_MAX_OVERFLOW,
+            pool_timeout=settings.DATABASE_POOL_TIMEOUT_SECONDS,
             # Recycle before a typical cloud idle-connection timeout, and verify
             # a connection is alive before handing it out. Without these, the
             # first query after an idle period fails on a dropped socket.
