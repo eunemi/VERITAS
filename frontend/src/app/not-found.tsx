@@ -15,7 +15,7 @@ const ELSEWHERE = [
   {
     href: "/intel",
     label: "The register of desks",
-    note: "All six desks, what each reads, and what it will not rule on",
+    note: "The public desks, what each reads, and what it will not rule on",
   },
   {
     href: "/archive",
@@ -23,7 +23,7 @@ const ELSEWHERE = [
     note: "Every examination signed so far, searchable by desk and determination",
   },
   {
-    href: "/investigate",
+    href: "/#agents-section",
     label: "The submission bench",
     note: "Hand over one artifact and let every desk that can read it report",
   },
