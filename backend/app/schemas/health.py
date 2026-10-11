@@ -28,3 +28,22 @@ class HealthResponse(BaseModel):
     version: str = Field(description="Application version.")
     environment: str = Field(description="Deployment environment.")
     timestamp: datetime = Field(description="Server time, UTC, when answered.")
+
+
+class PublicHealthResponse(BaseModel):
+    """Minimal liveness response intended for external uptime monitors.
+
+    This deliberately does not accept settings or expose application metadata. A
+    monitor only needs to know that the process answered successfully, and keeping
+    the response fixed avoids returning deployment configuration as public data.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    status: Literal["ok"] = Field(
+        default="ok", description="Always 'ok'; a failing process cannot answer."
+    )
+    service: Literal["running"] = Field(
+        default="running", description="The application process is serving requests."
+    )
+    timestamp: datetime = Field(description="Server time, UTC, when answered.")
