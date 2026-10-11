@@ -16,7 +16,9 @@ import { DESK_ISSUE } from "@/lib/desks";
  *
  * The digest is printed because it is the only thing that ties what the reader saw
  * to the line in the server log — a paper that asks for traceability should give a
- * reader the reference number.
+ * reader the reference number. The underlying exception message is deliberately not
+ * printed: render errors can contain provider, path, or configuration details that
+ * belong in the server log rather than in a public response.
  */
 export default function DeskError({
   error,
@@ -62,7 +64,8 @@ export default function DeskError({
               <Slug className="text-ink-black/40">Reported as</Slug>
             </dt>
             <dd className="font-body-sm text-body-sm text-ink-black/70 sm:col-span-9">
-              {error.message || "An unspecified rendering error"}
+              An unexpected rendering error occurred. Retry the page or use the log reference
+              when reporting the problem.
             </dd>
           </div>
           {error.digest ? (
