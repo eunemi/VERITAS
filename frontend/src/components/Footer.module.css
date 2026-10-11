@@ -146,7 +146,7 @@
 @media (max-width: 639px) {
   .navLink { min-height: 44px; }
   .wordmark { gap: 12px; padding-block: 22px; }
-  .wordmark img { width: 52px; height: 52px; }
+.wordmark svg { width: 52px; height: 52px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
