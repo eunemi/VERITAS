@@ -45,6 +45,18 @@ export function describeError(error: unknown): Described {
       };
     }
 
+    if (error.code === "not_found") {
+      return {
+        title: "The live examination record is unavailable",
+        detail:
+          "The service accepted this submission, but its record could not be read back. This usually means the examination service restarted before the live record was stored.",
+        remedy:
+          "Send the artifact again. The service should use its persistent verification store so a restart cannot remove an active check.",
+        code: error.code,
+        retryable: true,
+      };
+    }
+
     if (error.notImplemented) {
       const desk = error instanceof ExaminationError ? error.desk : null;
       return {
