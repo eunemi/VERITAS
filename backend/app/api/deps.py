@@ -17,7 +17,7 @@ its own collaborators would leave only the second option.
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, cast
 
 from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -34,7 +34,7 @@ from app.repositories.base import (
 from app.services.auth import AuthService
 from app.services.claims import ClaimExtractionService
 from app.services.research import WebResearchService
-from app.services.verification import VerificationService
+from app.services.verification import VerificationRunner, VerificationService
 
 #: Process settings. Wrapped in `Depends` rather than imported directly at the
 #: call site so tests can override it without touching the lru_cache.
@@ -69,6 +69,16 @@ def get_verification_service(
 
 VerificationServiceDep = Annotated[
     VerificationService, Depends(get_verification_service)
+]
+
+
+def get_verification_runner(request: Request) -> VerificationRunner:
+    """Return the process-wide bounded examination runner."""
+    return cast(VerificationRunner, request.app.state.verification_runner)
+
+
+VerificationRunnerDep = Annotated[
+    VerificationRunner, Depends(get_verification_runner)
 ]
 
 
