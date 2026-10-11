@@ -1,3 +1,19 @@
 {
-  "css.lint.unknownAtRules": "ignore"
+  "css.lint.unknownAtRules": "ignore",
+  "typescript.tsdk": "./frontend/node_modules/typescript/lib",
+  "files.exclude": {
+    "**/.next": true,
+    "**/.next-*": true,
+    "**/tsconfig.tsbuildinfo": true
+  },
+  "search.exclude": {
+    "**/.next": true,
+    "**/.next-*": true,
+    "**/tsconfig.tsbuildinfo": true
+  },
+  "files.watcherExclude": {
+    "**/.next/**": true,
+    "**/.next-*/**": true,
+    "**/tsconfig.tsbuildinfo": true
+  }
 }
