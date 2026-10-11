@@ -388,7 +388,7 @@ function Filed({ email }: { email: string }) {
             attach them to now.
           </p>
           <Link
-            href="/investigate"
+            href="/#agents-section"
             className="font-mono-label text-mono-label mt-stack-md inline-block border border-ink-black bg-ink-black px-8 py-3.5 text-parchment transition-colors duration-300 hover:bg-transparent hover:text-ink-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-black"
           >
             COMMISSION AN EXAMINATION
