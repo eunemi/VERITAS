@@ -4,9 +4,10 @@
 current provider setup, capabilities, limits and checks. The historical API design
 notes below predate the implemented desks.
 
-FastAPI service behind the Veritas frontend. The HTTP surface is complete —
-four endpoints, their schemas, validation, error handling, the domain model and the
-service layer that orchestrates a verification. **Claim extraction is implemented**:
+FastAPI service behind the Veritas frontend. The HTTP surface is complete, with
+versioned health, authentication, verification, file, claim-extraction and research
+routes, their schemas, validation, error handling, the domain model and the service
+layer that orchestrates a verification. **Claim extraction is implemented**:
 `POST /api/v1/extract-claim` reads real prose with spaCy, NLTK and scikit-learn.
 **Web research is implemented**: `POST /api/v1/research` fans a claim out across
 Tavily, Brave and Serper at once, deduplicates what comes back at two levels, and
@@ -95,7 +96,9 @@ production, where they and `/openapi.json` are closed.
 
 ## The API
 
-Eight endpoints under `/api/v1`, plus `/health`.
+The versioned surface under `/api/v1` includes health, authentication, verification,
+file, claim-extraction and research routes; `/health` is also mounted at the root for
+deployment probes.
 
 Authentication is a bearer token and is optional almost everywhere. `POST /verify` and
 `GET /verification/{id}` work with or without one; `GET /verifications` and
