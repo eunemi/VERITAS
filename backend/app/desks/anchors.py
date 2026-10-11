@@ -91,6 +91,8 @@ def note(ruling: ClaimRuling, reading: Reasoning | None = None) -> str:
         return reading.reasoning
     if ruling.insufficiency:
         return ruling.insufficiency
+    if ruling.explanation:
+        return ruling.explanation
     semantic = next((i for i in ruling.indications if i.agent == "semantic"), None)
     if semantic is not None:
         return semantic.detail
