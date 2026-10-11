@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="760" viewBox="0 0 1440 760" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">Inside the evidence engine</title>
+  <desc id="description">Three isometric layers illustrate the Veritas system: the Next.js workspace, the FastAPI and LangGraph examination engine, and PostgreSQL records with a Chroma evidence index. The corresponding steps are submit, investigate and inspect.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1440" y2="760" gradientUnits="userSpaceOnUse"><stop stop-color="#F7F2E7"/><stop offset="1" stop-color="#E7DFCD"/></linearGradient>
+    <linearGradient id="ivory" x1="0" y1="0" x2="320" y2="240" gradientUnits="userSpaceOnUse"><stop stop-color="#FFFCF5"/><stop offset="1" stop-color="#D9D0B9"/></linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="320" y2="240" gradientUnits="userSpaceOnUse"><stop stop-color="#416154"/><stop offset="1" stop-color="#203D34"/></linearGradient>
+    <linearGradient id="dark" x1="0" y1="0" x2="320" y2="240" gradientUnits="userSpaceOnUse"><stop stop-color="#343E37"/><stop offset="1" stop-color="#18241F"/></linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="220%"><feDropShadow dx="0" dy="20" stdDeviation="16" flood-color="#393827" flood-opacity="0.2"/></filter>
+    <pattern id="dots" width="25" height="25" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#736D58" fill-opacity="0.14"/></pattern>
+  </defs>
+  <rect width="1440" height="760" rx="20" fill="url(#bg)"/>
+  <rect x="1" y="1" width="1438" height="758" rx="19" stroke="#C5B998"/>
+  <rect x="35" y="154" width="640" height="548" fill="url(#dots)"/>
+  <text x="65" y="66" fill="#857144" font-family="monospace" font-size="12" letter-spacing="3">SYSTEM ATLAS / VERITAS</text>
+  <text x="63" y="120" fill="#24372E" font-family="Georgia, 'Times New Roman', serif" font-size="42">Inside the evidence engine.</text>
+  <text x="1373" y="67" text-anchor="end" fill="#857144" font-family="monospace" font-size="12" letter-spacing="2">INPUT → EVIDENCE → RECORD</text>
+  <path d="M65 145H1375" stroke="#AFA58B" stroke-opacity="0.6"/>
+
+  <!-- Layer 03: persistent record. -->
+  <g transform="translate(363 439) matrix(.866 .5 -.866 .5 0 0)" filter="url(#shadow)">
+    <rect y="14" width="320" height="245" rx="6" fill="#111E19"/>
+    <rect width="320" height="245" rx="6" fill="url(#dark)" stroke="#718470"/>
+    <text x="25" y="37" fill="#D8C593" font-family="monospace" font-size="12" letter-spacing="2">03 / RECORD</text>
+    <path d="M25 52H295" stroke="#8D9A79" stroke-opacity="0.5"/>
+    <g stroke="#C6BA91" stroke-opacity="0.7"><path d="M29 96H291M29 131H291M29 166H291M29 201H291M88 70V215M221 70V215"/></g>
+    <g fill="#DCCDA6" font-family="monospace" font-size="11"><text x="38" y="87">ID</text><text x="101" y="87">EVIDENCE</text><text x="237" y="87">STATE</text></g>
+    <g fill="#9FB5A0"><rect x="102" y="111" width="94" height="5"/><rect x="102" y="146" width="70" height="5"/><rect x="102" y="181" width="105" height="5"/></g>
+  </g>
+  <!-- Layer 02: connected examination graph. -->
+  <g transform="translate(363 299) matrix(.866 .5 -.866 .5 0 0)" filter="url(#shadow)">
+    <rect y="12" width="320" height="245" rx="6" fill="#1D3027"/>
+    <rect width="320" height="245" rx="6" fill="url(#green)" stroke="#9BAE8E"/>
+    <text x="25" y="37" fill="#F0E4C4" font-family="monospace" font-size="12" letter-spacing="2">02 / EXAMINATION</text>
+    <path d="M25 52H295" stroke="#AEC3A3" stroke-opacity="0.5"/>
+    <path d="M53 145H105V104H156M105 145V185H156M181 104H220V145H270M181 185H220" stroke="#DBC589" stroke-width="2"/>
+    <g fill="#284336" stroke="#C7CCAA" stroke-width="2"><circle cx="53" cy="145" r="18"/><rect x="147" y="84" width="38" height="38" rx="6"/><rect x="147" y="166" width="38" height="38" rx="6"/><circle cx="267" cy="145" r="18"/></g>
+    <g fill="#E0C888"><circle cx="53" cy="145" r="5"/><circle cx="166" cy="103" r="5"/><circle cx="166" cy="185" r="5"/><path d="M257 144L265 151L277 136" stroke="#E0C888" stroke-width="3" fill="none"/></g>
+  </g>
+  <!-- Layer 01: editorial application. -->
+  <g transform="translate(363 161) matrix(.866 .5 -.866 .5 0 0)" filter="url(#shadow)">
+    <rect y="10" width="320" height="245" rx="6" fill="#B5AA8C"/>
+    <rect width="320" height="245" rx="6" fill="url(#ivory)" stroke="#FEFCF3"/>
+    <text x="25" y="37" fill="#515B46" font-family="monospace" font-size="12" letter-spacing="2">01 / WORKSPACE</text>
+    <path d="M25 52H295" stroke="#B4AB8F"/>
+    <text x="25" y="94" fill="#293C31" font-family="Georgia, 'Times New Roman', serif" font-size="32">VERITAS</text>
+    <g stroke="#AEA891" stroke-width="4"><path d="M28 115H198M28 130H170"/></g>
+    <g fill="#DDD6C1" stroke="#BAB19A"><rect x="26" y="154" width="79" height="63" rx="3"/><rect x="121" y="154" width="79" height="63" rx="3"/><rect x="216" y="154" width="79" height="63" rx="3"/></g>
+    <g stroke="#64775E" stroke-width="2"><path d="M50 173H82M50 182H82M50 191H72"/><rect x="143" y="171" width="34" height="25"/><path d="M143 192L154 181L164 188L176 179M238 178H274M238 188H263"/></g>
+  </g>
+
+  <g font-family="Arial, Helvetica, sans-serif">
+    <g transform="translate(742 206)">
+      <circle cx="23" cy="23" r="23" fill="#DCD2B8"/>
+      <text x="23" y="28" text-anchor="middle" fill="#6D5A30" font-family="monospace" font-size="13">01</text>
+      <text x="65" y="12" fill="#847048" font-size="11" letter-spacing="2.2">THE INTERFACE</text>
+      <text x="65" y="49" fill="#253B30" font-family="Georgia, 'Times New Roman', serif" font-size="32">Submit in your own format.</text>
+      <text x="65" y="85" fill="#5D675A" font-size="16">Five tools. One editorial workspace.</text>
+      <text x="65" y="113" fill="#82734E" font-family="monospace" font-size="12">NEXT.JS 16 / REACT 19 / TAILWIND CSS 4</text>
+    </g>
+    <path d="M742 354H1360" stroke="#B6AB91" stroke-opacity="0.65"/>
+    <g transform="translate(742 388)">
+      <circle cx="23" cy="23" r="23" fill="#355345"/>
+      <text x="23" y="28" text-anchor="middle" fill="#F0E6CC" font-family="monospace" font-size="13">02</text>
+      <text x="65" y="12" fill="#847048" font-size="11" letter-spacing="2.2">THE INVESTIGATION</text>
+      <text x="65" y="49" fill="#253B30" font-family="Georgia, 'Times New Roman', serif" font-size="32">Let the sources speak.</text>
+      <text x="65" y="85" fill="#5D675A" font-size="16">Extract claims. Gather evidence. Assess meaning.</text>
+      <text x="65" y="113" fill="#82734E" font-family="monospace" font-size="12">FASTAPI / LANGGRAPH / SEARCH + VISION</text>
+    </g>
+    <path d="M742 536H1360" stroke="#B6AB91" stroke-opacity="0.65"/>
+    <g transform="translate(742 570)">
+      <circle cx="23" cy="23" r="23" fill="#24372E"/>
+      <text x="23" y="28" text-anchor="middle" fill="#F0E6CC" font-family="monospace" font-size="13">03</text>
+      <text x="65" y="12" fill="#847048" font-size="11" letter-spacing="2.2">THE FINDING</text>
+      <text x="65" y="49" fill="#253B30" font-family="Georgia, 'Times New Roman', serif" font-size="32">Inspect the evidence trail.</text>
+      <text x="65" y="85" fill="#5D675A" font-size="16">Cited reports, recorded outcomes, account history.</text>
+      <text x="65" y="113" fill="#82734E" font-family="monospace" font-size="12">POSTGRESQL / SQLALCHEMY / CHROMA INDEX</text>
+    </g>
+  </g>
+  <text x="65" y="722" fill="#857B62" font-family="monospace" font-size="11" letter-spacing="1.8">CONCEPTUAL LAYERS / REQUEST FLOW BELOW</text>
+</svg>
