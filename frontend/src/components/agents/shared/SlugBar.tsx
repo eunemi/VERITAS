@@ -23,8 +23,8 @@ const STATUS_MARK: Record<DeskStatus, string> = {
 
 /**
  * The wire slug that runs above every desk — where you are, which file, which
- * issue, and whether the desk is still working. Same strip on all six pages, so
- * moving between desks feels like turning a page rather than loading a new app.
+ * issue, and whether the desk is still working. The same strip runs across the desk
+ * pages, so moving between them feels like turning a page rather than loading a new app.
  */
 export function SlugBar({ desk, status }: { desk: DeskDefinition; status: DeskStatus }) {
   const divider = <span aria-hidden className="h-3 w-px shrink-0 bg-parchment/25" />;
