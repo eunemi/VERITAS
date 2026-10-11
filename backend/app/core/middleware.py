@@ -7,12 +7,16 @@ once its duration is known.
 
 from __future__ import annotations
 
+import resource
+import sys
 import time
 from collections.abc import Awaitable, Callable
+from pathlib import Path
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
+from starlette.types import ASGIApp
 
 from app.core.context import reset_request_id, set_request_id
 from app.core.logging import get_logger
@@ -25,7 +29,27 @@ REQUEST_ID_HEADER = "X-Request-ID"
 
 #: Paths that should not produce an access log line. Health is polled on a short
 #: interval by orchestrators; logging it buries everything else.
-_UNLOGGED_PATHS = frozenset({"/health", "/api/health", "/metrics"})
+_UNLOGGED_PATHS = frozenset({"/health", "/api/health", "/api/v1/health", "/metrics"})
+SLOW_REQUEST_MS = 1_000.0
+
+
+def _max_rss_mb() -> float:
+    """Return the process high-water RSS without adding a runtime dependency."""
+    value = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    # macOS reports bytes; Linux reports KiB.
+    divisor = 1024 * 1024 if sys.platform == "darwin" else 1024
+    return round(value / divisor, 2)
+
+
+def _rss_mb() -> float:
+    """Return current RSS where the host exposes it, with a portable fallback."""
+    if sys.platform != "darwin":
+        try:
+            pages = int(Path("/proc/self/statm").read_text().split()[1])
+            return round(pages * (resource.getpagesize() or 4096) / (1024 * 1024), 2)
+        except (OSError, IndexError, ValueError):
+            pass
+    return _max_rss_mb()
 
 
 class ContentLengthLimitMiddleware(BaseHTTPMiddleware):
@@ -38,7 +62,7 @@ class ContentLengthLimitMiddleware(BaseHTTPMiddleware):
     body limit for chunked requests, whose size cannot be known from a header.
     """
 
-    def __init__(self, app: object, *, max_bytes: int) -> None:
+    def __init__(self, app: ASGIApp, *, max_bytes: int) -> None:
         super().__init__(app)
         self.max_bytes = max_bytes
 
@@ -114,7 +138,19 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
             duration_ms = (time.perf_counter() - started) * 1000
             response.headers[REQUEST_ID_HEADER] = request_id
 
-            if request.url.path not in _UNLOGGED_PATHS:
+            if duration_ms >= SLOW_REQUEST_MS:
+                logger.warning(
+                    "slow request",
+                    extra={
+                        "method": request.method,
+                        "path": request.url.path,
+                        "status_code": response.status_code,
+                        "duration_ms": round(duration_ms, 2),
+                        "rss_mb": _rss_mb(),
+                        "max_rss_mb": _max_rss_mb(),
+                    },
+                )
+            elif request.url.path not in _UNLOGGED_PATHS:
                 logger.info(
                     "request completed",
                     extra={
