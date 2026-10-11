@@ -22,12 +22,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from app.core.logging import get_logger
 from app.domain.research import ClaimResearch
 from app.llm import get_embedder
 from app.llm.base import Embedder
 from app.vectorstore import evidence as passages
 from app.vectorstore import get_vector_store
 from app.vectorstore.base import VectorStore
+
+logger = get_logger(__name__)
 
 if TYPE_CHECKING:
     from app.core.config import Settings
@@ -61,6 +64,7 @@ class EvidenceIndex:
         self._embedder = embedder
         self._top_k = top_k
         self._min_similarity = min_similarity
+        self._collections: set[str] = set()
 
     async def index(self, research: ClaimResearch) -> int:
         """Store ``research``'s passages, returning how many distinct ones were written.
@@ -74,9 +78,9 @@ class EvidenceIndex:
         if not documents:
             return 0
         vectors = await self._embedder.embed([document.text for document in documents])
-        await self._store.upsert(
-            passages.collection_for(research.claim), documents, vectors
-        )
+        collection = passages.collection_for(research.claim)
+        await self._store.upsert(collection, documents, vectors)
+        self._collections.add(collection)
         return len(documents)
 
     async def relevant(
@@ -107,6 +111,29 @@ class EvidenceIndex:
     async def aclose(self) -> None:
         await self._store.aclose()
         await self._embedder.aclose()
+
+    async def discard(self) -> None:
+        """Delete collections created for one transient examination.
+
+        The fact-check desk uses the index only to reorder the dossier that is
+        already in memory. Keeping Chroma collections after that read would turn
+        every unique claim into permanent on-disk state and eventually increase
+        both disk and index RSS without improving a later examination.
+        """
+        for collection in tuple(self._collections):
+            try:
+                await self._store.delete_collection(collection)
+            except Exception:
+                # The examination result is already available; cleanup must not
+                # turn a successful verification into a failed one. The store's
+                # own error contains the provider and collection for diagnostics.
+                logger.warning(
+                    "temporary evidence collection cleanup failed",
+                    extra={"collection": collection},
+                )
+                continue
+        self._collections.clear()
+        await self.aclose()
 
 
 def build(settings: Settings) -> EvidenceIndex:
