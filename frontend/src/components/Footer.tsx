@@ -109,7 +109,7 @@ export default function Footer() {
 
         <div className="grid gap-10 py-10 lg:grid-cols-[1.05fr_2fr] lg:gap-14">
           <div className="flex items-start gap-5 lg:flex-col lg:gap-4 xl:flex-row xl:gap-5">
-            <BrandMark size={76} className="h-[76px] w-[76px] shrink-0" />
+            <BrandMark size={76} tone="dark" className="h-[76px] w-[76px] shrink-0" />
             <div>
               <p className={`${styles.editorial} max-w-[16rem] text-[24px] leading-[1.3] tracking-[-0.02em]`}>
                 Clarity in a world<br className="hidden lg:block" /> of noise.
@@ -181,7 +181,7 @@ export default function Footer() {
             </svg>
           </div>
           <Link href="/" aria-label="Veritas — home" className={styles.wordmark}>
-            <BrandMark size={76} className="h-[76px] w-[76px] shrink-0" />
+            <BrandMark size={76} tone="dark" className="h-[76px] w-[76px] shrink-0" />
             <span aria-hidden="true" className="flex min-w-0 flex-1 justify-between">
               {"VERITAS".split("").map((letter, index) => <span key={index}>{letter}</span>)}
             </span>
