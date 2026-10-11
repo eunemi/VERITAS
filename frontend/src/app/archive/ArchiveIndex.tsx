@@ -265,7 +265,7 @@ export function ArchiveIndex() {
             <p className="font-body-md text-read mt-stack-sm max-w-measure text-ink-black/70">
               Try a shorter search, widen a filter, or{" "}
               <Link
-                href="/investigate"
+                href="/#agents-section"
                 className="border-b border-secondary text-ink-black transition-colors hover:text-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black"
               >
                 commission an examination
@@ -293,12 +293,9 @@ export function ArchiveIndex() {
         <div className="border-t border-ink-black/25 pt-stack-sm pb-stack-lg">
           <Slug className="text-ink-black/70">Colophon</Slug>
           <p className="font-body-md text-body-md mt-2.5 max-w-measure text-ink-black/70">
-            Set at the Veritas archive · Issue <span className="tabular">{DESK_ISSUE}</span>. The
-            examination model is not attached yet, so the records on this index are fixtures held in
-            the shape the real index will take, and the full text of each record is not published:
-            every entry leads to the desk that signed it, where you can put the same kind of
-            artifact through the same examination. Records you commission yourself are real and are
-            listed in{" "}
+            Set at the Veritas archive · Issue <span className="tabular">{DESK_ISSUE}</span>. This
+            public index is a set of published example records; the full text of each record is not
+            published here. Records you commission yourself are real and are listed in{" "}
             <Link
               href="/archive/file"
               className="border-b border-secondary text-ink-black transition-colors hover:text-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black"
