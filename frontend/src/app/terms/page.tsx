@@ -5,7 +5,7 @@ import { StatementPage, type Clause } from "@/components/ui/StatementPage";
 export const metadata: Metadata = {
   title: "Terms of use",
   description:
-    "What Veritas is, what a determination is worth while the examination model is not attached, and what you agree to by submitting an artifact.",
+    "What Veritas is, what a determination means, and what you agree to by submitting an artifact.",
 };
 
 const CLAUSES: Clause[] = [
@@ -14,10 +14,10 @@ const CLAUSES: Clause[] = [
     body: (
       <>
         <p>
-          Veritas is a working prototype of a verification desk. The layout, the routing between
-          desks and the shape of every record are real; the examination behind them is not attached
-          yet. Read the site as a demonstration of how a determination would be reported, not as a
-          service that determines anything.
+          Veritas is a verification service in active development. It accepts text, documents, images
+          and public page URLs, sends them to the configured examination backend, and returns source
+          records and model-assisted determinations. The service is not a substitute for editorial,
+          legal, medical, financial or other professional judgment.
         </p>
       </>
     ),
@@ -27,10 +27,11 @@ const CLAUSES: Clause[] = [
     body: (
       <>
         <p>
-          Nothing, for now. Every finding, figure, confidence and signed determination on this site
-          is a fixture. Do not publish, cite, or act on one, and do not present a record from this
-          site as evidence that a piece of material is authentic or fabricated. When the model is
-          attached, this clause is the first one that will change.
+          A determination is an evidence summary and an assessment produced by the configured desks;
+          it is not a guarantee, certification, or calibrated probability. Sources can be incomplete,
+          inaccessible, wrong, or later corrected. Review the cited evidence yourself before
+          publishing, making a consequential decision, or treating a result as proof of authenticity
+          or fabrication.
         </p>
       </>
     ),
@@ -42,8 +43,8 @@ const CLAUSES: Clause[] = [
         <p>
           Only material you hold the rights to, or are otherwise entitled to have examined. Do not
           submit anything unlawful, and do not submit anything containing another person&rsquo;s
-          private information that you have no right to circulate. The bench reads what you hand it
-          in your browser — see{" "}
+           private information that you have no right to circulate. The bench sends what you hand it
+           to the verification service — see{" "}
           <Link
             href="/privacy"
             className="border-b border-secondary transition-colors hover:text-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black"
@@ -61,10 +62,10 @@ const CLAUSES: Clause[] = [
     body: (
       <>
         <p>
-          The stories on the world, economy and technology pages, and the records on the index, are
-          written to populate the design. They name real places and institutions in invented
-          circumstances, and none of them is journalism. Nothing on those pages should be quoted as a
-          report of an event that happened.
+          The stories on the world, economy and technology pages and the records on the public index
+          are editorial examples. They may name real places or institutions in illustrative
+          circumstances and are not user submissions, live monitoring, or journalism. Do not quote
+          them as reports of events that happened.
         </p>
       </>
     ),
@@ -76,8 +77,7 @@ const CLAUSES: Clause[] = [
         <p>
           The site is provided as it is, with no warranty of accuracy, availability or fitness for
           any purpose, and with no liability for anything done or not done on the strength of what it
-          prints. That is the ordinary position for a prototype, and it is stated here so no reader
-          has to infer it.
+          prints. That is stated here so no reader has to infer it.
         </p>
       </>
     ),
@@ -89,13 +89,11 @@ export default function TermsPage() {
     <StatementPage
       kicker="Terms"
       titleLines={["The terms", "you read this under."]}
-      standfirst="A prototype should say so on its own terms page. This one does, and it says what a determination here is worth."
+      standfirst="The service states what a determination means here, and where its limits are."
       clauses={CLAUSES}
       foot={
         <>
-          These terms describe a prototype in development and will be replaced before anything on
-          this site is offered as a verification service. Until then, treat every record as a
-          specimen of layout — the{" "}
+          These terms describe the current service and its limitations. The{" "}
           <Link
             href="/intel"
             className="border-b border-ink-black/30 transition-colors hover:text-secondary"
