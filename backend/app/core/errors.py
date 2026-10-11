@@ -81,6 +81,13 @@ class RateLimitError(VeritasError):
     status = HTTPStatus.TOO_MANY_REQUESTS
 
 
+class ServiceBusyError(VeritasError):
+    """The service has no capacity for another background examination right now."""
+
+    code = "service_busy"
+    status = HTTPStatus.SERVICE_UNAVAILABLE
+
+
 class PayloadTooLargeError(VeritasError):
     """The submitted artifact exceeds the configured size limit."""
 
