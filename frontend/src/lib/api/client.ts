@@ -397,18 +397,50 @@ export async function request<T>(
   return { body: parsed as T, response };
 }
 
+const wait = (ms: number, signal?: AbortSignal) =>
+  new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new DOMException("Aborted", "AbortError"));
+      return;
+    }
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    function onAbort() {
+      clearTimeout(timer);
+      reject(new DOMException("Aborted", "AbortError"));
+    }
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
+
 /** `POST /verify` — accepted, not finished. Poll the id it hands back. */
 export async function submitVerification(
   submission: VerifyRequest,
   options: CallOptions = {},
 ): Promise<VerificationAccepted> {
-  const { body } = await request<VerificationAccepted>("/verify", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(submission),
-    signal: options.signal,
-  });
-  return body;
+  const maxRetries = 3;
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const { body } = await request<VerificationAccepted>("/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(submission),
+        signal: options.signal,
+      });
+      return body;
+    } catch (cause) {
+      if (
+        cause instanceof ApiError &&
+        (cause.code === "service_busy" || cause.status === 503) &&
+        attempt < maxRetries
+      ) {
+        await wait(1500 * (attempt + 1), options.signal);
+        continue;
+      }
+      throw cause;
+    }
+  }
 }
 
 interface Read {
@@ -477,23 +509,6 @@ export interface PollOptions extends CallOptions {
   /** Give up after this long and raise `poll_timeout`. */
   timeoutMs?: number;
 }
-
-const wait = (ms: number, signal?: AbortSignal) =>
-  new Promise<void>((resolve, reject) => {
-    if (signal?.aborted) {
-      reject(new DOMException("Aborted", "AbortError"));
-      return;
-    }
-    const timer = setTimeout(() => {
-      signal?.removeEventListener("abort", onAbort);
-      resolve();
-    }, ms);
-    function onAbort() {
-      clearTimeout(timer);
-      reject(new DOMException("Aborted", "AbortError"));
-    }
-    signal?.addEventListener("abort", onAbort, { once: true });
-  });
 
 /**
  * Read the record until `terminal` is true, then return it.
