@@ -68,7 +68,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from app.core.config import Settings
-from app.core.logging import get_logger
+from app.core.logging import get_logger, opaque_identifier
 from app.domain import Band, ClaimResearch, Dossier, ExtractedClaim, SkippedClaim
 from app.factcheck.lookup import check
 from app.research import credibility, dossier, queries, reviews
@@ -306,7 +306,7 @@ class WebResearchService:
         except Exception:
             logger.exception(
                 "research could not be stored",
-                extra={"verification_id": verification_id},
+                extra={"verification_ref": opaque_identifier(verification_id)},
             )
 
     def _graded(self, research: ClaimResearch, *, now: datetime) -> ClaimResearch:
