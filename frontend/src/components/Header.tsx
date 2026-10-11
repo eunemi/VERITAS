@@ -44,7 +44,7 @@ export default function Header() {
           aria-label="Veritas — home"
           className="flex items-center gap-3 text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black"
         >
-          <BrandMark size={42} priority className="h-[42px] w-[42px]" />
+          <BrandMark size={42} className="h-[42px] w-[42px]" />
           <span className="text-4xl font-bold tracking-tighter">VERITAS</span>
         </Link>
 
