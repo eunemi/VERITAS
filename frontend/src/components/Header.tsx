@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence, MotionConfig } from "framer-motion";
-import { CommissionButton, CommissionTrigger } from "@/components/CommissionSlip";
+import { CommissionButton } from "@/components/CommissionSlip";
 import { AccountTrigger } from "@/components/auth/AccountSlip";
 import { Slug } from "@/components/agents/shared/layout";
 import { useRouter } from "next/navigation";
