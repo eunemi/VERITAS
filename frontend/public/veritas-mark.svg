@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Veritas mark</title>
+  <desc id="desc">A white V inside a circular sight mark with registration ticks and a coral diamond.</desc>
+  <defs>
+    <pattern id="dots" width="12" height="12" patternUnits="userSpaceOnUse">
+      <circle cx="1.2" cy="1.2" r="0.9" fill="#7D817F" fill-opacity="0.28" />
+    </pattern>
+    <linearGradient id="paper" x1="68" y1="48" x2="191" y2="210" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFDF6" />
+      <stop offset="1" stop-color="#EAE4D8" />
+    </linearGradient>
+  </defs>
+
+  <rect width="256" height="256" fill="#1A1C1D" />
+  <rect width="256" height="256" fill="url(#dots)" />
+
+  <g stroke="#B4B6AE" stroke-linecap="square">
+    <circle cx="128" cy="128" r="58" stroke-opacity="0.62" stroke-width="2" />
+    <circle cx="128" cy="128" r="48" stroke-opacity="0.4" stroke-width="2" />
+    <path d="M128 43V65M128 191V213M43 128H65M191 128H213" stroke-opacity="0.78" stroke-width="2" />
+    <path d="M128 54V66M128 190V202M54 128H66M190 128H202" stroke="#E0E0D5" stroke-opacity="0.55" />
+  </g>
+
+  <path d="M128 80L133 89L128 98L123 89L128 80Z" fill="#D98370" />
+  <path d="M128 84L130 89L128 94L126 89L128 84Z" fill="#F2A18B" />
+
+  <path d="M76 73H111L128 120L145 73H180L143 181H113L76 73Z" fill="url(#paper)" />
+  <path d="M91 73H111L128 120L145 73H165L137 158H119L91 73Z" fill="#FFFDF6" />
+</svg>
