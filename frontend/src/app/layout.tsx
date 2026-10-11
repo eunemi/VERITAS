@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     template: "%s · Veritas",
   },
   description:
-    "Veritas examines text, images, audio and video at six desks, and signs a record of what it found.",
+    "Veritas examines text, documents, images and public pages against cited evidence, then signs a record of what its desks found.",
 };
 
 export default function RootLayout({
