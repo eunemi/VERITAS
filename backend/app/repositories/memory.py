@@ -52,6 +52,15 @@ class InMemoryVerificationRepository:
     async def get(self, verification_id: str) -> Verification | None:
         return self._records.get(verification_id)
 
+    async def list_open_ids(self, *, limit: int = 100) -> tuple[str, ...]:
+        if limit <= 0:
+            return ()
+        return tuple(
+            record.id
+            for record in self._records.values()
+            if not record.status.is_terminal
+        )[:limit]
+
     async def list_for_user(
         self, user_id: str, *, limit: int = 50
     ) -> tuple[Verification, ...]:
