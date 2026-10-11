@@ -53,10 +53,12 @@ def _render(
 ) -> JSONResponse:
     headers: dict[str, str] = {}
     origin = request.headers.get("origin")
-    if origin:
+    settings = getattr(request.app.state, "settings", None)
+    if origin and settings is not None and origin in settings.CORS_ORIGINS:
         headers["Access-Control-Allow-Origin"] = origin
         headers["Access-Control-Allow-Credentials"] = "true"
         headers["Access-Control-Expose-Headers"] = "X-Request-ID, Location, Retry-After"
+        headers["Vary"] = "Origin"
 
     return JSONResponse(
         status_code=status,
