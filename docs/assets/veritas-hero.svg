@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="820" viewBox="0 0 1440 820" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">Veritas — The truth behind the story</title>
+  <desc id="description">A dark editorial cover with gold lettering and an exploded isometric stack of evidence sheets. Five tools: Text, Image, DOCX, PDF and URL.</desc>
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="1440" y2="820" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#161B1B"/>
+      <stop offset="0.55" stop-color="#0C1011"/>
+      <stop offset="1" stop-color="#181A17"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0" cy="0" r="1" gradientTransform="translate(1080 350) rotate(90) scale(380 420)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B99B58" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#B99B58" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="90" y1="180" x2="680" y2="340" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F2E2B6"/>
+      <stop offset="0.48" stop-color="#C2A365"/>
+      <stop offset="1" stop-color="#F0DFB8"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="310" y2="270" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FCF7EB"/>
+      <stop offset="1" stop-color="#CFC6AD"/>
+    </linearGradient>
+    <linearGradient id="plate" x1="0" y1="0" x2="320" y2="280" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#344341"/>
+      <stop offset="1" stop-color="#162321"/>
+    </linearGradient>
+    <linearGradient id="seal" x1="-60" y1="-60" x2="60" y2="60" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DFC78C"/>
+      <stop offset="0.5" stop-color="#AD8B48"/>
+      <stop offset="1" stop-color="#E6D4A6"/>
+    </linearGradient>
+    <pattern id="grid" width="52" height="52" patternUnits="userSpaceOnUse">
+      <path d="M52 0H0V52" stroke="#CCD3C6" stroke-opacity="0.055"/>
+    </pattern>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="220%">
+      <feDropShadow dx="0" dy="28" stdDeviation="22" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+    <filter id="soft" x="-50%" y="-100%" width="200%" height="300%">
+      <feGaussianBlur stdDeviation="22"/>
+    </filter>
+  </defs>
+
+  <rect width="1440" height="820" rx="24" fill="url(#ground)"/>
+  <rect x="1" y="1" width="1438" height="818" rx="23" stroke="#DBC28A" stroke-opacity="0.22"/>
+  <rect x="720" y="36" width="680" height="625" fill="url(#grid)"/>
+  <rect width="1440" height="740" fill="url(#halo)"/>
+  <path d="M48 92V48H92M1348 48H1392V92M48 728V772H92M1348 772H1392V728" stroke="#BC9D60" stroke-opacity="0.6"/>
+
+  <g font-family="Arial, Helvetica, sans-serif">
+    <path d="M91 66L104 89L91 112L78 89Z" stroke="#D8BF84"/>
+    <path d="M91 77V101M84 89H98" stroke="#D8BF84"/>
+    <text x="124" y="84" fill="#EAE3D3" font-size="14" letter-spacing="5">VERITAS INTELLIGENCE</text>
+    <text x="124" y="107" fill="#919B97" font-size="11" letter-spacing="2.5">THE EVIDENCE EDITION</text>
+    <text x="1348" y="88" text-anchor="end" fill="#B3B8AA" font-family="monospace" font-size="12" letter-spacing="2">VOL. 01 / OPEN THE RECORD</text>
+  </g>
+  <path d="M80 141H1360" stroke="#E2D2AE" stroke-opacity="0.19"/>
+
+  <text x="77" y="297" fill="url(#gold)" font-family="Georgia, 'Times New Roman', serif" font-size="112" letter-spacing="4">VERITAS</text>
+  <text x="85" y="362" fill="#F3EFE5" font-family="Georgia, 'Times New Roman', serif" font-size="46">The truth behind</text>
+  <text x="85" y="416" fill="#F3EFE5" font-family="Georgia, 'Times New Roman', serif" font-size="46" font-style="italic">the story.</text>
+  <path d="M88 454H143" stroke="#C5A363" stroke-width="2"/>
+  <g font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#AFB9B4">
+    <text x="85" y="495">Bring a claim. Follow the evidence.</text>
+    <text x="85" y="525">Leave with a record you can inspect.</text>
+  </g>
+  <g transform="translate(85 565)">
+    <rect width="217" height="43" rx="3" fill="#DAC18C"/>
+    <text x="19" y="27" fill="#141A18" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" letter-spacing="1.8">EVIDENCE OVER EVERYTHING</text>
+  </g>
+
+  <!-- Exploded evidence folio: each plane has a separately drawn solid edge. -->
+  <ellipse cx="1073" cy="608" rx="226" ry="38" fill="#000" opacity="0.5" filter="url(#soft)"/>
+  <g stroke="#D6BB7E" stroke-opacity="0.25" stroke-dasharray="4 9">
+    <path d="M1083 206V444M1343 356V594M841 346V584M1101 496V734"/>
+  </g>
+  <g transform="translate(1090 398) matrix(.866 .5 -.866 .5 0 0)" filter="url(#shadow)">
+    <rect x="0" y="14" width="300" height="280" rx="8" fill="#101A18" stroke="#526059"/>
+    <rect width="300" height="280" rx="8" fill="url(#plate)" stroke="#8C927A"/>
+    <rect x="18" y="18" width="264" height="244" rx="3" stroke="#9CA58E" stroke-opacity="0.35"/>
+    <g stroke="#C4D0BD" stroke-opacity="0.35">
+      <path d="M35 60H262M35 103H262M35 146H262M35 189H262M35 232H262"/>
+      <path d="M95 35V246M162 35V246M230 35V246"/>
+    </g>
+    <text x="36" y="52" fill="#D2CFB2" font-family="monospace" font-size="12" letter-spacing="3">03 / THE RECORD</text>
+    <path d="M39 214L82 183L115 194L153 133L198 148L256 83" stroke="#D9BF7D" stroke-width="3"/>
+    <g fill="#D9BF7D"><circle cx="82" cy="183" r="5"/><circle cx="153" cy="133" r="5"/><circle cx="256" cy="83" r="5"/></g>
+  </g>
+  <g transform="translate(1083 296) matrix(.866 .5 -.866 .5 0 0)" filter="url(#shadow)">
+    <rect x="0" y="10" width="300" height="280" rx="7" fill="#665D49"/>
+    <rect width="300" height="280" rx="7" fill="#C4BDA9" stroke="#E2D7BA"/>
+    <text x="27" y="39" fill="#39433C" font-family="monospace" font-size="12" letter-spacing="2">02 / SOURCE LEDGER</text>
+    <path d="M26 54H274" stroke="#777C6E"/>
+    <g fill="#EDE6D4" stroke="#A5A38E">
+      <rect x="27" y="75" width="246" height="44" rx="3"/>
+      <rect x="27" y="135" width="246" height="44" rx="3"/>
+      <rect x="27" y="195" width="246" height="44" rx="3"/>
+    </g>
+    <g fill="#536B58" font-family="monospace" font-size="16"><text x="40" y="104">01</text><text x="40" y="164">02</text><text x="40" y="224">03</text></g>
+    <g stroke="#7D8778" stroke-width="4"><path d="M82 92H245M82 105H187M82 152H245M82 165H210M82 212H245M82 225H165"/></g>
+  </g>
+  <g transform="translate(1083 182) matrix(.866 .5 -.866 .5 0 0)" filter="url(#shadow)">
+    <rect x="0" y="9" width="300" height="280" rx="7" fill="#9A8B6C"/>
+    <rect width="300" height="280" rx="7" fill="url(#paper)" stroke="#FFF8E5"/>
+    <text x="27" y="39" fill="#6D705E" font-family="monospace" font-size="12" letter-spacing="2">01 / THE ARTIFACT</text>
+    <path d="M26 53H273" stroke="#A49A7D"/>
+    <text x="25" y="98" fill="#24302B" font-family="Georgia, 'Times New Roman', serif" font-size="33">Question</text>
+    <text x="25" y="134" fill="#24302B" font-family="Georgia, 'Times New Roman', serif" font-size="33" font-style="italic">the story.</text>
+    <g stroke="#B0AD94" stroke-width="4"><path d="M28 160H268M28 176H250M28 192H266M28 208H163"/></g>
+    <rect x="25" y="228" width="155" height="25" rx="2" fill="#D5C492"/>
+    <text x="36" y="245" fill="#5B5238" font-family="monospace" font-size="10" letter-spacing="1.6">READY TO EXAMINE</text>
+    <g transform="translate(249 235)"><circle r="20" stroke="#677967"/><path d="M-9 0L-2 7L10 -8" stroke="#677967" stroke-width="3"/></g>
+  </g>
+  <g transform="translate(1260 510)" filter="url(#shadow)">
+    <circle cy="7" r="56" fill="#78623A"/>
+    <circle r="56" fill="url(#seal)" stroke="#EBD9AC"/>
+    <circle r="46" stroke="#74603A"/>
+    <circle r="40" stroke="#F7E8BE" stroke-opacity="0.5" stroke-dasharray="2 5"/>
+    <text x="0" y="20" text-anchor="middle" fill="#303528" font-family="Georgia, 'Times New Roman', serif" font-size="61">V</text>
+  </g>
+
+  <path d="M80 658H1360" stroke="#E2D2AE" stroke-opacity="0.25"/>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <g fill="#CDB47D" font-size="11" letter-spacing="2.3">
+      <text x="85" y="694">01 / LINGUISTIC</text><text x="351" y="694">02 / VISUAL</text><text x="617" y="694">03 / DOCUMENT</text><text x="883" y="694">04 / DOCUMENT</text><text x="1149" y="694">05 / WEB</text>
+    </g>
+    <g fill="#EEE8D9" font-family="Georgia, 'Times New Roman', serif" font-size="29">
+      <text x="85" y="733">Text</text><text x="351" y="733">Image</text><text x="617" y="733">DOCX</text><text x="883" y="733">PDF</text><text x="1149" y="733">URL Link</text>
+    </g>
+    <g stroke="#CDB47D" stroke-opacity="0.25"><path d="M320 680V738M586 680V738M852 680V738M1118 680V738"/></g>
+    <text x="85" y="785" fill="#858F86" font-family="monospace" font-size="11" letter-spacing="2">FIVE WAYS IN. ONE EVIDENCE TRAIL.</text>
+    <text x="1355" y="785" text-anchor="end" fill="#858F86" font-family="monospace" font-size="11" letter-spacing="2">BUILT TO QUESTION.</text>
+  </g>
+</svg>
