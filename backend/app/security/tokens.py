@@ -32,6 +32,8 @@ from enum import StrEnum
 from functools import lru_cache
 from typing import Any
 
+from pydantic import SecretStr
+
 from app.core.config import Settings
 from app.core.errors import AuthenticationError, ConfigurationError
 from app.utils.clock import utcnow
@@ -196,12 +198,13 @@ def _signing_key(settings: Settings) -> str:
     would let any copy of this repository forge a token for any deployment of it.
     """
     key = settings.JWT_SECRET_KEY
-    if key is None or not key.get_secret_value():
+    value = key.get_secret_value() if isinstance(key, SecretStr) else key
+    if not value:
         raise ConfigurationError(
             "JWT_SECRET_KEY is not set, so tokens cannot be signed or verified.",
             details={"setting": "JWT_SECRET_KEY"},
         )
-    return key.get_secret_value()
+    return value
 
 
 def _moment(value: Any) -> datetime:
