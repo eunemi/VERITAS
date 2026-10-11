@@ -25,7 +25,7 @@ REQUEST_ID_HEADER = "X-Request-ID"
 
 #: Paths that should not produce an access log line. Health is polled on a short
 #: interval by orchestrators; logging it buries everything else.
-_UNLOGGED_PATHS = frozenset({"/health", "/metrics"})
+_UNLOGGED_PATHS = frozenset({"/health", "/api/health", "/metrics"})
 
 
 class ContentLengthLimitMiddleware(BaseHTTPMiddleware):
