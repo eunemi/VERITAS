@@ -12,8 +12,7 @@ import type { VerificationOut } from "@/lib/api/client";
 /**
  * The shape every desk shares: slug, masthead, then the bench, the record or the
  * reason there is no record, then the colophon and the way through to the next desk.
- * Holding this in one place is what makes the six desks feel like six pages of one
- * publication.
+ * Holding this in one place makes the desk pages feel like pages of one publication.
  */
 export function DeskPage({
   desk,
