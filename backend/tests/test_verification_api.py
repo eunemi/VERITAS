@@ -5,13 +5,14 @@ because what is being checked is the wiring: that a validated body reaches the
 service, that a domain rejection becomes the right status with its details intact,
 and that the background task actually advances the record.
 
-``ASGITransport`` awaits the full ASGI call, which includes Starlette's background
-tasks. So by the time a ``POST /verify`` response is in hand the examination has
-already run to whatever conclusion it reaches — which makes submit-then-poll
-testable in-process, with no sleeping and no polling loop.
+The runner owns a detached process task, so the 202 response is not coupled to the
+examination's completion. Tests that assert a terminal state use the same status
+polling boundary as a real client.
 """
 
 from __future__ import annotations
+
+import asyncio
 
 import pytest
 from fastapi import FastAPI
@@ -20,6 +21,7 @@ from httpx import AsyncClient
 from app.core.config import Settings, get_settings
 from app.core.errors import ConfigurationError
 from app.domain import ADJUDICATOR, Artifact, ArtifactKind, Desk, Verification
+from app.services.verification import VerificationRunner
 from tests.stubs import (
     StubAdjudicator,
     StubExaminer,
@@ -34,6 +36,19 @@ V1 = "/api/v1"
 def text_body(content: str = "The minister said the bridge opened in March.", **extra):
     """A minimal valid submission, plus whatever a test wants to add or change."""
     return {"artifact": {"kind": "text", "content": content}, **extra}
+
+
+async def terminal(client: AsyncClient, verification_id: str):
+    """Read until the detached worker records a terminal state."""
+    for _ in range(100):
+        response = await client.get(f"{V1}/verification/{verification_id}")
+        if response.json().get("terminal"):
+            return response
+        # The production response advertises the polling interval. A detached 202
+        # worker is intentionally allowed to outlive the submit request, so a tight
+        # zero-delay loop would only starve it in an in-process ASGI test too.
+        await asyncio.sleep(float(response.headers.get("retry-after", "0.01")))
+    pytest.fail("verification did not reach a terminal state")
 
 
 @pytest.fixture
@@ -61,6 +76,23 @@ async def test_submit_carries_the_request_id(client: AsyncClient) -> None:
     response = await client.post(f"{V1}/verify", json=text_body())
 
     assert response.headers["X-Request-ID"]
+
+
+async def test_submit_is_rejected_before_persistence_when_queue_is_full(
+    app: FastAPI, client: AsyncClient
+) -> None:
+    runner = VerificationRunner(max_concurrent=1, max_queued=0)
+    app.state.verification_runner = runner
+    await runner.reserve()
+
+    try:
+        response = await client.post(f"{V1}/verify", json=text_body())
+    finally:
+        await runner.release()
+
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "service_busy"
+    assert response.headers["retry-after"] == "1"
 
 
 async def test_text_opens_the_text_and_fact_check_desks(client: AsyncClient) -> None:
@@ -274,7 +306,7 @@ async def test_an_unknown_id_is_404(client: AsyncClient) -> None:
 
 
 async def test_the_background_task_advances_the_record(client: AsyncClient) -> None:
-    """Submit, then read: the task has already run by the time the 202 is in hand.
+    """Submit, then poll: the detached task records the failure.
 
     An unavailable extractor is injected explicitly, independently of installed
     models. The task must record the failure rather than stay pending.
@@ -287,7 +319,7 @@ async def test_the_background_task_advances_the_record(client: AsyncClient) -> N
         }
     ):
         submitted = await client.post(f"{V1}/verify", json=text_body())
-    response = await client.get(f"{V1}/verification/{submitted.json()['id']}")
+    response = await terminal(client, submitted.json()["id"])
 
     body = response.json()
     assert body["status"] == "failed"
@@ -303,7 +335,7 @@ async def test_the_background_task_advances_the_record(client: AsyncClient) -> N
 async def test_a_terminal_record_stops_asking_to_be_polled(client: AsyncClient) -> None:
     """The absence of the header is the signal, so a client needs no status table."""
     submitted = await client.post(f"{V1}/verify", json=text_body())
-    response = await client.get(f"{V1}/verification/{submitted.json()['id']}")
+    response = await terminal(client, submitted.json()["id"])
 
     assert "retry-after" not in response.headers
 
@@ -311,8 +343,11 @@ async def test_a_terminal_record_stops_asking_to_be_polled(client: AsyncClient) 
 async def test_the_failed_desk_is_marked_and_the_rest_are_not(
     client: AsyncClient,
 ) -> None:
-    submitted = await client.post(f"{V1}/verify", json=text_body())
-    response = await client.get(f"{V1}/verification/{submitted.json()['id']}")
+    with desk_bench(
+        {Desk.TEXT: StubExaminer(Desk.TEXT, raises=ConfigurationError("unavailable"))}
+    ):
+        submitted = await client.post(f"{V1}/verify", json=text_body())
+    response = await terminal(client, submitted.json()["id"])
 
     progress = {d["desk"]: d["status"] for d in response.json()["desks"]}
     assert progress == {
@@ -326,7 +361,7 @@ async def test_a_failure_is_never_reported_as_an_error(client: AsyncClient) -> N
     """A failed verification is a successful request. If the body used `error` as
     its key, a client could not tell the two apart by shape."""
     submitted = await client.post(f"{V1}/verify", json=text_body())
-    response = await client.get(f"{V1}/verification/{submitted.json()['id']}")
+    response = await terminal(client, submitted.json()["id"])
 
     assert response.status_code == 200
     assert "error" not in response.json()
@@ -344,7 +379,7 @@ async def test_a_completed_record_reads_back_in_full(client: AsyncClient) -> Non
     with desk_bench(stubs, StubAdjudicator(report=furnished(ADJUDICATOR))):
         submitted = await client.post(f"{V1}/verify", json=text_body(desks=["text"]))
 
-    response = await client.get(f"{V1}/verification/{submitted.json()['id']}")
+    response = await terminal(client, submitted.json()["id"])
 
     body = response.json()
     assert body["status"] == "completed"
@@ -361,7 +396,7 @@ async def test_a_report_carries_its_whole_interior(client: AsyncClient) -> None:
     with desk_bench(stubs, StubAdjudicator(report=furnished(ADJUDICATOR))):
         submitted = await client.post(f"{V1}/verify", json=text_body(desks=["text"]))
 
-    response = await client.get(f"{V1}/verification/{submitted.json()['id']}")
+    response = await terminal(client, submitted.json()["id"])
 
     report = response.json()["reports"][0]
     assert report["ledger"] == [{"key": "Sources", "value": "2"}]
@@ -401,7 +436,7 @@ async def test_confidence_is_published_both_ways(client: AsyncClient) -> None:
     with desk_bench(stubs, StubAdjudicator(report=furnished(ADJUDICATOR))):
         submitted = await client.post(f"{V1}/verify", json=text_body(desks=["text"]))
 
-    response = await client.get(f"{V1}/verification/{submitted.json()['id']}")
+    response = await terminal(client, submitted.json()["id"])
 
     verdict = response.json()["reports"][0]["verdict"]
     assert verdict["confidence"] == "75%"
@@ -418,7 +453,7 @@ async def test_the_signed_verdict_is_the_decision_desk_s(client: AsyncClient) ->
     with desk_bench(stubs, StubAdjudicator(report=canned(ADJUDICATOR))):
         submitted = await client.post(f"{V1}/verify", json=text_body(desks=["text"]))
 
-    body = (await client.get(f"{V1}/verification/{submitted.json()['id']}")).json()
+    body = (await terminal(client, submitted.json()["id"])).json()
 
     assert "verdict" not in body
     decision = next(r for r in body["reports"] if r["desk"] == "decision")
