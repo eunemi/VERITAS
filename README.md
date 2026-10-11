@@ -28,7 +28,7 @@ with citations, reasoning, and uncertainty kept in view.
 
 <br />
 
-[The experience](#the-experience) · [Five tools](#five-tools-one-method) · [Architecture](#inside-the-engine) · [Quickstart](#run-it-locally) · [Deployment](#ship-it) · [API](#the-api) · [Contributing](#contributing)
+[The experience](#the-experience) · [Five tools](#five-tools-one-method) · [URL flow](#url-checks-are-live-jobs) · [Architecture](#inside-the-engine) · [Quickstart](#run-it-locally) · [Deployment](#ship-it) · [API](#the-api) · [Contributing](#contributing)
 
 </div>
 
@@ -74,7 +74,7 @@ The interface takes its cues from an editorial desk: a masthead, an examination 
 | **02 / Image** | Photographs, screenshots, captions, public image URLs | Describes visible details, recovers text, inspects metadata, and checks caption claims. Google Cloud Vision can add matching pages when configured. | [↗](https://veritasreal.vercel.app/intel/image) |
 | **03 / DOCX** | Word documents | Extracts readable paragraph text and routes it through the same claim-and-evidence pipeline as pasted prose. | [↗](https://veritasreal.vercel.app/intel/docx) |
 | **04 / PDF** | Text-based reports, notices, articles | Extracts embedded text and checks its claims. Scanned PDFs need OCR before submission. | [↗](https://veritasreal.vercel.app/intel/pdf) |
-| **05 / URL** | Public article and page links | Fetches readable page content, follows permitted redirects, and checks the page's claims against other sources. | [↗](https://veritasreal.vercel.app/intel/url) |
+| **05 / URL** | Public article and page links | Fetches readable page content, follows permitted public redirects, and checks the page's claims against other sources with live progress shown inside the URL field. | [↗](https://veritasreal.vercel.app/intel/url) |
 
 The **fact-check desk** gathers and evaluates evidence. The **decision desk** combines the filed reports into the final determination and is appended automatically. DOCX and PDF are frontend intake tools, not separate backend verification desk IDs.
 
@@ -93,6 +93,31 @@ Common claim outcomes are `SUPPORTED`, `CONTRADICTED`, `CONTESTED`, and `INSUFFI
 Image context and caption checking do not certify pixel authenticity, original capture date, or AI generation. Related search results are distinguished from actual image matches.
 
 </details>
+
+<br />
+
+## URL checks are live jobs
+
+The URL desk does not pretend to verify a page instantly in the browser. It opens the
+same server-side verification record used by the other desks and keeps the reader
+informed while the page is being fetched and examined:
+
+1. The browser validates that the input is a complete `http://` or `https://` URL.
+2. `POST /api/v1/verify` accepts the URL and returns `202 Accepted` with a record id.
+3. The backend checks the host, follows up to three public redirects, fetches the page,
+   removes scripts and non-readable markup, and keeps the original URL as provenance.
+4. The text and fact-check desks extract claims, search independent sources, compare the
+   evidence, and file their reports. The decision desk signs the final record.
+5. The frontend polls `GET /api/v1/verification/{id}` and honors the server's
+   `Retry-After` hint. The URL field shows a scan line, spinner, hostname, active desk,
+   filed-desk count, and progress bar while this happens.
+6. The page renders the completed exhibits and determination, or a clear service/page
+   failure when the public URL cannot be read.
+
+Only publicly reachable pages can be fetched. Private, loopback, link-local, and other
+non-public destinations are refused on every redirect hop. A valid URL can still finish
+with `INSUFFICIENT` when it returns no readable prose, requires browser JavaScript to
+render its content, blocks the fetcher, or has no claims that can be checked.
 
 <br />
 
@@ -188,7 +213,13 @@ sequenceDiagram
     Web-->>Reader: Render the completed record
 ```
 
-The current execution model uses FastAPI background tasks in the API process. PostgreSQL persists records; it is not a durable job queue. In-memory stores are available for local development. The Chroma evidence index uses hashing-based embeddings for passage retrieval, rather than a separate semantic embedding API.
+The current execution model uses a bounded in-process verification runner inside the
+API process. PostgreSQL persists records and the runner can recover open records after
+an API restart, but PostgreSQL is not a durable job queue. Keep one API process per
+container unless a real external worker queue is added. In-memory stores are available
+for quick local development and lose accounts and records when the process restarts.
+The Chroma evidence index uses hashing-based embeddings for passage retrieval, rather
+than a separate semantic embedding API.
 
 </details>
 
@@ -210,7 +241,10 @@ The current execution model uses FastAPI background tasks in the API process. Po
 
 ## Run it locally
 
-**You will need:** Node.js **20.9+**, Python **3.12+**, and credentials for a language-model provider and at least one search provider for live verification. PostgreSQL is optional for the in-memory quickstart below.
+**You will need:** Node.js **20.9+**, Python **3.12+**, and credentials for a
+language-model provider and at least one search provider for live verification.
+PostgreSQL is optional for the in-memory quickstart below and required for durable
+accounts and verification records.
 
 ### 1 / Get the project
 
@@ -247,11 +281,20 @@ JWT_SECRET_KEY=your-generated-secret
 
 Generate the value for `JWT_SECRET_KEY` with `openssl rand -hex 32`. Replace the key placeholders with your own credentials. In-memory accounts and records reset when the process restarts.
 
+`VERIFICATION_STORE=memory` is the fastest local path and does not need PostgreSQL.
+For a durable local run, use `VERIFICATION_STORE=database`, start PostgreSQL, and set
+`DATABASE_URL` to the database you want the API to use. The verification store also
+controls the account store: memory mode loses both accounts and records on restart.
+
 The frontend's `frontend/.env.local` should contain:
 
 ```dotenv
 NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
 ```
+
+`NEXT_PUBLIC_API_URL` is embedded into the browser bundle at build time. Restart
+`npm run dev` after changing it locally, and redeploy/rebuild the frontend after
+changing it in Vercel.
 
 ### 3 / Start the API
 
@@ -282,6 +325,18 @@ npm run dev
 | **Workspace** | http://localhost:3000 |
 | **Interactive API docs** | http://localhost:8000/docs |
 | **API health** | http://localhost:8000/health |
+| **Public API health** | http://localhost:8000/api/health |
+
+To run the already-built frontend instead of the development server:
+
+```bash
+cd frontend
+npm run build
+npm run start
+```
+
+The workspace is then served on the port printed by Next.js. The API still needs to be
+running separately.
 
 <details>
 <summary><strong>Use PostgreSQL and Docker Compose instead</strong></summary>
@@ -298,6 +353,11 @@ docker compose up --build api
 ```
 
 Wait for PostgreSQL to be ready before running Alembic. The Compose configuration overrides the API's database hostname to `postgres` inside the container. Local named volumes keep database and `/app/var` data across rebuilds. The Docker build includes the spaCy model and NLTK data.
+
+The compose file is a local development stack. It runs one reloading API process and
+PostgreSQL; the frontend still runs from its own `frontend/` terminal. For a quick
+frontend-only pass, memory mode is enough, but URL verification still needs the backend
+and its configured provider credentials.
 
 </details>
 
@@ -351,11 +411,12 @@ Set this in the **Production** environment and rebuild after changing it. For a 
 | `JWT_SECRET_KEY` | A generated secret, stored in Render |
 | `DATABASE_URL` | Your Neon pooled URL, using `postgresql+asyncpg://` |
 | `VERIFICATION_STORE` | `database` |
+| `UPLOAD_DIRECTORY` | A persistent/shared path for uploaded images, such as `/app/var/uploads` |
 | **Provider configuration** | The model, search, and optional vision settings from the provider table above |
 
 Keep one entry per variable. Multiple permitted frontend origins go in one comma-separated `CORS_ORIGINS` value. Vercel preview URLs and additional custom domains need their own explicit entries.
 
-Run `alembic upgrade head` once against the target database using its direct connection URL, from `backend/` with dependencies installed. The runtime Docker image contains the app, not the Alembic migration directory. Configure persistent storage for uploads and the Chroma index if those files must survive deployments; multiple API instances need shared upload storage.
+Run `alembic upgrade head` once against the target database using its direct connection URL, from `backend/` with dependencies installed. The runtime Docker image contains the app, not the Alembic migration directory. Configure persistent storage for uploads and the Chroma index if those files must survive deployments; multiple API instances need shared upload storage. The shipped container runs one Uvicorn process, and the verification runner is in-process rather than a separate queue worker.
 
 #### Verify the connection
 
@@ -380,6 +441,8 @@ Expect health to report `status: "ok"` and `environment: "production"`. The pref
 | Old API URL after editing Vercel settings | Rebuild the frontend. `NEXT_PUBLIC_API_URL` is embedded at build time. |
 | `GET /` returns `404` on Render | Expected: the backend has no homepage. Configure the health check to use `/health`. |
 | Health works, verification fails | Check database connectivity, migrations, and the API logs using the returned request ID. |
+| `No verification with id ...` | Use `VERIFICATION_STORE=database` for deployed environments. Memory mode loses records when the API restarts; an owned record also returns `404` when read without its owner's token. |
+| URL check says the page could not be read | Confirm the page is public, returns readable HTML/text, does not require browser-only JavaScript, and does not redirect to a private host. The fetcher allows at most three redirects. |
 | Record completes with no sources | Inspect the provider ledger. Add working search credentials; a healthy server alone cannot retrieve evidence. |
 | Images upload but previews fail | Check `PUBLIC_API_URL`, persistent upload storage, and the generated media URL. |
 | Scanned PDF produces no text | Run OCR first; PDF intake reads the embedded text layer. |
@@ -394,7 +457,7 @@ Expect health to report `status: "ok"` and `environment: "production"`. The pref
 
 | Method | Endpoint | Purpose |
 | :--- | :--- | :--- |
-| `GET` | `/health` | Versioned liveness check; also available at root `/health` |
+| `GET` | `/health` | Versioned liveness check; also available at root `/health` and public `/api/health` |
 | `POST` | `/verify` | Accept an artifact and return a record ID (`202`) |
 | `GET` | `/verification/{id}` | Read progress, reports, final status, or failure |
 | `GET` | `/verifications?limit=20` | Read the signed-in account's history |
@@ -431,6 +494,18 @@ Illustrative acceptance response — this is a job receipt, not a verdict:
   "created_at": "2026-10-11T09:00:00Z"
 }
 ```
+
+For the URL desk, submit a URL artifact instead of text or claim content:
+
+```bash
+curl -sS http://localhost:8000/api/v1/verify \
+  -H 'Content-Type: application/json' \
+  -d '{"artifact":{"kind":"url","url":"https://example.com/article"}}'
+```
+
+The URL submission opens the text and fact-check desks by default, followed by the
+decision desk. The backend keeps the submitted address on the record while the desks
+work on the readable page content fetched from it.
 
 Read `/api/v1/verification/{id}` using the returned ID until `terminal` is `true`. Nonterminal responses include a `Retry-After` hint. A completed record carries `reports`; a failed examination carries `failure` and preserves reports already filed. Request-level errors use an `error` envelope with a stable `code`, `message`, and request ID.
 
