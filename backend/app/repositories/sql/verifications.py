@@ -70,6 +70,18 @@ class SqlVerificationRepository:
             row = await session.get(VerificationRow, verification_id)
             return _to_domain(row) if row is not None else None
 
+    async def list_open_ids(self, *, limit: int = 100) -> tuple[str, ...]:
+        if limit <= 0:
+            return ()
+        async with self._factory() as session:
+            found = await session.execute(
+                select(VerificationRow.id)
+                .where(VerificationRow.status.in_((Status.PENDING, Status.RUNNING)))
+                .order_by(VerificationRow.created_at, VerificationRow.id)
+                .limit(limit)
+            )
+            return tuple(found.scalars().all())
+
     async def list_for_user(
         self, user_id: str, *, limit: int = 50
     ) -> tuple[Verification, ...]:
