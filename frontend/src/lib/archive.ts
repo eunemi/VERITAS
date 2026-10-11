@@ -1,16 +1,16 @@
 /**
  * The published record index.
  *
- * Every entry is a record that was signed at one of the desks. The shape is what
- * the backend will fill — one row per signed record, keyed by its file number —
- * so the index can be swapped for a query without the page changing. The rows
- * below are fixtures, and the archive page says so.
+ * The public index is an editorial set of example records. Its shape mirrors the
+ * backend's signed record so a future published-record query can replace the
+ * examples without changing the page.
  */
 
+import { DESKS } from "@/lib/desks";
 import type { Determination } from "@/lib/types/agents";
 
 /** What was handed over. Matches the kinds the commission bench accepts. */
-export type ArchiveArtifact = "Copy" | "Claim" | "Frame" | "Recording" | "Footage";
+export type ArchiveArtifact = "Copy" | "Claim" | "Frame" | "Document" | "Link";
 
 export interface ArchiveRecord {
   /** File number, as printed on the record. */
@@ -21,7 +21,7 @@ export interface ArchiveRecord {
   /** ISO date the record was signed. Sorted and grouped by this. */
   filed: string;
   /** Desk that led the examination. A key of `DESKS`. */
-  desk: string;
+  desk: keyof typeof DESKS;
   artifact: ArchiveArtifact;
   /** Where the artifact came to us from. */
   source: string;
@@ -49,23 +49,23 @@ export const ARCHIVE: ArchiveRecord[] = [
     id: "VT–0111",
     headline: "The viral market-panic call was never recorded",
     standfirst:
-      "Phase ran continuously across a splice no microphone could have captured in one take.",
+      "The published claim relies on a recording the source does not provide, so the fact-check desk could not rule on the audio itself.",
     filed: "2026-07-02",
-    desk: "audio",
-    artifact: "Recording",
+    desk: "fact-check",
+    artifact: "Claim",
     source: "Social platform",
     region: "North America",
-    determination: "SYNTHETIC",
-    confidence: "97%",
+    determination: "INSUFFICIENT",
+    confidence: "41%",
   },
   {
     id: "VT–0109",
     headline: "Deep-sea sabotage footage: too little to rule on",
     standfirst:
-      "Nine seconds at 240p. The video desk could not separate compression from tampering and declined to guess.",
+      "Nine seconds at 240p. The image desk could not separate compression from tampering and declined to guess.",
     filed: "2026-06-14",
-    desk: "video",
-    artifact: "Footage",
+    desk: "image",
+    artifact: "Frame",
     source: "Anonymous submission",
     region: "Baltic",
     determination: "INSUFFICIENT",
@@ -127,10 +127,10 @@ export const ARCHIVE: ArchiveRecord[] = [
     id: "VT–0094",
     headline: "Ministerial resignation clip cut from two separate answers",
     standfirst:
-      "The edit is real footage in a false order. Frame cadence changes at the join, and the room tone does not.",
+      "The supplied frames are real footage in a false order. Frame cadence changes at the join, and the visible sequence does not.",
     filed: "2025-12-11",
-    desk: "video",
-    artifact: "Footage",
+    desk: "image",
+    artifact: "Frame",
     source: "Broadcast rip",
     region: "West Africa",
     determination: "ANOMALOUS",
@@ -140,10 +140,10 @@ export const ARCHIVE: ArchiveRecord[] = [
     id: "VT–0090",
     headline: "Two desks disagreed on the same recording, and both were printed",
     standfirst:
-      "The audio desk read the splice as an edit; the core weighed the transcript against it and left the disagreement standing.",
+      "The fact-check desk read the published transcript as an edit; the core weighed the claim against it and left the disagreement standing.",
     filed: "2025-11-04",
-    desk: "decision",
-    artifact: "Recording",
+    desk: "fact-check",
+    artifact: "Claim",
     source: "Whistleblower",
     region: "Middle East",
     determination: "CONTESTED",
@@ -179,10 +179,10 @@ export const ARCHIVE: ArchiveRecord[] = [
     id: "VT–0075",
     headline: "Machine-read speech attributed to a governor who never gave it",
     standfirst:
-      "The voice is a model of a real one. The desk marked the six places where breathing does not track the sentence.",
+      "The claim is a model of a real statement. The fact-check desk marked the six places where the published wording does not track the record.",
     filed: "2025-05-08",
-    desk: "audio",
-    artifact: "Recording",
+    desk: "fact-check",
+    artifact: "Claim",
     source: "Video platform",
     region: "South Asia",
     determination: "SYNTHETIC",
