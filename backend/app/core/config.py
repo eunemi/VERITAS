@@ -191,11 +191,27 @@ class Settings(BaseSettings):
     DATABASE_ECHO: bool = False
     DATABASE_POOL_SIZE: int = 5
     DATABASE_MAX_OVERFLOW: int = 10
+    #: Bound connection acquisition and database command time so a stalled
+    #: dependency cannot hold an API coroutine forever.
+    DATABASE_CONNECT_TIMEOUT_SECONDS: float = Field(default=10.0, gt=0)
+    DATABASE_COMMAND_TIMEOUT_SECONDS: float = Field(default=30.0, gt=0)
+    DATABASE_POOL_TIMEOUT_SECONDS: float = Field(default=10.0, gt=0)
 
     #: Which store holds verifications. ``memory`` needs no database at all — see
     #: :class:`StoreBackend`. Set it before starting the API without PostgreSQL up,
     #: or every request will fail on connection rather than on anything meaningful.
     VERIFICATION_STORE: StoreBackend = StoreBackend.DATABASE
+
+    # --------------------------------------------------------- examinations ----
+    #: One active graph per small Render process by default. Operators can raise
+    #: this when memory measurements show the instance has headroom.
+    VERIFICATION_MAX_CONCURRENT: int = Field(default=1, ge=1)
+    #: Accepted jobs waiting behind active work. Requests beyond this bound are
+    #: rejected before persistence. In-process work does not survive a restart.
+    VERIFICATION_MAX_QUEUED: int = Field(default=2, ge=0)
+    #: Active examination budget, including provider and storage work. Queue wait
+    #: is separate; failure persistence gets its own database command budget.
+    VERIFICATION_TIMEOUT_SECONDS: float = Field(default=300.0, gt=0)
 
     # -------------------------------------------------------------- auth ----
 
