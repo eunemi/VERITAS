@@ -87,7 +87,7 @@ async def main() -> int:
         )
 
         print("\nHealth")
-        for path in ("/health", f"{PREFIX}/health"):
+        for path in ("/health", "/api/health", f"{PREFIX}/health"):
             r = await client.get(path)
             check(f"GET {path}", r.status_code == 200, str(r.status_code))
 
