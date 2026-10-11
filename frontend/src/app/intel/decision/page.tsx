@@ -31,7 +31,7 @@ const REPORTING = ["text", "fact-check"].map((id) => DESKS[id]);
 
 export default function DecisionDesk() {
   const [copy, setCopy] = useState("");
-  const { status, record, error, open, reopen, working } = useExamination<DecisionRecord>();
+  const { status, record, error, open, reopen, working, progress } = useExamination<DecisionRecord>();
 
   const tooShort = copy.trim().length < MINIMUM;
 
@@ -39,6 +39,7 @@ export default function DecisionDesk() {
     <DeskPage
       desk={desk}
       status={status}
+      progress={progress}
       latencyMs={DECISION_PACE_MS}
       onReopen={reopen}
       bench={
