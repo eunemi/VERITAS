@@ -304,6 +304,14 @@ export function LinkField({
           // eslint-disable-next-line @next/next/no-img-element -- User-supplied image preview.
           <img src={trimmed} alt="Image selected for verification" onError={() => setBroken(trimmed)} className="max-h-80 max-w-full object-contain" />
         ) : <p className="text-center text-ink-black/60">Drop an image here or choose a file from your device.</p>}
+        {scanning ? (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-ink-black/55 backdrop-blur-[2px]">
+            <div role="status" aria-live="polite" className="flex items-center gap-3 border border-parchment/45 bg-ink-black/80 px-5 py-3 text-parchment">
+              <span aria-hidden className="h-2 w-2 animate-pulse bg-gold-foil" />
+              <span className="font-mono-label text-sm tracking-wider uppercase">Examining image…</span>
+            </div>
+          </div>
+        ) : null}
         <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" className="hidden" disabled={scanning || isUploading} onChange={(event) => { const file = event.target.files?.[0]; if (file) void handleFileUpload(file); }} />
         <button type="button" disabled={scanning || isUploading} onClick={() => fileInputRef.current?.click()} className="border border-ink-black px-5 py-3 text-ink-black disabled:opacity-50 hover:bg-ink-black/5">
           {isUploading ? "Uploading image…" : "Choose image"}
