@@ -48,9 +48,8 @@ const COLUMNS: Column[] = [
 ];
 
 const ELSEWHERE = [
-  { href: "https://x.com", label: "X / Twitter" },
-  { href: "https://github.com", label: "GitHub" },
-  { href: "https://linkedin.com", label: "LinkedIn" },
+  { href: "/intel", label: "The method" },
+  { href: "/archive", label: "The archive" },
 ];
 
 function Arrow({ className = "" }: { className?: string }) {
@@ -167,20 +166,18 @@ export default function Footer() {
 
             <nav aria-labelledby="foot-elsewhere">
               <h3 id="foot-elsewhere" className={`${styles.eyebrow} mb-4 text-[#d88876]`}>
-                Elsewhere
+                Read next
               </h3>
               <ul>
                 {ELSEWHERE.map((link) => (
                   <li key={link.href}>
-                    <a
+                    <Link
                       href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className={`${styles.navLink} justify-between gap-3 sm:max-w-[8rem]`}
                     >
-                      <span>{link.label}<span className="sr-only"> (opens in a new tab)</span></span>
+                      <span>{link.label}</span>
                       <Arrow className="h-3 w-3 shrink-0 text-parchment/50" />
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
