@@ -14,9 +14,12 @@ would call. Nothing about it knows it was scheduled by FastAPI.
 
 from __future__ import annotations
 
+import asyncio
+import time
+
 from app.core.config import Settings
-from app.core.errors import NotFoundError, VeritasError
-from app.core.logging import get_logger
+from app.core.errors import NotFoundError, ServiceBusyError, StorageError, VeritasError
+from app.core.logging import get_logger, opaque_identifier
 from app.desks import get_adjudicator, get_examiner
 from app.domain import (
     ADJUDICATOR,
@@ -37,6 +40,163 @@ DEFAULT_HISTORY_LIMIT = 20
 #: because a verification carries every report it has and a caller asking for a
 #: thousand of them would be asking the store for a very large answer.
 MAX_HISTORY_LIMIT = 100
+
+
+class VerificationRunner:
+    """Admit and run a bounded number of background examinations per process."""
+
+    def __init__(self, *, max_concurrent: int, max_queued: int) -> None:
+        self._max_concurrent = max(1, max_concurrent)
+        self._slots = asyncio.Semaphore(self._max_concurrent)
+        self._capacity = self._max_concurrent + max(0, max_queued)
+        self._admission_lock = asyncio.Lock()
+        self._admitted = 0
+        self._active = 0
+        self._tasks: set[asyncio.Task[None]] = set()
+
+    async def reserve(self) -> None:
+        """Reserve capacity before a verification is persisted."""
+        async with self._admission_lock:
+            if self._admitted >= self._capacity:
+                raise ServiceBusyError(
+                    "The examination queue is full. Try again shortly.",
+                    details={"capacity": self._capacity},
+                )
+            self._admitted += 1
+
+    async def release(self) -> None:
+        """Release a reservation when submission or scheduling fails."""
+        async with self._admission_lock:
+            if self._admitted:
+                self._admitted -= 1
+
+    async def status(self) -> tuple[int, int, int]:
+        """Return ``(active, queued, capacity)`` for diagnostics."""
+        async with self._admission_lock:
+            return (
+                self._active,
+                max(0, self._admitted - self._active),
+                self._capacity,
+            )
+
+    def schedule(self, service: VerificationService, verification_id: str) -> None:
+        """Detach an admitted job from the request that accepted it.
+
+        Starlette background tasks run after the response body is sent, but the ASGI
+        request task still awaits them. A process task lets the API finish the 202
+        immediately while this runner retains ownership of the admission slot.
+        """
+        task = asyncio.create_task(
+            self.run(service, verification_id),
+            name=f"verification:{verification_id}",
+        )
+        self._tasks.add(task)
+        task.add_done_callback(self._task_done)
+
+    def start_recovery(
+        self,
+        service: VerificationService,
+        repository: VerificationRepository,
+        *,
+        storage_timeout: float,
+    ) -> None:
+        """Start a bounded scan for jobs left open by an earlier process.
+
+        The scan itself is detached from lifespan startup. A database outage must be
+        observable in logs, but it must not prevent ``/health`` from becoming live.
+        ``list_open_ids`` is capped at this runner's capacity, so recovery cannot
+        create an unbounded in-memory backlog.
+        """
+        task = asyncio.create_task(
+            self._recover(
+                service,
+                repository,
+                storage_timeout=storage_timeout,
+            ),
+            name="verification-recovery",
+        )
+        self._tasks.add(task)
+        task.add_done_callback(self._task_done)
+
+    async def _recover(
+        self,
+        service: VerificationService,
+        repository: VerificationRepository,
+        *,
+        storage_timeout: float,
+    ) -> None:
+        try:
+            async with asyncio.timeout(storage_timeout):
+                open_ids = await repository.list_open_ids(limit=self._capacity)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logger.exception("verification recovery scan failed")
+            return
+
+        recovered = 0
+        for verification_id in open_ids:
+            try:
+                await self.reserve()
+            except ServiceBusyError:
+                break
+            self.schedule(service, verification_id)
+            recovered += 1
+        if open_ids:
+            logger.info(
+                "verification recovery scheduled",
+                extra={"found": len(open_ids), "scheduled": recovered},
+            )
+
+    def _task_done(self, task: asyncio.Task[None]) -> None:
+        self._tasks.discard(task)
+        if task.cancelled():
+            return
+        exception = task.exception()
+        if exception is not None:
+            logger.error(
+                "verification runner task failed",
+                extra={"error": type(exception).__name__},
+                exc_info=(type(exception), exception, exception.__traceback__),
+            )
+
+    async def shutdown(self) -> None:
+        """Cancel and await jobs during orderly application shutdown."""
+        tasks = tuple(self._tasks)
+        for task in tasks:
+            task.cancel()
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+        self._tasks.clear()
+
+    async def run(self, service: VerificationService, verification_id: str) -> None:
+        """Run one reserved job and always return its admission slot."""
+        queued_at = time.perf_counter()
+        try:
+            async with self._slots:
+                async with self._admission_lock:
+                    self._active += 1
+                    active = self._active
+                    queued = max(0, self._admitted - self._active)
+                logger.info(
+                    "verification worker started",
+                    extra={
+                        "verification_ref": opaque_identifier(verification_id),
+                        "queue_wait_ms": round(
+                            (time.perf_counter() - queued_at) * 1000, 2
+                        ),
+                        "active_jobs": active,
+                        "queued_jobs": queued,
+                    },
+                )
+                try:
+                    await service.run(verification_id)
+                finally:
+                    async with self._admission_lock:
+                        self._active -= 1
+        finally:
+            # Cancellation can happen while waiting for an execution slot too.
+            await self.release()
 
 
 class VerificationService:
@@ -80,14 +240,20 @@ class VerificationService:
                 field="artifact.content",
             )
         record = Verification.submitted(artifact=artifact, desks=desks, user_id=user_id)
-        await self._repository.create(record)
+        try:
+            async with asyncio.timeout(self._settings.DATABASE_COMMAND_TIMEOUT_SECONDS):
+                await self._repository.create(record)
+        except TimeoutError as exc:
+            raise StorageError(
+                "The verification could not be persisted before the storage timeout."
+            ) from exc
         logger.info(
             "verification submitted",
             extra={
-                "verification_id": record.id,
+                "verification_ref": opaque_identifier(record.id),
                 "artifact_kind": artifact.kind.value,
                 "desks": [p.desk.value for p in record.desks],
-                "user_id": user_id,
+                "has_owner": user_id is not None,
             },
         )
         return record
@@ -125,9 +291,15 @@ class VerificationService:
         store method that cannot return anything else. See
         :meth:`app.repositories.base.VerificationRepository.list_for_user`.
         """
-        return await self._repository.list_for_user(
-            user_id, limit=min(max(limit, 1), MAX_HISTORY_LIMIT)
-        )
+        try:
+            async with asyncio.timeout(self._settings.DATABASE_COMMAND_TIMEOUT_SECONDS):
+                return await self._repository.list_for_user(
+                    user_id, limit=min(max(limit, 1), MAX_HISTORY_LIMIT)
+                )
+        except TimeoutError as exc:
+            raise StorageError(
+                "Verification history could not be read before the storage timeout."
+            ) from exc
 
     # ----------------------------------------------------------------- run ---
 
@@ -150,47 +322,89 @@ class VerificationService:
         the determination the roster describes.
         """
         desk: Desk | None = None
+        started = time.perf_counter()
         try:
-            record = await self._repository.get(verification_id)
-            if record is None:
-                # Evicted between submission and scheduling. Nothing to advance
-                # and nowhere to record a failure, so say so and stop.
-                logger.warning(
-                    "verification vanished before it ran",
-                    extra={"verification_id": verification_id},
-                )
-                return
+            async with asyncio.timeout(self._settings.VERIFICATION_TIMEOUT_SECONDS):
+                record = await self._repository.get(verification_id)
+                if record is None:
+                    # Evicted between submission and scheduling. Nothing to advance
+                    # and nowhere to record a failure, so say so and stop.
+                    logger.warning(
+                        "verification vanished before it ran",
+                        extra={"verification_ref": opaque_identifier(verification_id)},
+                    )
+                    return
 
-            await self._repository.mark_running(verification_id)
+                await self._repository.mark_running(verification_id)
 
-            for desk in record.examining_desks:
-                await self._repository.start_desk(verification_id, desk)
-                report = await get_examiner(desk, self._settings).examine(
-                    record.artifact, verification_id=verification_id
-                )
-                await self._repository.add_report(verification_id, report)
+                for desk in record.examining_desks:
+                    desk_report = record.report_for(desk)
+                    if desk_report is not None:
+                        # A durable job may be resumed after the process died after
+                        # filing a report but before the aggregate was closed. Do not
+                        # append a duplicate report on the retry.
+                        continue
+                    desk_started = time.perf_counter()
+                    await self._repository.start_desk(verification_id, desk)
+                    report = await get_examiner(desk, self._settings).examine(
+                        record.artifact, verification_id=verification_id
+                    )
+                    await self._repository.add_report(verification_id, report)
+                    logger.info(
+                        "verification desk completed",
+                        extra={
+                            "verification_ref": opaque_identifier(verification_id),
+                            "desk": desk.value,
+                            "duration_ms": round(
+                                (time.perf_counter() - desk_started) * 1000, 2
+                            ),
+                        },
+                    )
 
-            desk = ADJUDICATOR
-            await self._repository.start_desk(verification_id, desk)
-            # Re-read: the adjudicator weighs the reports as filed, and the
-            # in-hand copy predates all of them. Through `_require` and not `get`,
-            # because the examination is not a viewer — an owned record must not
-            # become unreadable to the worker running it.
-            filed = await self._require(verification_id)
-            decision = await get_adjudicator(desk).adjudicate(filed.reports)
-            await self._repository.add_report(verification_id, decision)
+                desk = ADJUDICATOR
+                # Re-read: the adjudicator weighs the reports as filed, and the
+                # in-hand copy predates all of them. Through `_require` and not `get`,
+                # because the examination is not a viewer — an owned record must not
+                # become unreadable to the worker running it.
+                filed = await self._require(verification_id)
+                if filed.report_for(desk) is None:
+                    await self._repository.start_desk(verification_id, desk)
+                    decision = await get_adjudicator(desk).adjudicate(filed.reports)
+                    await self._repository.add_report(verification_id, decision)
 
-            await self._repository.complete(verification_id)
+                await self._repository.complete(verification_id)
             logger.info(
-                "verification completed", extra={"verification_id": verification_id}
+                "verification completed",
+                extra={
+                    "verification_ref": opaque_identifier(verification_id),
+                    "duration_ms": round((time.perf_counter() - started) * 1000, 2),
+                },
+            )
+        except TimeoutError:
+            logger.warning(
+                "verification timed out",
+                extra={
+                    "verification_ref": opaque_identifier(verification_id),
+                    "desk": desk.value if desk else None,
+                    "duration_ms": round((time.perf_counter() - started) * 1000, 2),
+                },
+            )
+            await self._record_failure(
+                verification_id,
+                Failure(
+                    code="verification_timeout",
+                    message="The examination exceeded its processing time limit.",
+                    desk=desk,
+                ),
             )
         except VeritasError as exc:
             logger.warning(
                 "verification failed",
                 extra={
-                    "verification_id": verification_id,
+                    "verification_ref": opaque_identifier(verification_id),
                     "error_code": exc.code,
                     "desk": desk.value if desk else None,
+                    "duration_ms": round((time.perf_counter() - started) * 1000, 2),
                 },
             )
             await self._record_failure(
@@ -200,8 +414,9 @@ class VerificationService:
             logger.exception(
                 "verification raised an unexpected error",
                 extra={
-                    "verification_id": verification_id,
+                    "verification_ref": opaque_identifier(verification_id),
                     "desk": desk.value if desk else None,
+                    "duration_ms": round((time.perf_counter() - started) * 1000, 2),
                 },
             )
             await self._record_failure(
@@ -220,7 +435,13 @@ class VerificationService:
         :meth:`get`; this exists for the examination itself, which acts on the
         record rather than on behalf of a viewer.
         """
-        record = await self._repository.get(verification_id)
+        try:
+            async with asyncio.timeout(self._settings.DATABASE_COMMAND_TIMEOUT_SECONDS):
+                record = await self._repository.get(verification_id)
+        except TimeoutError as exc:
+            raise StorageError(
+                "The verification could not be read before the storage timeout."
+            ) from exc
         if record is None:
             raise NotFoundError(
                 f"No verification with id {verification_id}.",
@@ -237,9 +458,14 @@ class VerificationService:
         record, or broken outright, is logged and dropped rather than raised.
         """
         try:
-            await self._repository.fail(verification_id, failure)
+            # Outside the examination timeout, but still bounded if storage stalls.
+            async with asyncio.timeout(self._settings.DATABASE_COMMAND_TIMEOUT_SECONDS):
+                await self._repository.fail(verification_id, failure)
         except Exception:
             logger.exception(
                 "could not record a verification failure",
-                extra={"verification_id": verification_id, "error_code": failure.code},
+                extra={
+                    "verification_ref": opaque_identifier(verification_id),
+                    "error_code": failure.code,
+                },
             )
