@@ -73,13 +73,22 @@ uvicorn app.main:app --reload
 ```
 
 Nothing connects to the database at startup, so the service comes up and answers
-`/health` whether or not Postgres is running.
+`/health` and `/api/health` whether or not Postgres is running.
 
 ## Checking it works
 
 ```bash
 curl -s localhost:8000/health | python -m json.tool
 ```
+
+For an external uptime monitor such as UptimeRobot, use the public minimal probe:
+
+```bash
+curl -s localhost:8000/api/health | python -m json.tool
+```
+
+It returns only `status`, `service`, and a UTC `timestamp`; it does not perform
+database or provider readiness checks.
 
 ```json
 {
@@ -97,8 +106,9 @@ production, where they and `/openapi.json` are closed.
 ## The API
 
 The versioned surface under `/api/v1` includes health, authentication, verification,
-file, claim-extraction and research routes; `/health` is also mounted at the root for
-deployment probes.
+file, claim-extraction and research routes. `/health` remains mounted at the root for
+internal deployment probes, and `/api/health` is the minimal public probe for uptime
+monitors.
 
 Authentication is a bearer token and is optional almost everywhere. `POST /verify` and
 `GET /verification/{id}` work with or without one; `GET /verifications` and
