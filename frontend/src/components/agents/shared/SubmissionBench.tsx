@@ -241,7 +241,7 @@ export function LinkField({
 }: {
   value: string;
   onChange: (value: string) => void;
-  kind: "image" | "audio" | "video";
+  kind: "image";
   /** Human-readable list, e.g. "JPG · PNG · WEBP". */
   formats: string;
   /** Draws the examination pass over the artifact while the desk reads it. */
