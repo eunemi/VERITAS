@@ -3,6 +3,7 @@
 import { Colophon } from "./Colophon";
 import { DeskMasthead } from "./DeskMasthead";
 import { DeskNavigation } from "./DeskNavigation";
+import { ExaminationStatus } from "./ExaminationStatus";
 import { ExaminationTicker } from "./ExaminationTicker";
 import { SlugBar, type DeskStatus } from "./SlugBar";
 import { Slug, Spread } from "./layout";
@@ -46,11 +47,9 @@ export function DeskPage({
       </Spread>
 
       {status === "working" && progress !== undefined ? (
-        <Spread><div role="status" aria-live="polite" className="border-y border-ink-black/20 py-5">
-          <Slug>{progress ? `Live verification · ${progress.desks.find((d) => d.status === "running")?.desk ?? progress.status}` : "Submitting for live verification…"}</Slug>
-          <p className="mt-2 text-ink-black/60">{progress ? `${progress.reports.length} report(s) filed. Fetching sources and assessing evidence; this may take a few minutes.` : "Opening your record. Results will appear as soon as the server completes the check."}</p>
-          <button type="button" onClick={onReopen} className="mt-3 underline underline-offset-4">Stop waiting and edit submission</button>
-        </div></Spread>
+        <Spread>
+          <ExaminationStatus progress={progress} onStop={onReopen} />
+        </Spread>
       ) : status === "working" ? (
         <ExaminationTicker stages={desk.stages} durationMs={latencyMs} />
       ) : null}
