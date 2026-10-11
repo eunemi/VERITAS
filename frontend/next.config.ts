@@ -4,6 +4,24 @@ const nextConfig: NextConfig = {
   // Give a parallel preview its own generated output; never share runtime chunks
   // between the host dev server and a sandbox or a different bundler.
   distDir: process.env.NEXT_DIST_DIR || ".next",
+  allowedDevOrigins: [
+    "*.ngrok-free.app",
+    "*.ngrok-free.dev",
+    "*.ngrok.app",
+    "*.ngrok.io",
+    "*.trycloudflare.com",
+  ],
+  experimental: {
+    serverActions: {
+      allowedOrigins: [
+        "*.ngrok-free.app",
+        "*.ngrok-free.dev",
+        "*.ngrok.app",
+        "*.ngrok.io",
+        "*.trycloudflare.com",
+      ],
+    },
+  },
   async rewrites() {
     return [
       {
