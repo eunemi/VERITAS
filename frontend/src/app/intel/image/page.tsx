@@ -63,7 +63,7 @@ export default function ImageDesk() {
         record ? (
           <>
             <LedgerBand entries={record.ledger} />
-            <div className="pt-stack-xl"><Determination verdict={record.verdict} signedBy="image context & claim check" scope="Text / caption verdict" /></div>
+            <div className="pt-stack-xl"><Determination verdict={record.verdict} annotations={record.annotations} signedBy="image context & claim check" scope="Text / caption verdict" /></div>
             <Spread className="pt-stack-xl">
               <MarkedSpread
                 artifact={
