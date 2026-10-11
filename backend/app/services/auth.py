@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from app.core.config import Settings
 from app.core.errors import AuthenticationError, ValidationError
-from app.core.logging import get_logger
+from app.core.logging import get_logger, opaque_identifier
 from app.domain import User, normalise_email
 from app.repositories.base import UserRepository
 from app.security import (
@@ -71,7 +71,9 @@ class AuthService:
         await self._users.create(user)
         # The address is not logged. It is the identifier a person did not choose to
         # publish, and a log line is the easiest place in a system to read one out of.
-        logger.info("account registered", extra={"user_id": user.id})
+        logger.info(
+            "account registered", extra={"user_ref": opaque_identifier(user.id)}
+        )
         return user
 
     # ---------------------------------------------------------------- login ---
@@ -96,13 +98,15 @@ class AuthService:
             logger.info(
                 "sign-in rejected",
                 extra={
-                    "user_id": user.id,
+                    "user_ref": opaque_identifier(user.id),
                     "reason": "bad_password" if not password_ok else "inactive",
                 },
             )
             raise AuthenticationError(CREDENTIALS_REJECTED)
 
-        logger.info("sign-in accepted", extra={"user_id": user.id})
+        logger.info(
+            "sign-in accepted", extra={"user_ref": opaque_identifier(user.id)}
+        )
         return user, create_access_token(subject=user.id, settings=self._settings)
 
     # -------------------------------------------------------------- current ---
