@@ -25,7 +25,7 @@ export function CommissionTrigger({
   };
 
   return (
-    <button onClick={handleScroll} className={className}>
+    <button type="button" onClick={handleScroll} className={className}>
       {children}
     </button>
   );
