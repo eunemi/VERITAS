@@ -160,6 +160,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     # Unversioned liveness, for probes and orchestrators.
     app.include_router(health_route.router)
+    # Public, minimal liveness response for external uptime monitors.
+    app.include_router(health_route.public_router)
     # The versioned surface.
     app.include_router(v1_router, prefix=settings.API_V1_PREFIX)
 
