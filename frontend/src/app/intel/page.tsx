@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 /**
  * The index of the desks.
  *
- * This page used to be six status-pill cards ringed by decorative circles, with
+ * This page used to be status-pill cards ringed by decorative circles, with
  * the desk copy retyped a third time. It is now the register: what each desk
  * accepts, what it hands back, and — stated plainly — what it will not do. The
  * copy comes from `@/lib/desks`, so the index cannot drift from the desks.
