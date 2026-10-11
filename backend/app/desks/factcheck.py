@@ -57,9 +57,9 @@ from app.domain import (
 )
 from app.graph.state import Case, cases, dossier
 from app.graph.verdict import Bearing, ClaimRuling, Ruling, as_determination
+from app.media import fetch
 from app.reasoning.answer import Reasoning
 from app.research.terms import squeeze
-from app.media import fetch
 
 if TYPE_CHECKING:
     from app.graph.workflow import Outcome, VerificationGraph
@@ -142,7 +142,9 @@ class FactCheckDesk:
         # the graph. This lets the URL page show its source address and still checks
         # the claims actually published at that address.
         outcome = await self._graph().run(
-            artifact if artifact.content else Artifact(
+            artifact
+            if artifact.content
+            else Artifact(
                 # The graph's claim extractor accepts prose and claims. The URL is
                 # retained as provenance, but the fetched page itself is text.
                 kind=ArtifactKind.TEXT,
@@ -207,7 +209,11 @@ class FactCheckDesk:
         try:
             return await self._read(index, found)
         finally:
-            await index.aclose()
+            # ``discard`` removes transient Chroma collections as well as closing
+            # the client. Keep the older close-only seam usable for injected test
+            # indexes and future stores that do not own named collections.
+            cleanup = getattr(index, "discard", index.aclose)
+            await cleanup()
 
     async def _read(
         self, index: EvidenceIndex, found: Sequence[Case]
