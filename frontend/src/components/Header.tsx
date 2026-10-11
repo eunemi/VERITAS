@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { CommissionButton } from "@/components/CommissionSlip";
-import { AccountTrigger } from "@/components/auth/AccountSlip";
 import { Slug } from "@/components/agents/shared/layout";
 import { useRouter } from "next/navigation";
 
@@ -75,11 +74,7 @@ export default function Header() {
           })}
         </nav>
 
-        {/* Actions. One filled action in the masthead, and it is the one that starts
-            work; the account is a ruled label beside it. */}
         <div className="flex items-center gap-gutter">
-          <AccountTrigger className="font-mono-label text-mono-label hidden max-w-[16ch] cursor-pointer truncate border-b border-ink-black/30 pb-1 text-on-surface-variant transition-colors duration-300 hover:border-secondary hover:text-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black md:block" />
-
           <CommissionButton />
 
           {/* Mobile menu. Two rules rather than an icon glyph, so the header needs
@@ -154,11 +149,6 @@ export default function Header() {
               >
                 START INVESTIGATION
               </button>
-
-              <AccountTrigger
-                onOpen={() => setOpenedAt(null)}
-                className="font-mono-label text-mono-label mt-stack-sm flex w-full cursor-pointer items-center justify-center truncate border border-ink-black px-6 py-4 text-ink-black transition-colors duration-300 hover:bg-ink-black hover:text-parchment focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-black"
-              />
             </motion.nav>
           ) : null}
         </AnimatePresence>
