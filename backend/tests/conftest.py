@@ -46,6 +46,14 @@ def settings() -> Settings:
         CORS_ORIGINS=["http://localhost:3000"],
         VERIFICATION_STORE=StoreBackend.MEMORY,
         JWT_SECRET_KEY="test-signing-key-not-used-anywhere-real",
+        OPENAI_API_KEY=None,
+        GROQ_API_KEY=None,
+        VISION_API_KEY=None,
+        GOOGLE_VISION_API_KEY=None,
+        TAVILY_API_KEY=None,
+        BRAVE_API_KEY=None,
+        SERPER_API_KEY=None,
+        GOOGLE_FACT_CHECK_API_KEY=None,
     )
 
 
