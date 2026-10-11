@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { CommissionButton } from "@/components/CommissionSlip";
+import { BrandMark } from "@/components/BrandMark";
 import { Slug } from "@/components/agents/shared/layout";
 import { useRouter } from "next/navigation";
 
@@ -40,9 +41,11 @@ export default function Header() {
         {/* Brand */}
         <Link
           href="/"
-          className="text-4xl font-bold text-primary tracking-tighter focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black"
+          aria-label="Veritas — home"
+          className="flex items-center gap-3 text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink-black"
         >
-          VERITAS
+          <BrandMark size={42} priority className="h-[42px] w-[42px]" />
+          <span className="text-4xl font-bold tracking-tighter">VERITAS</span>
         </Link>
 
         {/* Desktop nav */}
