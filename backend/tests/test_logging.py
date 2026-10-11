@@ -95,6 +95,14 @@ async def test_health_is_not_access_logged(
     assert not _lines(captured, "request completed")
 
 
+async def test_public_health_is_not_access_logged(
+    client: AsyncClient, captured: list[logging.LogRecord]
+) -> None:
+    await client.get("/api/health")
+
+    assert not _lines(captured, "request completed")
+
+
 async def test_failed_request_is_logged_with_a_trace(
     app: FastAPI, client: AsyncClient, captured: list[logging.LogRecord]
 ) -> None:
