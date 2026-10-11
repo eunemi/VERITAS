@@ -103,7 +103,7 @@ export function DocumentDesk({ kind }: { kind: "docx" | "pdf" }) {
         record ? (
           <>
             <LedgerBand entries={record.ledger} />
-            <div className="pt-stack-xl"><Determination verdict={record.verdict} signedBy={`${setting.format} text desk`} /></div>
+            <div className="pt-stack-xl"><Determination verdict={record.verdict} annotations={record.annotations} signedBy={`${setting.format} text desk`} /></div>
             <Spread className="pt-stack-xl">
               <MarkedSpread
                 artifact={<GalleyProof copy={record.copy} annotations={record.annotations} />}
