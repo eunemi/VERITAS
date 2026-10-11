@@ -11,6 +11,7 @@ from app.core.config import Settings
 from app.core.errors import ConfigurationError
 from app.domain import Artifact, ArtifactKind, Determination, ImageDetail, LedgerEntry
 from app.graph.agents import semantic
+from app.graph.agents.judge import SETTLED_UNCERTAINTY
 from app.graph.agents.semantic import Answer, Citation, SemanticJudge
 from app.graph.state import cases
 from app.graph.verdict import Judgement
@@ -45,8 +46,8 @@ def answer(**changes):
         confidence=0.93,
         explanation="Both sources describe a lunar landing.",
         citations=[
-            Citation(ref=1, passage=0, stance="refutes"),
-            Citation(ref=2, passage=0, stance="refutes"),
+            Citation(ref=1, passage=0, stance="refutes", same_event=True),
+            Citation(ref=2, passage=0, stance="refutes", same_event=True),
         ],
     ).model_copy(update=changes)
 
@@ -74,7 +75,9 @@ async def test_hallucinated_citation_is_not_a_verdict(monkeypatch):
         "ask",
         AsyncMock(
             return_value=answer(
-                citations=[Citation(ref=999, passage=0, stance="refutes")]
+                citations=[
+                    Citation(ref=999, passage=0, stance="refutes", same_event=False)
+                ]
             )
         ),
     )
@@ -88,7 +91,7 @@ async def test_model_outage_does_not_turn_word_overlap_into_truth(monkeypatch):
     )
     result = await SemanticJudge(Settings(_env_file=None))(gathered())
     assert result["ruling"].judgement is Judgement.UNCERTAIN
-    assert result["ruling"].confidence == 0
+    assert result["ruling"].confidence == SETTLED_UNCERTAINTY
     assert "evidence reader was unavailable" in result["ruling"].rationale
 
 
@@ -101,7 +104,7 @@ async def test_model_outage_cannot_turn_matching_figures_into_truth(monkeypatch)
     ))
 
     assert result["ruling"].judgement is Judgement.UNCERTAIN
-    assert result["ruling"].confidence == 0
+    assert result["ruling"].confidence == SETTLED_UNCERTAINTY
 
 
 async def test_no_sources_never_calls_the_model(monkeypatch):
