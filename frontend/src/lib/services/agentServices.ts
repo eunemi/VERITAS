@@ -33,12 +33,9 @@ import {
   type VerificationSummaryOut,
 } from "@/lib/api/client";
 import {
-  toneOf,
   type AgentRecord,
-
   type Contribution,
   type DecisionRecord,
-  type Determination,
   type FactCheckRecord,
   type ImageRecord,
   type TextRecord,
@@ -110,21 +107,6 @@ function verdictOf(verdict: VerdictOut): Verdict {
     confidence: verdict.confidence,
     confidenceValue: verdict.confidence_value,
   };
-}
-
-/**
- * Whether an artifact location the desk annotated should be ruled in the margin.
- *
- * A note the desk was satisfied by is still a note, and marking it adverse would
- * turn agreement into an accusation, so only unresolved and adverse findings rule.
- */
-function ruled(refs: Map<number, Determination>, ref: number): boolean {
-  const determination = refs.get(ref);
-  return determination !== undefined && toneOf(determination) !== "clear";
-}
-
-function annotationRefs(report: DeskReportOut): Map<number, Determination> {
-  return new Map(report.annotations.map((a) => [a.ref, a.determination]));
 }
 
 /** A readable name for a media artifact the desk was pointed at. */
