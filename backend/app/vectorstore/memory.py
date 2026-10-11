@@ -124,6 +124,10 @@ class InMemoryVectorStore:
             for id_ in ids:
                 held.pop(id_, None)
 
+    async def delete_collection(self, collection: str) -> None:
+        async with self._lock:
+            self._collections.pop(collection, None)
+
     async def aclose(self) -> None:
         return None
 
