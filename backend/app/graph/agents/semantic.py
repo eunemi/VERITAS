@@ -11,7 +11,12 @@ from pydantic import BaseModel, Field
 from app.core.config import Settings
 from app.core.errors import VeritasError
 from app.domain import Source
-from app.graph.agents.judge import _nothing_to_check, _overall
+from app.graph.rollup import (
+    SETTLED_UNCERTAINTY,
+    UNGROUNDED_UNCERTAINTY,
+    nothing_to_check,
+    overall,
+)
 from app.graph.state import AgentNote, Case, GraphState, cases
 from app.graph.verdict import Bearing, ClaimRuling, Indication, Judgement
 from app.llm.structured import ask
@@ -21,6 +26,11 @@ class Citation(BaseModel):
     ref: int = Field(strict=True)
     passage: int = Field(ge=0, strict=True)
     stance: Literal["supports", "refutes", "context"]
+    same_event: bool = Field(
+        description="True only if this passage concerns the same subject/event, "
+        "place and time as the claim in its original context. Unrelated incidents "
+        "with similar wording are false, even if they share a nationality or number.",
+    )
 
 
 class Answer(BaseModel):
@@ -38,23 +48,30 @@ class SemanticJudge:
         found = cases(state)
         if not found:
             return GraphState(
-                ruling=_nothing_to_check(state),
+                ruling=nothing_to_check(state),
                 trace=(AgentNote("judge", "No claims to check"),),
             )
         semaphore = asyncio.Semaphore(3)
 
         async def read(case: Case) -> ClaimRuling:
             async with semaphore:
-                return await self.rule(case, str(state.get("now", "")))
+                artifact = state.get("artifact")
+                return await self.rule(
+                    case,
+                    str(state.get("now", "")),
+                    context=_context(artifact.content or "", case) if artifact else "",
+                )
 
         rulings = tuple(await asyncio.gather(*(read(case) for case in found)))
-        ruling = _overall(rulings)
+        ruling = overall(rulings)
         explanations = [
             f"Claim {item.ref}: {item.insufficiency or item.explanation}"
-            for item in rulings[:3]
+            for item in rulings
             if item.insufficiency or item.explanation
         ]
-        ruling = replace(ruling, rationale=" ".join([ruling.rationale, *explanations]))
+        ruling = replace(
+            ruling, rationale="\n\n".join([ruling.rationale, *explanations])
+        )
         capped = [
             s
             for s in state.get("skipped", ())
@@ -67,7 +84,7 @@ class SemanticJudge:
                 if ruling.judgement is Judgement.SUPPORTED
                 else ruling.judgement,
                 headline="Only part of the submission could be checked",
-                confidence=0
+                confidence=SETTLED_UNCERTAINTY
                 if ruling.judgement is Judgement.SUPPORTED
                 else ruling.confidence,
                 rationale=ruling.rationale
@@ -81,19 +98,27 @@ class SemanticJudge:
             ),
         )
 
-    async def rule(self, case: Case, now: str) -> ClaimRuling:
+    async def rule(self, case: Case, now: str, *, context: str = "") -> ClaimRuling:
         def unknown(reason: str) -> ClaimRuling:
             return ClaimRuling(
                 ref=case.claim.ref,
                 claim=case.claim.text,
                 judgement=Judgement.UNCERTAIN,
-                confidence=0,
+                # An unresolved assessment still has confidence of its own: this
+                # describes how firmly the evidence failed to settle the claim,
+                # rather than claiming the claim is false.
+                confidence=(
+                    SETTLED_UNCERTAINTY
+                    if case.sources
+                    else UNGROUNDED_UNCERTAINTY
+                ),
                 insufficiency=reason,
             )
 
         standing = {grade.ref: grade.standing or 0 for grade in case.grading}
         ranked = sorted(case.sources, key=lambda s: -standing.get(s.ref, 0))
-        sources = {s.ref: s for s in ranked[:8]}
+        sources = {s.ref: s for s in ranked if _passages(s)}
+        sources = dict(list(sources.items())[:8])
         if not sources:
             return unknown(
                 "No live web sources were available for this claim; "
@@ -106,20 +131,34 @@ class SemanticJudge:
                 "Fact-check the exact claim using ONLY the supplied live search "
                 "passages. Shared words or numbers do not establish truth. Check "
                 "subject, date, place, quantities, negation, satire and whether a "
-                "page merely repeats an allegation. Current claims need current "
+                "page merely repeats an allegation. Use submission_context to "
+                "resolve which event the claim refers to; it is NOT evidence. "
+                "Do not verify a generic fragment using reports of different events. "
+                "Deaths in different cities or attacks on different dates cannot "
+                "corroborate each other. Mark same_event for every citation; unrelated "
+                "reports may only be context. An explicitly different quantity for "
+                "the SAME population, event and time can refute an exact-number "
+                "claim; do not demand the false number appear verbatim. A total for "
+                "a different population (all injured vs Indian nationals) cannot. "
+                "Current claims need current "
                 "evidence. Sources are search excerpts, not full articles. Do not "
                 "use memory to fill evidence gaps. Cite source ref and the zero-based "
                 "passage index of the provided evidence, with stance. "
                 "Return UNCERTAIN for missing context, "
                 "weak/irrelevant sources or insufficient coverage. Explain in the "
                 "language of the original quote (Devanagari input requires Hindi). "
-                "Do not put reference markers in the explanation; use citations. "
+                "Give a concise two-to-four sentence explanation of what is supported, "
+                "what conflicts and what remains unknown. Do not put reference markers "
+                "in the explanation; use citations. Confidence is confidence in the "
+                "assessment, not the probability of truth; UNCERTAIN need not be zero. "
                 "A decisive verdict needs at least "
-                "two independent sources directly supporting that direction.",
+                f"{self.settings.JUDGE_MIN_SOURCES} independent sources directly "
+                "supporting that direction and referring to the same event.",
                 {
                     "checked_at": now,
                     "claim": case.claim.text,
                     "original_quote": case.claim.quote,
+                    "submission_context": context or case.claim.quote,
                     "sources": [
                         {
                             "ref": ref,
@@ -164,7 +203,8 @@ class SemanticJudge:
             )
         judgement = Judgement(result.verdict)
         direction = "supports" if judgement is Judgement.SUPPORTED else "refutes"
-        directional = [c for c in valid if c.stance == direction]
+        relevant = [c for c in valid if c.same_event]
+        directional = [c for c in relevant if c.stance == direction]
         independent: list[Source] = []
         for citation in directional:
             source = sources[citation.ref]
@@ -187,10 +227,11 @@ class SemanticJudge:
         ):
             return unknown(
                 "Not enough independent, directly relevant cited sources "
-                "to settle this claim. " + result.explanation
+                "refer to the same event to settle this claim. Reports about "
+                "other incidents and repeated copies do not corroborate it."
             )
         if judgement is Judgement.MIXED and not {"supports", "refutes"}.issubset(
-            {c.stance for c in valid}
+            {c.stance for c in relevant}
         ):
             return unknown(
                 "The cited evidence does not establish both sides "
@@ -205,29 +246,32 @@ class SemanticJudge:
                 ref=c.ref,
                 quote=passages[c.ref][c.passage],
             )
-            for c in valid
+            for c in relevant
             if c.stance != "context"
         )
         return ClaimRuling(
             ref=case.claim.ref,
             claim=case.claim.text,
             judgement=judgement,
-            confidence=min(result.confidence, 0.95)
-            if judgement is not Judgement.UNCERTAIN
-            else 0,
+            confidence=(
+                min(result.confidence, 0.95)
+                if judgement is not Judgement.UNCERTAIN and relevant
+                else (SETTLED_UNCERTAINTY if case.sources else UNGROUNDED_UNCERTAINTY)
+            ),
             indications=indications,
             insufficiency=result.explanation
             if judgement is Judgement.UNCERTAIN
             else "",
-            support=sum(c.stance == "supports" for c in valid),
-            refute=sum(c.stance == "refutes" for c in valid),
+            support=sum(c.stance == "supports" for c in relevant),
+            refute=sum(c.stance == "refutes" for c in relevant),
             explanation=result.explanation,
         )
 
 
 def _passages(source: Source) -> list[str]:
     """Short, numbered, literal slices; quotation is never generated by a model."""
-    excerpts: list[str] = []
+    # Claim-relevant passages can be beyond the beginning of a long search snippet.
+    excerpts = list(dict.fromkeys(p.quote for p in source.evidence if p.quote))[:3]
     for snippet in dict.fromkeys(r.snippet for r in source.retrievals if r.snippet):
         start = 0
         while start < min(len(snippet), 1800) and len(excerpts) < 3:
@@ -236,6 +280,25 @@ def _passages(source: Source) -> list[str]:
                 boundary = snippet.rfind(" ", start, end)
                 if boundary > start:
                     end = boundary
-            excerpts.append(snippet[start:end])
+            excerpt = snippet[start:end].strip()
+            if excerpt and not any(excerpt in known for known in excerpts):
+                excerpts.append(excerpt)
             start = end
     return excerpts
+
+
+def _context(text: str, case: Case) -> str:
+    """Bound context around the original quote, retaining the headline as an anchor."""
+    if len(text) <= 6000:
+        return text
+    start = (
+        text.find(case.claim.quote, max(0, case.claim.start))
+        if case.claim.quote
+        else -1
+    )
+    if start < 0 and case.claim.quote:
+        start = text.find(case.claim.quote)
+    if start < 0:
+        start = case.claim.start
+    start = max(0, start)
+    return text[:1000] + "\n…\n" + text[max(0, start - 1500) : start + 3500]
