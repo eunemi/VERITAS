@@ -40,6 +40,14 @@ MAX_REDIRECTS = 3
 PROVIDER = "media-fetch"
 _UPLOAD_PATH = re.compile(r".*/api/v1/files/media/[0-9a-f]{32}\.[a-z0-9]{1,10}$")
 
+# A number of otherwise public article pages reject httpx's default client
+# signature before returning any HTML. Keep the request identifiable while sending
+# the normal negotiation headers a browser sends for a document or image.
+_REQUEST_HEADERS = {
+    "User-Agent": "Veritas/0.1 (public-page examination)",
+    "Accept-Language": "en-US,en;q=0.8",
+}
+
 
 class _PageTextParser(HTMLParser):
     """Collect readable page copy while ignoring executable and presentational markup."""
@@ -219,7 +227,10 @@ async def fetch(
         target = url
         for _ in range(MAX_REDIRECTS + 1):
             await _permitted(target, allow_private=allow_private)
-            response = await _send(client, client.build_request("GET", target))
+            response = await _send(
+                client,
+                client.build_request("GET", target, headers=_REQUEST_HEADERS),
+            )
             try:
                 location = response.headers.get("location", "")
                 if response.is_redirect and location:
