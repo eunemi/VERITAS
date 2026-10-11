@@ -13,7 +13,7 @@ interface StoryCardProps {
   verificationStatus?: VerificationStatus;
   featured?: boolean;
   /**
-   * Which desk examined the story, e.g. "audio". Prints the way through to that
+   * Which desk examined the story, e.g. "text". Prints the way through to that
    * desk's record. Omit it and the card carries no action rather than a control
    * that goes nowhere.
    */
