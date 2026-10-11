@@ -67,7 +67,7 @@ export default function UrlDesk() {
               />
             </Spread>
             <div className="pt-stack-xl">
-              <Determination verdict={record.verdict} signedBy="URL source desk" exhibits={record.exhibits} />
+              <Determination verdict={record.verdict} annotations={record.annotations} signedBy="URL source desk" exhibits={record.exhibits} />
             </div>
           </>
         ) : null
