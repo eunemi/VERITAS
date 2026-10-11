@@ -75,7 +75,7 @@ export default function TextDesk() {
         record ? (
           <>
             <LedgerBand entries={record.ledger} />
-            <div className="pt-stack-xl"><Determination verdict={record.verdict} signedBy="live fact-check desk" /></div>
+            <div className="pt-stack-xl"><Determination verdict={record.verdict} annotations={record.annotations} signedBy="live fact-check desk" /></div>
             <Spread className="pt-stack-xl">
               <MarkedSpread
                 artifact={<GalleyProof copy={record.copy} annotations={record.annotations} />}
