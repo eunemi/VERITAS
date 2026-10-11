@@ -125,9 +125,9 @@ class Reliability(StrEnum):
 
 
 #: Which desks examine which kind of artifact, and the roster used when a caller
-#: names none. Taken from ``KINDS`` in ``src/app/investigate/CommissionBench.tsx``
-#: rather than invented, so the roster the existing investigate page would send is
-#: accepted rather than rejected. One row is load-bearing and easy to get wrong:
+#: names none. Taken from the frontend's desk register rather than invented, so the
+#: roster the submission bench sends is accepted rather than rejected. One row is
+#: load-bearing and easy to get wrong:
 #: copy opens two desks (one reads how it is written, the other checks what it
 #: asserts). :data:`ADJUDICATOR` appears in no row; see
 #: :class:`Desk`.
