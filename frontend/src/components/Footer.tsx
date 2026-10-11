@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CommissionTrigger } from "@/components/CommissionSlip";
+import { BrandMark } from "@/components/BrandMark";
 import { Spread } from "@/components/agents/shared/layout";
 import { DESK_ORDER, DESKS } from "@/lib/desks";
 import styles from "./Footer.module.css";
@@ -71,19 +72,6 @@ function Arrow({ className = "" }: { className?: string }) {
   );
 }
 
-/** A printer's monogram, rather than a verification or service-status badge. */
-function Monogram() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 80 80" className="h-[76px] w-[76px] shrink-0">
-      <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" strokeOpacity=".35" />
-      <circle cx="40" cy="40" r="29" fill="none" stroke="currentColor" strokeOpacity=".15" />
-      <path d="M40 1v11m0 56v11M1 40h11m56 0h11" stroke="currentColor" strokeOpacity=".6" />
-      <path d="m21 24 18 34h3l16-34h-9v2h5L42 51 29 26h6v-2Z" fill="currentColor" />
-      <path d="m40 13 2 4-2 4-2-4Z" fill="#d88876" />
-    </svg>
-  );
-}
-
 export default function Footer() {
   return (
     <footer className={`${styles.footer} w-full text-parchment`}>
@@ -121,7 +109,7 @@ export default function Footer() {
 
         <div className="grid gap-10 py-10 lg:grid-cols-[1.05fr_2fr] lg:gap-14">
           <div className="flex items-start gap-5 lg:flex-col lg:gap-4 xl:flex-row xl:gap-5">
-            <Monogram />
+            <BrandMark size={76} className="h-[76px] w-[76px] shrink-0" />
             <div>
               <p className={`${styles.editorial} max-w-[16rem] text-[24px] leading-[1.3] tracking-[-0.02em]`}>
                 Clarity in a world<br className="hidden lg:block" /> of noise.
@@ -193,7 +181,8 @@ export default function Footer() {
             </svg>
           </div>
           <Link href="/" aria-label="Veritas — home" className={styles.wordmark}>
-            <span aria-hidden="true" className="flex w-full justify-between">
+            <BrandMark size={76} className="h-[76px] w-[76px] shrink-0" />
+            <span aria-hidden="true" className="flex min-w-0 flex-1 justify-between">
               {"VERITAS".split("").map((letter, index) => <span key={index}>{letter}</span>)}
             </span>
           </Link>
