@@ -71,6 +71,10 @@ class VectorStore(Protocol):
         """Remove ``ids``. Missing ids are not an error."""
         ...
 
+    async def delete_collection(self, collection: str) -> None:
+        """Remove a temporary collection and all of its documents."""
+        ...
+
     async def aclose(self) -> None:
         """Flush anything buffered and release resources."""
         ...
