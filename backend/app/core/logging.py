@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import logging
 import sys
+from hashlib import blake2s
 from typing import Any, Literal
 
 from app.core.context import get_request_id
@@ -171,3 +172,10 @@ def configure_logging(
 def get_logger(name: str) -> logging.Logger:
     """Return a module logger. Thin wrapper, kept so call sites import from here."""
     return logging.getLogger(name)
+
+
+def opaque_identifier(value: str | None) -> str | None:
+    """Return a stable, non-reversible correlation value for an internal id."""
+    if value is None:
+        return None
+    return blake2s(value.encode("utf-8"), digest_size=6).hexdigest()
