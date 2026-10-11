@@ -5,16 +5,16 @@ import { StatementPage, type Clause } from "@/components/ui/StatementPage";
 export const metadata: Metadata = {
   title: "What we keep",
   description:
-    "What happens to an artifact you hand Veritas, what is stored, and what changes when the examination model is attached.",
+    "What happens to an artifact you hand Veritas, what is stored, and which services process a verification.",
 };
 
 /**
  * The privacy note.
  *
- * Written against what the code actually does today rather than against a
- * template: there is no examination model attached, so an artifact is read in the
- * browser and never sent anywhere. Every clause here has to be re-read the day a
- * backend is added — clause 06 says so in the open.
+ * Written against the current service rather than against a prototype template.
+ * Submissions are sent to the separate verification API, which may call the
+ * providers configured for the deployment. The public archive remains editorial
+ * example content; signed-in records belong to the account that filed them.
  */
 const CLAUSES: Clause[] = [
   {
@@ -22,9 +22,10 @@ const CLAUSES: Clause[] = [
     body: (
       <>
         <p>
-          The bench takes one artifact at a time: pasted copy, a single frame, a recording, or a
-          piece of footage. Nothing else is asked for. There is no account, no sign-in, and no field
-          anywhere on this site that asks for your name, your address, or your organisation.
+          The bench accepts pasted copy or a single claim, a still image, a DOCX or PDF document, or
+          a public page URL. An account is optional. When you sign in, the record is attached to your
+          account; when you do not, the record is anonymous and its returned file number is the handle
+          used to read it.
         </p>
       </>
     ),
@@ -34,11 +35,11 @@ const CLAUSES: Clause[] = [
     body: (
       <>
         <p>
-          As the site stands, the artifact is read in your browser and is not uploaded. A file you
-          choose is held in the page&rsquo;s own memory for as long as the tab is open; a frame is
-          previewed through an object URL your browser creates locally. Closing or reloading the tab
-          discards it. Nothing is written to a server, because there is no server-side examination
-          yet.
+          A submission is sent to the separate FastAPI verification service. Text and document files
+          are read there, public URLs and image URLs are fetched there, and uploaded images are stored
+          behind an API-served file URL before examination. The service may send the material needed
+          for the selected desk to the language-model, search, fact-check or vision providers enabled
+          by that deployment. Their own terms and retention policies apply to those requests.
         </p>
       </>
     ),
@@ -48,11 +49,13 @@ const CLAUSES: Clause[] = [
     body: (
       <>
         <p>
-          The findings, figures and determinations printed on a desk record are fixtures — they are
-          held in the shape the real record will take, and they are derived from the artifact&rsquo;s
-          own properties, such as a file&rsquo;s name and size or the length of the copy you pasted,
-          so that the same submission always produces the same record. They are not an assessment of
-          your artifact, and they must not be read as one.
+          Desk records contain the evidence returned by the configured research providers, the source
+          excerpts selected by the examination, and a determination and confidence produced by the
+          verification graph. A configured language model may assist with claim extraction, semantic
+          reasoning, observations or the written explanation; fallbacks can return an insufficient
+          result when that assistance is unavailable. Confidence is an estimate, not a calibrated
+          probability or a guarantee of truth. An image result does not certify the photograph&rsquo;s
+          original capture, pixel history, or authorship.
         </p>
       </>
     ),
@@ -62,10 +65,15 @@ const CLAUSES: Clause[] = [
     body: (
       <>
         <p>
-          Nothing you submit is stored. There is no database behind this site, no analytics script on
-          any page, and no third-party tag collecting what you read or submit. The one network
-          request the pages make is for the typefaces, which Next.js serves from this site&rsquo;s
-          own domain rather than from a font provider.
+          Signed-in accounts store an email address, display name, password hash and account timestamps.
+          Verifications store the submitted artifact reference or text, desk progress, reports,
+          evidence, timestamps and optional account ownership. Uploaded images are written to the
+          backend&rsquo;s configured upload directory. The production service uses PostgreSQL by default;
+          local memory mode is non-durable. There is currently no self-service deletion endpoint, so
+          do not submit material that requires a guaranteed deletion workflow. No scheduled deletion
+          policy is implemented by the current service; records and uploaded images remain until the
+          deployment&rsquo;s operator, database, or storage retention policy removes them. The frontend has
+          no analytics script or third-party tracking tag.
         </p>
       </>
     ),
@@ -82,9 +90,9 @@ const CLAUSES: Clause[] = [
           >
             the index
           </Link>{" "}
-          are fixtures written by us, not examinations of anybody&rsquo;s submitted material. Nothing
-          you hand the bench is added to the index, and no examination you run appears anywhere
-          another reader can see it.
+          are published examples written for the public site, not a public feed of user submissions.
+          Records you commission while signed in appear only in your private file. Anonymous records
+          remain readable through the returned file number, but are not added to the public index.
         </p>
       </>
     ),
@@ -94,10 +102,9 @@ const CLAUSES: Clause[] = [
     body: (
       <>
         <p>
-          The moment a real examination model is attached, an artifact will have to leave your
-          browser to be read, and that changes every clause above. When it does, this page will say
-          exactly where the artifact goes, who processes it, how long it is held, and how to have it
-          removed — before the first artifact is sent, not after.
+          Provider, storage, account or deletion behavior can change by deployment. This page should
+          be updated before a material change goes live, with the destination of each submission, the
+          services that process it, the retention behavior, and the available deletion path.
         </p>
       </>
     ),
@@ -109,15 +116,14 @@ export default function PrivacyPage() {
     <StatementPage
       kicker="Privacy"
       titleLines={["What we keep", "of what you hand us."]}
-      standfirst="Almost nothing, at present — because nothing you submit leaves your browser yet. Here is the whole of it, plainly."
+       standfirst="A submission leaves the browser for the verification service. Here is what the current system stores and sends, plainly."
       clauses={CLAUSES}
       foot={
         <>
-          This note describes the site as it is built today, not as it is intended to work. It is
-          written from the code rather than from a template, and it is short because the site does
-          little: there is no account system, no analytics, and no examination model attached. If a
-          clause here ever disagrees with what the site does, the site is wrong and the clause
-          stands until it is fixed.
+          This note describes the current frontend and backend configuration, not every provider&rsquo;s
+          separate policy. If a deployment changes where submissions are processed, how long records
+          are retained, or whether deletion is available, this page must be revised before that
+          deployment accepts new artifacts.
         </>
       }
     />
