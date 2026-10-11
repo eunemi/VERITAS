@@ -1,9 +1,9 @@
 /**
  * The desk register.
  *
- * One entry per examination desk. Pages read their masthead, method note, stage
- * list and neighbours from here, so the six desks stay in step and the ordering
- * lives in a single place.
+ * One entry per public submission tool or internal record page. Pages read their
+ * masthead, method note, stage list and neighbours from here, so the vocabulary
+ * stays in one place.
  */
 
 export interface MethodRow {
@@ -172,13 +172,13 @@ export const DESKS: Record<string, DeskDefinition> = {
 
   "fact-check": {
     id: "fact-check",
-    number: "05",
+    number: "06",
     name: "Fact-check",
     titleLines: ["Fact-check", "Desk"],
-    eyebrow: "Agent 05 — Evidence & sources",
+    eyebrow: "Agent 06 — Evidence & sources",
     standfirst:
       "State the claim. The desk searches the record and returns every exhibit it found, ruled and rated, including the ones that disagree.",
-    file: "VT–0118",
+    file: "VT–0119",
     method: [
       { key: "Reads", value: "A single checkable claim" },
       { key: "Looks for", value: "Primary records, first reports" },
@@ -197,13 +197,13 @@ export const DESKS: Record<string, DeskDefinition> = {
   },
   decision: {
     id: "decision",
-    number: "06",
+    number: "07",
     name: "Decision",
     titleLines: ["Decision", "Core"],
-    eyebrow: "Agent 06 — Adjudication",
+    eyebrow: "Agent 07 — Adjudication",
     standfirst:
       "The desks that read the artifact report here. The core publishes the gravest determination any of them filed, at the confidence of the desks that filed it, and never averages a finding away.",
-    file: "VT–0119",
+    file: "VT–0120",
     method: [
       { key: "Reads", value: "The desk records, not the artifact" },
       { key: "Looks for", value: "The gravest determination filed" },
