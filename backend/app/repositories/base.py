@@ -48,6 +48,10 @@ class VerificationRepository(Protocol):
         """Return the verification, or ``None`` if there is no such id."""
         ...
 
+    async def list_open_ids(self, *, limit: int = 100) -> tuple[str, ...]:
+        """Return pending or running ids for worker recovery after a restart."""
+        ...
+
     async def list_for_user(
         self, user_id: str, *, limit: int = 50
     ) -> tuple[Verification, ...]:
