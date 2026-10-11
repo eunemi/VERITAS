@@ -37,6 +37,7 @@ from app.repositories import (
     UserRepository,
     VerificationRepository,
 )
+from app.services.verification import VerificationRunner, VerificationService
 
 logger = get_logger(__name__)
 
@@ -60,8 +61,23 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         },
     )
 
+    # A database-backed record can outlive the process that was examining it. Scan
+    # asynchronously after the lifespan is live, so a slow or unavailable database
+    # cannot delay the liveness endpoints. The runner caps the recovered set and
+    # applies the same admission limit as new submissions.
+    if settings.VERIFICATION_STORE is StoreBackend.DATABASE:
+        app.state.verification_runner.start_recovery(
+            VerificationService(
+                repository=app.state.verification_repository,
+                settings=settings,
+            ),
+            app.state.verification_repository,
+            storage_timeout=settings.DATABASE_COMMAND_TIMEOUT_SECONDS,
+        )
+
     yield
 
+    await app.state.verification_runner.shutdown()
     await dispose_engine()
     logger.info("application stopped")
 
@@ -129,6 +145,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # overridable; nothing imports either directly.
     app.state.verification_repository = build_verification_store(settings)
     app.state.user_repository = build_user_store(settings)
+    app.state.verification_runner = VerificationRunner(
+        max_concurrent=settings.VERIFICATION_MAX_CONCURRENT,
+        max_queued=settings.VERIFICATION_MAX_QUEUED,
+    )
 
     # Order matters and is why both are registered here. Starlette runs
     # middleware in reverse registration order, so CORS — added last — is the
