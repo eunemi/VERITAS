@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="230" viewBox="0 0 1440 230" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">The last word belongs to the evidence</title>
+  <desc id="description">Veritas editorial signature in ivory and gold on an obsidian background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1440" y2="230" gradientUnits="userSpaceOnUse"><stop stop-color="#18231D"/><stop offset="1" stop-color="#0D1310"/></linearGradient>
+  </defs>
+  <rect width="1440" height="230" rx="16" fill="url(#bg)"/>
+  <rect x="1" y="1" width="1438" height="228" rx="15" stroke="#C8B078" stroke-opacity="0.3"/>
+  <path d="M65 55H610M830 55H1375" stroke="#B99C60" stroke-opacity="0.45"/>
+  <path d="M720 36L732 55L720 74L708 55Z" stroke="#D4B97B"/>
+  <text x="720" y="137" text-anchor="middle" fill="#F1E9D8" font-family="Georgia, 'Times New Roman', serif" font-size="41" font-style="italic">The last word belongs to the evidence.</text>
+  <text x="720" y="185" text-anchor="middle" fill="#C2AD7C" font-family="Arial, Helvetica, sans-serif" font-size="12" letter-spacing="5">VERITAS / QUESTION THE STORY</text>
+</svg>
