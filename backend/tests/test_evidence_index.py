@@ -593,6 +593,15 @@ async def test_indexing_twice_does_not_multiply_the_evidence() -> None:
     assert len(await store.relevant(CLAIM)) == 2
 
 
+async def test_discard_removes_transient_collections() -> None:
+    store = index()
+    await store.index(dossier(CLAIM, carrying("https://www.reuters.com/a", HELD)))
+
+    await store.discard()
+
+    assert await store.relevant(CLAIM) == ()
+
+
 async def test_a_truncated_copy_is_retrieved_once_and_still_indexed() -> None:
     """The query-time dedupe, and the promise that it deletes nothing.
 
