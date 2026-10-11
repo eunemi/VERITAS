@@ -124,6 +124,24 @@ class ChromaVectorStore:
             "delete", collection, lambda handle: handle.delete(ids=list(ids))
         )
 
+    async def delete_collection(self, collection: str) -> None:
+        """Drop a temporary collection, including its on-disk index files."""
+
+        def drop() -> None:
+            try:
+                self._client.delete_collection(name=collection)
+            except Exception as exc:
+                raise VectorStoreError(
+                    f"chroma delete_collection on {collection!r} failed: {exc}",
+                    provider=self.name,
+                    details={
+                        "collection": collection,
+                        "operation": "delete_collection",
+                    },
+                ) from exc
+
+        await anyio.to_thread.run_sync(drop)
+
     async def aclose(self) -> None:
         """Nothing to release: ``PersistentClient`` writes through on every call."""
         return None
