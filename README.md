@@ -1,392 +1,538 @@
+<a id="top"></a>
+
 <div align="center">
 
-# ❖ V E R I T A S ❖
-### *Autonomous Multimodal Intelligence & Truth Verification Engine*
+<img src="docs/assets/veritas-hero.svg" alt="Veritas — The truth behind the story. Five tools, one evidence trail." width="100%" />
 
-<br/>
+<br />
 
-[![Next.js](https://img.shields.io/badge/Next.js%2015-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
-[![Python](https://img.shields.io/badge/Python%203.12+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![LangGraph](https://img.shields.io/badge/LangGraph-Multi--Agent-FF6F00?style=for-the-badge)](https://langchain-ai.github.io/langgraph/)
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS%204-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL%2016-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
+**An evidence-first workspace for checking the stories we read, receive, and share.**
 
-<br/>
+Text, images, documents, and public pages — examined against live sources,<br />
+with citations, reasoning, and uncertainty kept in view.
 
-```
-       ▲  ┌────────────────────────────────────────────────────────┐  ▲
-      /█\ │   V E R I T A S   I N T E L L I G E N C E   N E T W O R K   │ /█\
-     /███\│   Autonomous Multi-Agent Fact-Checking & Deep Synthesis│/███\
-    /█████\────────────────────────────────────────────────────────/█████\
-   ┌──────────────────────────────────────────────────────────────────────┐
-   │  [ TEXT ]      [ IMAGE ]      [ AUDIO ]      [ VIDEO ]    [ SYNTH ]  │
-   │  NLP Screen    OCR & Forensics Spectral Wave  Frame Audit  Consensus │
-   └──────────────────────────────────────────────────────────────────────┘
-```
+<br />
 
-<p align="center">
-  <b>Veritas</b> is an enterprise-grade, state-of-the-art forensic truth-checking ecosystem that unites high-performance NLP sentence decomposition, multi-engine live web research fanout, Google Fact Check graph indexing, and LangGraph agentic reasoning.
-</p>
+[![Open Veritas](https://img.shields.io/badge/OPEN_VERITAS-D6BD84?style=for-the-badge&logo=vercel&logoColor=151C18)](https://veritasreal.vercel.app)
+[![Explore the tools](https://img.shields.io/badge/EXPLORE_THE_TOOLS-243C30?style=for-the-badge&logo=readthedocs&logoColor=F1E9D8)](https://veritasreal.vercel.app/intel)
+[![API health](https://img.shields.io/badge/API_HEALTH-18231D?style=for-the-badge&logo=fastapi&logoColor=D6BD84)](https://veritas-ojg4.onrender.com/health)
 
----
+<br />
+
+![Next.js 16](https://img.shields.io/badge/Next.js-16-151C18?style=flat-square&logo=nextdotjs&logoColor=white&labelColor=293A30)
+![React 19](https://img.shields.io/badge/React-19-151C18?style=flat-square&logo=react&logoColor=DDD0AA&labelColor=293A30)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-151C18?style=flat-square&logo=typescript&logoColor=DDD0AA&labelColor=293A30)
+![Python 3.12](https://img.shields.io/badge/Python-3.12+-151C18?style=flat-square&logo=python&logoColor=DDD0AA&labelColor=293A30)
+![FastAPI](https://img.shields.io/badge/FastAPI-async-151C18?style=flat-square&logo=fastapi&logoColor=DDD0AA&labelColor=293A30)
+![LangGraph](https://img.shields.io/badge/LangGraph-workflows-151C18?style=flat-square&logo=langgraph&logoColor=DDD0AA&labelColor=293A30)
+
+<br />
+
+[The experience](#the-experience) · [Five tools](#five-tools-one-method) · [Architecture](#inside-the-engine) · [Quickstart](#run-it-locally) · [Deployment](#ship-it) · [API](#the-api) · [Contributing](#contributing)
 
 </div>
 
-<br/>
+<br />
 
-## 🌐 Isometric Architectural Topology
+## The experience
 
-```mermaid
-graph TB
-    subgraph "🎨 Editorial Client Layer (Next.js 15 App Router)"
-        UI["🖥️ Veritas Studio UI<br/>(Desk Masthead · Galley Proof · Exhibit Ledger)"]
-        AUTH_FE["🔐 Client Auth & Session<br/>(JWT Bearer · Argon2id Token)"]
-        DESK_FE["🎛️ Multimodal Desks<br/>(Text · Image · Audio · Video · Decision)"]
-    end
+### Question the story. Follow the evidence.
 
-    subgraph "⚡ API Gateway & Core Pipeline (FastAPI)"
-        GATEWAY["🛡️ FastAPI Route Controller<br/>(/api/v1/verify · /extract-claim · /research)"]
-        EXTRACTOR["📜 NLP Claim Extraction Engine<br/>(spaCy en_core_web_sm · NLTK Punkt · TF-IDF)"]
-        FANOUT["🔍 Multi-Provider Live Search Fanout<br/>(Tavily · Brave · Serper)"]
-        FACTCHECK_INDEX["🔎 Google FactCheck Claims Graph<br/>(Publisher Review Index · Stance Matcher)"]
-    end
+Veritas turns an artifact into an inspectable record. Submit a headline, a forwarded message, a screenshot, a document, or an article link. The system extracts checkable claims, gathers evidence, assesses what the sources actually support, and returns a report you can read source by source.
 
-    subgraph "🧠 Multi-Agent Orchestration (LangGraph)"
-        CLAIM_AGENT["🤖 Claim Dissector Agent"]
-        SEARCH_AGENT["🌐 Evidence Retrieval Agent"]
-        CONTRADICTION_AGENT["⚖️ Cross-Source Contradiction Agent"]
-        JUDGE_AGENT["🏛️ Supreme Verdict & Confidence Agent"]
-    end
-
-    subgraph "🗄️ Persistence & Intelligence Vaults"
-        PG[("🐘 PostgreSQL 16<br/>(Verifications · Claims · Accounts)")]
-        CHROMA[("🔮 Chroma / Vector DB<br/>(Semantic Evidence Embeddings)")]
-    end
-
-    UI --> GATEWAY
-    AUTH_FE --> GATEWAY
-    DESK_FE --> GATEWAY
-
-    GATEWAY --> EXTRACTOR
-    GATEWAY --> FANOUT
-    GATEWAY --> FACTCHECK_INDEX
-
-    EXTRACTOR --> CLAIM_AGENT
-    FANOUT --> SEARCH_AGENT
-    FACTCHECK_INDEX --> CONTRADICTION_AGENT
-
-    CLAIM_AGENT --> SEARCH_AGENT --> CONTRADICTION_AGENT --> JUDGE_AGENT
-    JUDGE_AGENT --> PG
-    SEARCH_AGENT --> CHROMA
-```
-
-<br/>
-
----
-
-## ✨ 3D Feature Matrix & Multimodal Desks
+The interface takes its cues from an editorial desk: a masthead, an examination bench, annotated copy, an exhibit ledger, and a final determination. Serif headlines, warm paper, dark ink, and restrained motion give the evidence room to breathe.
 
 <table>
-  <thead>
-    <tr>
-      <th width="80">Icon</th>
-      <th width="200">Intelligence Desk</th>
-      <th width="300">Forensic Capabilities</th>
-      <th width="220">Underlying Engine</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td align="center">📝</td>
-      <td><b>Text Forensics</b></td>
-      <td>Clause-by-clause claim isolation, named entity recognition (NER), and opinion vs. fact classification.</td>
-      <td><code>spaCy</code> · <code>NLTK</code> · <code>scikit-learn</code></td>
-    </tr>
-    <tr>
-      <td align="center">🔍</td>
-      <td><b>Live Web Fanout</b></td>
-      <td>Concurrent querying across search providers, two-stage URL & story deduplication, verbatim snippet quote matching.</td>
-      <td><code>Tavily</code> · <code>Brave Search</code> · <code>Serper</code></td>
-    </tr>
-    <tr>
-      <td align="center">⚖️</td>
-      <td><b>Fact-Check Index</b></td>
-      <td>Direct integration with Google Fact Check API, stance mapping, and publisher agreement verification.</td>
-      <td><code>Google FactCheck API</code></td>
-    </tr>
-    <tr>
-      <td align="center">🎙️</td>
-      <td><b>Speech & Audio Desk</b></td>
-      <td>Spectral speech boundary bracketing, audio transcription alignment, and audio tamper detection.</td>
-      <td><code>Whisper</code> · <code>Librosa</code></td>
-    </tr>
-    <tr>
-      <td align="center">🖼️</td>
-      <td><b>Vision & Image Desk</b></td>
-      <td>OCR optical character extraction, visual anomaly detection, and reverse image relevance mapping.</td>
-      <td><code>Tesseract OCR</code> · <code>Pillow</code> · <code>CV2</code></td>
-    </tr>
-    <tr>
-      <td align="center">🏛️</td>
-      <td><b>Supreme Decision Desk</b></td>
-      <td>Consolidated evidence synthesis, cross-verification verdict signing, and confidence calculation.</td>
-      <td><code>LangGraph</code> · <code>OpenAI / Ollama</code></td>
-    </tr>
-  </tbody>
+  <tr>
+    <td width="33%" valign="top">
+      <h3>01 &nbsp; Bring the artifact</h3>
+      <p>Paste, upload, or link. Five focused tools share a single verification workflow.</p>
+      <sub>TEXT · IMAGE · DOCX · PDF · URL</sub>
+    </td>
+    <td width="33%" valign="top">
+      <h3>02 &nbsp; Watch the examination</h3>
+      <p>A submission opens a record. Live polling follows the desks as their reports arrive.</p>
+      <sub>SUBMIT → EXAMINE → ADJUDICATE</sub>
+    </td>
+    <td width="33%" valign="top">
+      <h3>03 &nbsp; Read the evidence</h3>
+      <p>Inspect claim annotations, source excerpts, provider outcomes, and the reasoning behind the finding.</p>
+      <sub>CITATIONS · CONTEXT · UNCERTAINTY</sub>
+    </td>
+  </tr>
 </table>
 
-<br/>
+> **The principle:** a confident-looking answer is not enough. The record should show what was checked, what was found, and what remains unresolved.
 
----
+<br />
 
-## 🛠️ Technology Stack Breakdown
+## Five tools, one method
 
-<div align="center">
+| Desk | Bring | What the tool does | Open |
+| :--- | :--- | :--- | :---: |
+| **01 / Text** | Headlines, articles, statements, forwarded messages | Extracts claims, searches live sources, and returns an annotated evidence report. LLM-assisted extraction supports multilingual input, including Hindi and Hinglish. | [↗](https://veritasreal.vercel.app/intel/text) |
+| **02 / Image** | Photographs, screenshots, captions, public image URLs | Describes visible details, recovers text, inspects metadata, and checks caption claims. Google Cloud Vision can add matching pages when configured. | [↗](https://veritasreal.vercel.app/intel/image) |
+| **03 / DOCX** | Word documents | Extracts readable paragraph text and routes it through the same claim-and-evidence pipeline as pasted prose. | [↗](https://veritasreal.vercel.app/intel/docx) |
+| **04 / PDF** | Text-based reports, notices, articles | Extracts embedded text and checks its claims. Scanned PDFs need OCR before submission. | [↗](https://veritasreal.vercel.app/intel/pdf) |
+| **05 / URL** | Public article and page links | Fetches readable page content, follows permitted redirects, and checks the page's claims against other sources. | [↗](https://veritasreal.vercel.app/intel/url) |
 
-| Domain | Technologies |
-| :--- | :--- |
-| **Frontend Framework** | `Next.js 15 (App Router)`, `React 19`, `TypeScript` |
-| **Styling & Aesthetics** | `Tailwind CSS 4`, Custom Editorial Design System, Monospace Slips |
-| **Backend Core** | `Python 3.12+`, `FastAPI`, `Uvicorn`, `Pydantic v2` |
-| **Agentic Workflow** | `LangGraph`, `LangChain Core`, `Ollama / OpenAI API` |
-| **NLP & Extraction** | `spaCy (en_core_web_sm)`, `NLTK (punkt_tab, stopwords)`, `scikit-learn` |
-| **Search & Fact Checking** | `Tavily API`, `Brave Search API`, `Serper Dev API`, `Google Fact Check Tools` |
-| **Storage & Caching** | `PostgreSQL 16`, `SQLAlchemy 2.0 (Async)`, `Alembic`, `ChromaDB` |
-| **Security & Auth** | `Argon2id (argon2-cffi)`, `JWT (PyJWT)`, `NIST SP 800-63B Compliant` |
-| **Container & CI/CD** | `Docker`, `Docker Compose`, `Pytest`, `Ruff`, `MyPy` |
+The **fact-check desk** gathers and evaluates evidence. The **decision desk** combines the filed reports into the final determination and is appended automatically. DOCX and PDF are frontend intake tools, not separate backend verification desk IDs.
 
-</div>
+<details>
+<summary><strong>Inside a report</strong> — the details behind the determination</summary>
 
-<br/>
+- **Verdict:** a determination, headline, rationale, and confidence estimate.
+- **Annotations:** the original quoted claim, an explanation, and a finding.
+- **Exhibits:** source URLs, literal evidence excerpts, relevance, and reliability labels.
+- **Ledger:** examination metadata, source counts, and provider availability.
+- **Signals:** readings used to explain the report.
+- **Image detail:** observations, recovered text, metadata, web context, and limitations when available.
 
----
+Common claim outcomes are `SUPPORTED`, `CONTRADICTED`, `CONTESTED`, and `INSUFFICIENT`. A decisive semantic finding needs independent cited evidence. Confidence is a model estimate, not a calibrated probability.
 
-## 📁 Repository Monorepo Structure
+Image context and caption checking do not certify pixel authenticity, original capture date, or AI generation. Related search results are distinguished from actual image matches.
 
-```text
-veritas/
-├── 🌐 frontend/                      # Next.js 15 Client Application
-│   ├── src/
-│   │   ├── app/                     # App Router (Archive, Desks, Legal, Intel)
-│   │   │   ├── intel/               # Specialized Desks (Text, Audio, Video, Image)
-│   │   │   ├── archive/             # Forensic Record Archives & Files
-│   │   │   └── layout.tsx           # Editorial Master Layout
-│   │   ├── components/              # Design System (ExhibitLedger, Slips, Badges)
-│   │   │   ├── agents/              # Instrument Benches & Forensics Slates
-│   │   │   └── ui/                  # Drawers, Verification Badges, Notices
-│   │   ├── context/                 # AuthContext & Session Management
-│   │   └── lib/api/                 # Axios / Fetch API client & Stamp Generators
-│   └── package.json
-│
-├── ⚡ backend/                       # High-Throughput FastAPI Intelligence Service
-│   ├── app/
-│   │   ├── api/v1/routes/           # Endpoints: /verify, /extract-claim, /research
-│   │   ├── core/                    # Settings, Config, Error Handlers, Logging
-│   │   ├── database/                # Async Engine, Base, Sessions
-│   │   ├── desks/                   # Multimodal Desk Handlers & State Machines
-│   │   ├── graph/                   # LangGraph Multi-Agent Workflows & Scoring
-│   │   ├── models/                  # SQLAlchemy ORM Schema Models
-│   │   ├── nlp/                     # spaCy / NLTK Sentence & Claim Partitioning
-│   │   ├── repositories/            # SQL / Memory Data Access Layer
-│   │   ├── research/                # Query Builders, Multi-Engine Fanout & Deduplication
-│   │   ├── schemas/                 # Pydantic Input/Output Validation Contracts
-│   │   ├── search/                  # Brave, Tavily, Serper Search Integrations
-│   │   ├── security/                # Argon2id Hashing, JWT Minting & Verifiers
-│   │   ├── services/                # Verification, Claims, and Research Services
-│   │   └── vectorstore/             # Chroma & In-Memory Vector Storage
-│   ├── alembic/                     # Database Schema Migrations
-│   ├── tests/                       # Complete Pytest Suite & Offline Benches
-│   ├── Dockerfile                   # Production Multi-Stage Container
-│   ├── docker-compose.yml           # Complete Stack Compose
-│   └── pyproject.toml
-│
-└── 🧠 claude-skills/                 # AI Engineering, Research & Workflow Standards
+</details>
+
+<br />
+
+## Built around evidence
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>↗ &nbsp; Live source discovery</h3>
+      <p>Tavily, Brave, and Serper adapters support concurrent research. Google Fact Check lookup adds published reviews alongside web evidence.</p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>⌁ &nbsp; Grounded assessment</h3>
+      <p>The semantic judge selects numbered evidence passages. The server validates citations and supplies the excerpts and source URLs.</p>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h3>◇ &nbsp; Independent corroboration</h3>
+      <p>URL normalization and story clustering distinguish independent reporting from repeated domains and syndicated copies.</p>
+    </td>
+    <td valign="top">
+      <h3>◎ &nbsp; Visible uncertainty</h3>
+      <p>Missing keys, unavailable providers, and insufficient evidence remain visible in the result instead of becoming invented certainty.</p>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h3>▤ &nbsp; A personal record</h3>
+      <p>Bearer-token authentication attaches submissions to an account. Owned records and their history are available only to that account.</p>
+    </td>
+    <td valign="top">
+      <h3>↔ &nbsp; Replaceable providers</h3>
+      <p>OpenAI-compatible endpoints, Groq configuration, and Ollama support sit behind provider interfaces, with separate vision settings when needed.</p>
+    </td>
+  </tr>
+</table>
+
+<br />
+
+## Inside the engine
+
+<img src="docs/assets/veritas-system.svg" alt="Three system layers: the Next.js workspace, the FastAPI and LangGraph examination engine, and the persistent evidence record." width="100%" />
+
+### From artifact to finding
+
+```mermaid
+flowchart LR
+    A["Artifact"] --> B["Claim extraction"]
+    B --> C["Live web search"]
+    B --> D["Published fact checks"]
+    C --> E["Evidence selection"]
+    D --> E
+    E --> F["Source assessment"]
+    F --> G["Contradiction analysis"]
+    G --> H["Semantic judge"]
+    H --> I["Desk reports"]
+    I --> J["Decision record"]
+
+    classDef intake fill:#F2E9D5,stroke:#AC9159,color:#24372E
+    classDef research fill:#284B3B,stroke:#8DA98B,color:#F5EFDF
+    classDef record fill:#18231D,stroke:#C7AC72,color:#E8D8B3
+    class A,B intake
+    class C,D,E,F,G research
+    class H,I,J record
 ```
 
-<br/>
+Search and published fact-check lookup run as parallel branches. When extraction finds no checkable claims, the graph skips research and goes directly to the judge. Document text and image-derived claims join the text/evidence workflow; visual inspection adds image-specific context.
 
----
+<details>
+<summary><strong>Request lifecycle &amp; deployment topology</strong></summary>
 
-## 🚀 Quickstart & Installation
+```mermaid
+sequenceDiagram
+    actor Reader
+    participant Web as Next.js · Vercel
+    participant API as FastAPI · Render
+    participant DB as PostgreSQL · Neon
+    participant Work as Examination task
+    participant Sources as Search / LLM / Vision
+    Reader->>Web: Submit an artifact
+    Web->>API: POST /api/v1/verify
+    API->>DB: Persist pending record
+    API-->>Web: 202 Accepted + record ID
+    API->>Work: Start background examination
+    Work->>Sources: Gather and assess evidence
+    loop Until terminal
+        Web->>API: GET /api/v1/verification/{id}
+        API->>DB: Read status and reports
+        API-->>Web: Record + polling hint
+    end
+    Work->>DB: File reports and final status
+    Web-->>Reader: Render the completed record
+```
 
-### Option 1: Instant Start with Docker Compose (Recommended)
+The current execution model uses FastAPI background tasks in the API process. PostgreSQL persists records; it is not a durable job queue. In-memory stores are available for local development. The Chroma evidence index uses hashing-based embeddings for passage retrieval, rather than a separate semantic embedding API.
+
+</details>
+
+### The stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Editorial frontend** | Next.js 16 · React 19 · TypeScript · Tailwind CSS 4 · Framer Motion |
+| **API & contracts** | Python 3.12+ · FastAPI · Uvicorn · Pydantic v2 · HTTPX |
+| **Verification workflow** | LangGraph · claim extraction · source assessment · semantic judging |
+| **Text & documents** | spaCy · NLTK · scikit-learn · python-docx · pypdf |
+| **Models & research** | OpenAI-compatible APIs / Groq · Ollama · Tavily · Brave · Serper |
+| **Image context** | Multimodal model · Pillow · Google Cloud Vision Web Detection · optional local OCR/detection |
+| **Persistence** | PostgreSQL · SQLAlchemy async · asyncpg · Alembic · Chroma |
+| **Identity** | Argon2id password hashes · PyJWT bearer tokens · record ownership checks |
+| **Delivery & tooling** | Vercel · Render · Neon · Docker · pytest · Ruff · mypy · ESLint |
+
+<br />
+
+## Run it locally
+
+**You will need:** Node.js **20.9+**, Python **3.12+**, and credentials for a language-model provider and at least one search provider for live verification. PostgreSQL is optional for the in-memory quickstart below.
+
+### 1 / Get the project
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/eunemi/VERITAS.git
 cd VERITAS
-
-# 2. Configure environment keys
 cp backend/.env.example backend/.env
-
-# 3. Launch both Frontend and Backend
-docker compose -f backend/docker-compose.yml up --build
+cp frontend/.env.example frontend/.env.local
 ```
-* **Frontend**: `http://localhost:3000`
-* **FastAPI Docs**: `http://localhost:8000/docs`
-* **Health Check**: `http://localhost:8000/health`
 
-<br/>
+### 2 / Configure the desks
 
-### Option 2: Local Host Development Setup
+Edit the matching entries in `backend/.env`:
 
-#### 1. Backend Setup
+```dotenv
+ENVIRONMENT=local
+DEBUG=false
+VERIFICATION_STORE=memory
+VECTOR_STORE_PROVIDER=memory
+CORS_ORIGINS=http://localhost:3000
+PUBLIC_API_URL=http://localhost:8000
+
+LLM_PROVIDER=openai
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL=gpt-4o-mini
+OPENAI_API_KEY=your-provider-key
+CLAIM_EXTRACTION_LLM=true
+VISION_MODEL=gpt-4o-mini
+
+SEARCH_PROVIDERS=tavily
+TAVILY_API_KEY=your-search-key
+JWT_SECRET_KEY=your-generated-secret
+```
+
+Generate the value for `JWT_SECRET_KEY` with `openssl rand -hex 32`. Replace the key placeholders with your own credentials. In-memory accounts and records reset when the process restarts.
+
+The frontend's `frontend/.env.local` should contain:
+
+```dotenv
+NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+```
+
+### 3 / Start the API
+
+From the repository root:
+
 ```bash
 cd backend
-
-# Create and activate virtual environment
-python3 -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
-
-# Install dependencies
-pip install -r requirements-dev.txt
-
-# Download required NLP Models
+python -m pip install -r requirements-dev.txt
 python -m spacy download en_core_web_sm
 python -m nltk.downloader punkt_tab stopwords
-
-# Setup configuration
-cp .env.example .env
-
-# Run database migrations & start development server
-alembic upgrade head
 uvicorn app.main:app --reload --port 8000
 ```
 
-#### 2. Frontend Setup
+### 4 / Start the workspace
+
+In a **second terminal**, from the repository root:
+
 ```bash
 cd frontend
-
-# Install node dependencies
-npm install
-
-# Start Next.js development server
+npm ci
 npm run dev
 ```
 
-<br/>
+| Open | Address |
+| :--- | :--- |
+| **Workspace** | http://localhost:3000 |
+| **Interactive API docs** | http://localhost:8000/docs |
+| **API health** | http://localhost:8000/health |
 
----
+<details>
+<summary><strong>Use PostgreSQL and Docker Compose instead</strong></summary>
 
-## 🔌 API Endpoints Showcase
+Compose runs **the API and PostgreSQL**. The frontend still runs in its own terminal.
+
+1. In `backend/.env`, set `VERIFICATION_STORE=database` and `VECTOR_STORE_PROVIDER=chroma`. Keep the provider credentials and JWT secret configured above.
+2. From `backend/`, with the Python environment active, start the database and apply migrations:
 
 ```bash
-# Claim Extraction
-POST /api/v1/extract-claim
-Content-Type: application/json
-{
-  "text": "The Queensferry Crossing opened in 2017 and cost £1.35bn. It is magnificent."
-}
+docker compose up -d postgres
+DATABASE_URL=postgresql+asyncpg://veritas:veritas@localhost:5432/veritas alembic upgrade head
+docker compose up --build api
 ```
+
+Wait for PostgreSQL to be ready before running Alembic. The Compose configuration overrides the API's database hostname to `postgres` inside the container. Local named volumes keep database and `/app/var` data across rebuilds. The Docker build includes the spaCy model and NLTK data.
+
+</details>
+
+<details>
+<summary><strong>Provider options</strong> — text, search, image matching, and fallbacks</summary>
+
+| Capability | Configuration |
+| :--- | :--- |
+| **OpenAI-compatible text** | `LLM_PROVIDER=openai`, `OPENAI_BASE_URL`, `OPENAI_MODEL`, `OPENAI_API_KEY` |
+| **Groq** | Use `OPENAI_BASE_URL=https://api.groq.com/openai/v1`, a supported `OPENAI_MODEL`, and `GROQ_API_KEY` |
+| **Ollama text** | `LLM_PROVIDER=ollama`, `OLLAMA_BASE_URL`, `OLLAMA_MODEL` |
+| **Visual description** | `VISION_MODEL`; optionally separate `VISION_BASE_URL` and `VISION_API_KEY`. The model must support image inputs and JSON output. |
+| **Web research** | `SEARCH_PROVIDERS=tavily,brave,serper` and the keys for the providers you enable |
+| **Published fact checks** | `GOOGLE_FACT_CHECK_API_KEY` |
+| **Reverse-image context** | `GOOGLE_VISION_API_KEY`, with Cloud Vision Web Detection enabled |
+
+Search providers without credentials report their unavailability. Model failures can fall back to installed spaCy extraction, but semantic verdicts remain insufficient without a working model. Local Tesseract OCR requires the Tesseract system binary; hosted vision does not require Tesseract or YOLO.
+
+See [live verification configuration](backend/LIVE_VERIFICATION.md) and the [complete environment template](backend/.env.example).
+
+</details>
+
+<br />
+
+## Ship it
+
+### Vercel × Render × Neon
+
+| Service | Responsibility | Setup |
+| :--- | :--- | :--- |
+| **Vercel** | Frontend | Root directory: `frontend`. Build: `npm run build`. |
+| **Render** | FastAPI backend | Docker Web Service. Root directory: `backend`. Dockerfile: `./Dockerfile`. Health check: `/health`. |
+| **Neon** | Persistent records and accounts | PostgreSQL connection string using the `postgresql+asyncpg://` driver. |
+
+#### Vercel · public build-time configuration
+
+```dotenv
+NEXT_PUBLIC_API_URL=https://veritas-ojg4.onrender.com/api/v1
+```
+
+Set this in the **Production** environment and rebuild after changing it. For a fork, replace the hostname with your own API service.
+
+#### Render · server-side configuration
+
+| Variable | Value |
+| :--- | :--- |
+| `ENVIRONMENT` | `production` |
+| `DEBUG` | `false` |
+| `CORS_ORIGINS` | `https://veritasreal.vercel.app` — your exact frontend origin, without a trailing slash |
+| `PUBLIC_API_URL` | `https://veritas-ojg4.onrender.com` — backend origin, without `/api/v1` |
+| `JWT_SECRET_KEY` | A generated secret, stored in Render |
+| `DATABASE_URL` | Your Neon pooled URL, using `postgresql+asyncpg://` |
+| `VERIFICATION_STORE` | `database` |
+| **Provider configuration** | The model, search, and optional vision settings from the provider table above |
+
+Keep one entry per variable. Multiple permitted frontend origins go in one comma-separated `CORS_ORIGINS` value. Vercel preview URLs and additional custom domains need their own explicit entries.
+
+Run `alembic upgrade head` once against the target database using its direct connection URL, from `backend/` with dependencies installed. The runtime Docker image contains the app, not the Alembic migration directory. Configure persistent storage for uploads and the Chroma index if those files must survive deployments; multiple API instances need shared upload storage.
+
+#### Verify the connection
+
+```bash
+curl -fsS https://veritas-ojg4.onrender.com/api/v1/health
+
+curl -i -X OPTIONS https://veritas-ojg4.onrender.com/api/v1/verify \
+  -H 'Origin: https://veritasreal.vercel.app' \
+  -H 'Access-Control-Request-Method: POST' \
+  -H 'Access-Control-Request-Headers: authorization,content-type'
+```
+
+Expect health to report `status: "ok"` and `environment: "production"`. The preflight should return `200` with `access-control-allow-origin` matching the frontend origin. Health is a liveness check; it does not validate the database or provider credentials.
+
+<details>
+<summary><strong>Deployment troubleshooting</strong></summary>
+
+| Symptom | Check |
+| :--- | :--- |
+| `service_unreachable` | Test `/health`, then preflight with the **exact address-bar origin**. A rejected browser request can mean networking, timeout, or CORS; it does not prove the API is down. |
+| `Disallowed CORS origin` | Update Render's `CORS_ORIGINS`, save, and redeploy the API. Domain aliases and preview URLs are distinct origins. |
+| Old API URL after editing Vercel settings | Rebuild the frontend. `NEXT_PUBLIC_API_URL` is embedded at build time. |
+| `GET /` returns `404` on Render | Expected: the backend has no homepage. Configure the health check to use `/health`. |
+| Health works, verification fails | Check database connectivity, migrations, and the API logs using the returned request ID. |
+| Record completes with no sources | Inspect the provider ledger. Add working search credentials; a healthy server alone cannot retrieve evidence. |
+| Images upload but previews fail | Check `PUBLIC_API_URL`, persistent upload storage, and the generated media URL. |
+| Scanned PDF produces no text | Run OCR first; PDF intake reads the embedded text layer. |
+
+</details>
+
+<br />
+
+## The API
+
+**Base path:** `/api/v1` · **Format:** JSON, except multipart file uploads · **Identity:** optional bearer auth for submission; required for account history.
+
+| Method | Endpoint | Purpose |
+| :--- | :--- | :--- |
+| `GET` | `/health` | Versioned liveness check; also available at root `/health` |
+| `POST` | `/verify` | Accept an artifact and return a record ID (`202`) |
+| `GET` | `/verification/{id}` | Read progress, reports, final status, or failure |
+| `GET` | `/verifications?limit=20` | Read the signed-in account's history |
+| `POST` | `/extract-claim` | Extract checkable claims from text |
+| `POST` | `/research` | Gather web sources and published fact checks |
+| `POST` | `/files/extract-text` | Extract text from TXT, Markdown, DOCX, or PDF |
+| `POST` | `/files/upload-media` | Store a supported image and return its API URL |
+| `GET` | `/files/media/{filename}` | Retrieve an uploaded image by its generated filename |
+| `POST` | `/auth/register` | Create an account |
+| `POST` | `/auth/login` | Issue an access token |
+| `GET` | `/auth/me` | Read the authenticated account |
+
+### Open a record
+
+```bash
+curl -sS http://localhost:8000/api/v1/verify \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "artifact": {
+      "kind": "claim",
+      "content": "The Eiffel Tower was completed in 1889."
+    },
+    "desks": ["fact-check"]
+  }'
+```
+
+Illustrative acceptance response — this is a job receipt, not a verdict:
 
 ```json
 {
-  "claims": [
-    {
-      "ref": 1,
-      "text": "The Queensferry Crossing opened in 2017.",
-      "quote": "The Queensferry Crossing opened in 2017",
-      "start": 0,
-      "end": 39,
-      "checkable": true,
-      "entities": [{"text": "Queensferry Crossing", "label": "FAC"}, {"text": "2017", "label": "DATE"}],
-      "keywords": [{"term": "queensferry crossing", "score": 1.0}]
-    },
-    {
-      "ref": 2,
-      "text": "The Queensferry Crossing cost £1.35bn.",
-      "quote": "cost £1.35bn",
-      "start": 44,
-      "end": 56,
-      "checkable": true,
-      "entities": [{"text": "£1.35bn", "label": "MONEY"}]
-    },
-    {
-      "ref": 3,
-      "text": "It is magnificent.",
-      "checkable": false,
-      "reason": "opinion"
-    }
-  ],
-  "count": 3,
-  "checkable_count": 2
+  "id": "8f14e45f-ceea-467a-9c4d-1b1e1a3f7c02",
+  "status": "pending",
+  "desks": ["fact-check", "decision"],
+  "created_at": "2026-10-11T09:00:00Z"
 }
 ```
 
-<br/>
+Read `/api/v1/verification/{id}` using the returned ID until `terminal` is `true`. Nonterminal responses include a `Retry-After` hint. A completed record carries `reports`; a failed examination carries `failure` and preserves reports already filed. Request-level errors use an `error` envelope with a stable `code`, `message`, and request ID.
 
----
+Anonymous records are readable by ID. Sending `Authorization: Bearer <token>` attaches ownership; subsequent reads need that account's token. Local interactive docs are at `/docs`; `/docs`, `/redoc`, and `/openapi.json` are disabled in production.
 
-## 🧪 Testing & Code Quality
+<br />
 
-Run tests offline with zero network dependencies:
+## Project map
 
-```bash
-# Run complete Pytest suite
-pytest backend/tests
-
-# Run standalone offline test runner
-python3 backend/offline_search_tests.py
-
-# Lint & Typecheck
-ruff check backend/ && ruff format --check backend/ && mypy backend/app
+```text
+VERITAS/
+├── frontend/
+│   ├── src/app/                 Pages, examination tools, archive, error states
+│   ├── src/components/          Editorial UI, submission benches, report instruments
+│   ├── src/context/             Account and session state
+│   ├── src/lib/api/             Typed fetch client, auth, submission, polling
+│   └── src/lib/services/        API records → presentation models
+├── backend/
+│   ├── app/api/v1/              Versioned HTTP routes
+│   ├── app/core/                Settings, middleware, errors, structured logging
+│   ├── app/domain/              Artifact, claim, evidence, and verdict vocabulary
+│   ├── app/desks/               Text, image, fact-check, and decision desks
+│   ├── app/graph/               LangGraph nodes, state, workflow, and judging
+│   ├── app/nlp/                 Claim extraction, segmentation, keyword ranking
+│   ├── app/search/              Tavily, Brave, Serper, and concurrent fan-out
+│   ├── app/factcheck/           Published fact-check lookup
+│   ├── app/research/            Evidence selection, deduplication, source assessment
+│   ├── app/llm/                 Model clients and hashing embeddings
+│   ├── app/vision/              Visual context, OCR, and image preparation
+│   ├── app/repositories/        SQL and in-memory storage implementations
+│   ├── app/security/            Password hashing and token verification
+│   ├── app/services/            Verification and research orchestration
+│   ├── app/vectorstore/         Evidence indexing and retrieval
+│   ├── alembic/                 Database migrations
+│   └── tests/                   API, workflow, provider, and persistence tests
+├── docs/assets/                 Original README illustrations
+├── scripts/                     Maintenance utilities
+└── claude-skills/               Vendored agent workflow resources
 ```
 
-<br/>
+## Quality & engineering
 
----
+### Frontend
 
-## 🔒 Security & Standards
-
-* **Password Hashing**: OWASP-recommended **Argon2id** (`argon2-cffi`) with secure salt and memory parameters.
-* **Token Verification**: Hardened HS256 JWT tokens requiring strict standard claims (`sub`, `type`, `exp`, `iat`, `jti`).
-* **Input Validation**: Strict RFC-compliant Pydantic models with input truncation bounds to prevent ReDoS & payload abuse.
-
----
-
-## Production deployment
-
-Deploy the frontend from `frontend/` to Vercel and the API from `backend/` to a
-Render Web Service. The API's durable PostgreSQL store belongs on Neon; no second
-backend service is needed. The Docker image honours Render's `PORT` and exposes
-`/health` for the service health check.
-
-Set `NEXT_PUBLIC_API_URL` in Vercel for every environment (Development, Preview,
-and Production) to the public Render URL plus `/api/v1`, for example
-`https://api.example.com/api/v1`. It is a public, build-time value; never put a
-credential in a `NEXT_PUBLIC_*` variable. Copy
-`frontend/.env.example` for local development.
-
-On Render, set these server-only variables: `ENVIRONMENT=production`, a unique
-`JWT_SECRET_KEY`, `DATABASE_URL`, and `CORS_ORIGINS` containing the exact Vercel
-origins. Use Neon's **pooled** connection string with the `postgresql+asyncpg://`
-driver for `DATABASE_URL`; use a separate direct URL only when running Alembic
-migrations. Configure optional provider keys only for providers you enable:
-`OPENAI_API_KEY`, `TAVILY_API_KEY`, `BRAVE_API_KEY`, `SERPER_API_KEY`, and
-`GOOGLE_FACT_CHECK_API_KEY`. Start from `backend/.env.example`; do not upload an
-`.env` file or commit a real secret.
-
-Before promoting a release, run migrations once against the target database:
+Run from `frontend/`:
 
 ```bash
-cd backend
-DATABASE_URL='postgresql+asyncpg://…' alembic upgrade head
+npm ci
+npm run lint
+npm run typecheck
+npm run build
 ```
 
-This initial migration creates tables and indexes; it does not delete data. Take a
-Neon restore point before every future schema migration. The service's `/health` is
-liveness only, so a dependency outage does not cause restart loops.
+### Backend
 
-For validation, run `npm ci && npm run lint && npm run build` in `frontend/`, then
-`pip install -r requirements-dev.txt`, `ruff check app`, `mypy app`, and `pytest` in
-`backend/`. Render should also enforce a request-body limit at its edge: the app
-rejects oversized declared bodies, while chunked requests require the proxy limit.
+Run from `backend/` with the Python environment active:
 
----
+```bash
+python -m pip install -r requirements-dev.txt
+ruff check app
+mypy app
+pytest
+```
+
+Provider fixtures cover citation grounding, source deduplication, timeouts, outages, image validation, and API contracts without calling paid services. Parser-backed tests need the installed NLP models; live provider checks need real credentials. A dependency-light search check is also available with `python offline_search_tests.py`.
+
+**Implementation highlights:**
+
+- Argon2id password hashing and constrained JWT validation.
+- Account-scoped history and ownership checks on individual records.
+- Exact-origin CORS, request IDs, structured logs, and consistent API errors.
+- Public-host and redirect checks for server-side media and page fetching.
+- File-type validation, byte limits, and generated upload filenames.
+- Startup validation for production secrets and incompatible settings.
+
+## Contributing
+
+Useful contributions include provider integrations, citation-quality improvements, multilingual extraction, accessibility refinements, and reproducible bug reports.
+
+1. Open an [issue](https://github.com/eunemi/VERITAS/issues) describing the problem or proposed change.
+2. Keep the change focused and follow the surrounding frontend or backend conventions.
+3. Add meaningful regression coverage for behavior changes and run the relevant checks above.
+4. Open a pull request with the problem, solution, and verification steps.
+
+For a provider integration, keep HTTP behavior in the provider adapter and evidence assessment in the research or graph layer. For a UI change, preserve the typed API contract and the distinction between evidence, findings, and service failures.
+
+### Further reading
+
+- [Live verification guide](backend/LIVE_VERIFICATION.md) — current capabilities, provider setup, and limitations.
+- [Backend reference](backend/README.md) — detailed contracts and architectural notes, including historical design context.
+- [Configuration reference](backend/app/core/config.py) — the source of truth for environment settings.
+- [API schemas](backend/app/schemas/verification.py) — request and response models.
+- [Graph implementation](backend/app/graph/workflow.py) — nodes, branching, and execution.
+
+<br />
 
 <div align="center">
-  <sub>Built with precision and verifiable truth. © 2026 Veritas Intelligence.</sub>
+
+<img src="docs/assets/veritas-signature.svg" alt="The last word belongs to the evidence. Veritas — question the story." width="100%" />
+
+<br />
+
+Built by [Arya Yadav](https://github.com/eunemi) · [Open Veritas](https://veritasreal.vercel.app) · [Report an issue](https://github.com/eunemi/VERITAS/issues) · [Back to top ↑](#top)
+
 </div>
