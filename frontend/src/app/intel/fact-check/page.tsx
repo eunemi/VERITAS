@@ -24,7 +24,7 @@ const SAMPLE =
 
 export default function FactCheckDesk() {
   const [claim, setClaim] = useState("");
-  const { status, record, error, open, reopen, working } =
+  const { status, record, error, open, reopen, working, progress } =
     useExamination<FactCheckRecord>();
 
   const tooShort = claim.trim().length < MINIMUM;
@@ -33,6 +33,7 @@ export default function FactCheckDesk() {
     <DeskPage
       desk={desk}
       status={status}
+      progress={progress}
       latencyMs={DESK_PACE_MS}
       onReopen={reopen}
       bench={
