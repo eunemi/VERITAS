@@ -107,9 +107,9 @@ def one_provider(configure: Callable[..., Settings]) -> Settings:
 def checking(configure: Callable[..., Settings]) -> Settings:
     """One provider *and* a fact-check key, so the lookup runs instead of being skipped.
 
-    Separate from :func:`one_provider` because most of this file is about the search, and
-    a key set everywhere would mean every test above silently depended on a fake database
-    being registered.
+    Separate from :func:`one_provider` because most of this file is about the search,
+    and a key set everywhere would mean every test above silently depended on a fake
+    database being registered.
     """
     return configure(
         SEARCH_PROVIDERS=[SearchProvider.TAVILY],
@@ -361,7 +361,7 @@ async def test_an_api_key_never_reaches_the_response_body(
 
 
 async def test_one_outcome_per_configured_provider(client: AsyncClient) -> None:
-    """Whatever became of it. A provider absent from this list was never accounted for."""
+    """A provider absent from this list was never accounted for."""
     response = await research(client, claims=[CLAIM])
 
     reported = [p["provider"] for p in response.json()["providers"]]
@@ -390,6 +390,7 @@ async def test_the_response_carries_exactly_the_documented_fields(
         "fact_checks",
         "domains",
         "stories",
+        "credibility",
     }
 
 
@@ -575,7 +576,7 @@ async def test_syndication_is_marked_and_never_merged(
 async def test_a_url_that_is_not_a_web_page_never_becomes_a_source(
     client: AsyncClient, one_provider: Settings
 ) -> None:
-    """A source a reader cannot open cannot be checked, so it is dropped, not renamed."""
+    """A source a reader cannot open is dropped, not renamed."""
     fake = Fake(
         "tavily",
         results=[
