@@ -21,8 +21,8 @@ search and fact-check in the same superstep; a direct import between two of them
 be a call ordering the graph does not know about and cannot schedule.
 
 Read with :mod:`ast` rather than by importing, so it holds in this sandbox too — where
-``langgraph`` is not installed and an import-based check could not load the one module it
-most needs to inspect.
+``langgraph`` is not installed and an import-based check could not load the one module
+it most needs to inspect.
 """
 
 from __future__ import annotations
@@ -93,6 +93,7 @@ def test_the_package_is_where_this_thinks_it_is() -> None:
         "source.py",
         "contradiction.py",
         "judge.py",
+        "semantic.py",
     }
     assert (GRAPH / RUNTIME_HOST).is_file()
 
@@ -116,7 +117,7 @@ def test_langgraph_is_imported_in_exactly_one_module() -> None:
 
 @pytest.mark.parametrize("path", agents(), ids=lambda path: path.name)
 def test_no_agent_imports_the_graph_runtime(path: Path) -> None:
-    """One case per agent, so a failure names the file that would stop being testable."""
+    """One case per agent, naming the file that would stop being testable."""
     assert not any(_root(name) == "langgraph" for name in _imports(path)), (
         f"{path.name} imports langgraph, so it can no longer be called with a dict and "
         f"its tests now require the runtime to be installed."
@@ -142,7 +143,7 @@ def test_no_agent_imports_another_agent(path: Path) -> None:
 def test_the_state_and_the_verdict_types_reach_for_nothing(name: str) -> None:
     """Both are imported by every agent, so anything they need, everything needs.
 
-    Note the third: ``scoring.py`` is where every 0–100 comes from, and it stays plain
+    Note the third: ``scoring.py`` is where every 0-100 comes from, and it stays plain
     for the same reason — a deployment reading a :class:`~app.graph.verdict.Score` off a
     stored ruling must not need the graph runtime to do it.
 
@@ -174,9 +175,9 @@ def test_no_module_reaches_for_a_chain_framework(path: Path) -> None:
 def test_the_agents_package_imports_no_agent() -> None:
     """``__init__`` stays empty so importing one agent does not pull the other six.
 
-    :mod:`~app.graph.agents.judge` needs neither :class:`~app.core.config.Settings` nor a
-    vendor client, and a re-export here would give it both transitively — enough to make
-    ``test_graph_judge`` unrunnable in an environment without pydantic installed.
+    :mod:`~app.graph.agents.judge` needs neither :class:`~app.core.config.Settings` nor
+    a vendor client, and a re-export here would give it both transitively — enough to
+    make ``test_graph_judge`` unrunnable without pydantic installed.
     """
     reached = sorted(
         name
