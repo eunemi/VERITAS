@@ -8,7 +8,7 @@ import pytest
 from PIL import Image
 
 from app.core.config import Settings
-from app.core.errors import ConfigurationError
+from app.core.errors import ConfigurationError, LLMError, RateLimitError
 from app.domain import Artifact, ArtifactKind, Determination, ImageDetail, LedgerEntry
 from app.graph.agents import semantic
 from app.graph.agents.judge import SETTLED_UNCERTAINTY
@@ -85,6 +85,30 @@ async def test_hallucinated_citation_is_not_a_verdict(monkeypatch):
     assert result["ruling"].judgement is Judgement.UNCERTAIN
 
 
+async def test_invalid_mixed_verdict_uses_the_grounding_failure(monkeypatch):
+    monkeypatch.setattr(
+        semantic,
+        "ask",
+        AsyncMock(
+            return_value=answer(
+                verdict="MIXED",
+                explanation="The model supplied an ungrounded mixed explanation.",
+                citations=[
+                    Citation(ref=1, passage=0, stance="supports", same_event=True),
+                    Citation(ref=2, passage=0, stance="supports", same_event=True),
+                ],
+            )
+        ),
+    )
+
+    result = await SemanticJudge(Settings(_env_file=None))(gathered())
+
+    assert result["ruling"].judgement is Judgement.UNCERTAIN
+    rationale = result["ruling"].rationale
+    assert "The cited evidence does not establish both sides" in rationale
+    assert "ungrounded mixed explanation" not in rationale
+
+
 async def test_model_outage_does_not_turn_word_overlap_into_truth(monkeypatch):
     monkeypatch.setattr(
         semantic, "ask", AsyncMock(side_effect=ConfigurationError("model unavailable"))
@@ -93,6 +117,25 @@ async def test_model_outage_does_not_turn_word_overlap_into_truth(monkeypatch):
     assert result["ruling"].judgement is Judgement.UNCERTAIN
     assert result["ruling"].confidence == SETTLED_UNCERTAINTY
     assert "evidence reader was unavailable" in result["ruling"].rationale
+
+
+async def test_retry_auth_failure_is_not_reported_as_rate_limiting(monkeypatch):
+    call = AsyncMock(
+        side_effect=[
+            RateLimitError("limited", details={"status": 429}),
+            LLMError("bad credentials", details={"status": 401}),
+        ]
+    )
+    monkeypatch.setattr(semantic.asyncio, "sleep", AsyncMock())
+    monkeypatch.setattr(semantic, "ask", call)
+
+    result = await SemanticJudge(Settings(_env_file=None))(gathered())
+
+    assert result["ruling"].judgement is Judgement.UNCERTAIN
+    assert "rejected its credentials" in result["ruling"].rationale
+    assert call.await_count == 2
+    assert call.await_args_list[0].args[1] == call.await_args_list[1].args[1]
+    assert "submission_context" in call.await_args_list[1].args[2]
 
 
 async def test_model_outage_cannot_turn_matching_figures_into_truth(monkeypatch):
