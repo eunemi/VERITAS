@@ -64,6 +64,16 @@ export interface Verdict {
   confidenceValue: number;
 }
 
+/** These findings do not carry an assessed confidence, even when the wire includes a number. */
+export function confidenceIsAssessed(determination: Determination): boolean {
+  return determination !== "INSUFFICIENT" && determination !== "REQUIRES VERIFICATION";
+}
+
+/** Keep unresolved findings from presenting a placeholder or fallback as a measurement. */
+export function confidenceLabel(determination: Determination, confidence: string): string {
+  return confidenceIsAssessed(determination) ? confidence : "Not assessed";
+}
+
 interface RecordBase {
   ledger: LedgerEntry[];
   annotations: Annotation[];
