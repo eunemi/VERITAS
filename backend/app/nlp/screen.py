@@ -38,7 +38,7 @@ if TYPE_CHECKING:  # pragma: no cover - spaCy is imported only by the pipeline
 #: with none of these is not a sentence: "Photo by Reuters", "More on this story",
 #: "Updated at 14:02". Note that spaCy tags copulas and auxiliaries with the same
 #: set, so "The span is 3km" qualifies on ``is``.
-_FINITE_TAGS = frozenset({"VBD", "VBP", "VBZ", "MD"})
+_FINITE_TAGS = frozenset({"VBD", "VBP", "VBZ", "VBN", "MD"})
 
 _SUBJECTS = frozenset({"nsubj", "nsubjpass", "csubj", "csubjpass", "expl"})
 
@@ -204,18 +204,22 @@ def screen(clause: Clause, *, min_tokens: int) -> tuple[bool, str]:
         return False, Unfit.QUESTION
     if _is_imperative(head, children):
         return False, Unfit.IMPERATIVE
-    if not _has_finite_verb(clause) or not _has_subject(children):
-        return False, Unfit.FRAGMENT
-    if _content_tokens(clause) < min_tokens:
-        return False, Unfit.TOO_SHORT
+    # These semantic exclusions are more useful than a structural fragment label.
+    # Conditional clauses and reporting verbs can be parsed without the root subject
+    # or with a participle tag even though the reader can still understand why they
+    # are not checkable.
     if _is_hypothetical(clause, children):
         return False, Unfit.HYPOTHETICAL
     if _is_prediction(children):
         return False, Unfit.PREDICTION
-    if _is_opinion(clause, head, children):
-        return False, Unfit.OPINION
     if _is_attribution_only(head, children):
         return False, Unfit.ATTRIBUTION_ONLY
+    if not _has_finite_verb(clause) or not _has_subject(children):
+        return False, Unfit.FRAGMENT
+    if _content_tokens(clause) < min_tokens:
+        return False, Unfit.TOO_SHORT
+    if _is_opinion(clause, head, children):
+        return False, Unfit.OPINION
     if not _names_anything(clause):
         return False, Unfit.NO_CONTENT
     return True, ""
