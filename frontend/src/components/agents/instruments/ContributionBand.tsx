@@ -1,7 +1,14 @@
 import Link from "next/link";
 import { SectionHead, Slug } from "../shared/layout";
 import { DESKS } from "@/lib/desks";
-import { TONE_RULE, TONE_TEXT, toneOf, type Contribution } from "@/lib/types/agents";
+import {
+  confidenceIsAssessed,
+  confidenceLabel,
+  TONE_RULE,
+  TONE_TEXT,
+  toneOf,
+  type Contribution,
+} from "@/lib/types/agents";
 
 /**
  * What each desk filed.
@@ -26,6 +33,8 @@ export function ContributionBand({ contributions }: { contributions: Contributio
       <ul className="mt-stack-sm">
         {contributions.map((contribution) => {
           const tone = toneOf(contribution.determination);
+          const assessed = confidenceIsAssessed(contribution.determination);
+          const confidence = `${Math.round(contribution.confidence * 100)}%`;
           const named = DESKS[contribution.desk]?.name ?? `${contribution.desk} desk`;
           return (
             <li key={contribution.desk} className="border-b border-ink-black/12">
@@ -39,18 +48,21 @@ export function ContributionBand({ contributions }: { contributions: Contributio
                     {named}
                   </span>
                   <Slug className="tabular text-ink-black/40">
-                    {Math.round(contribution.confidence * 100)}% confidence
+                    {confidenceLabel(contribution.determination, confidence)}
+                    {assessed ? " confidence" : ""}
                   </Slug>
                   <Slug className={`w-[168px] sm:text-right ${TONE_TEXT[tone]}`}>
                     {contribution.determination}
                   </Slug>
                 </div>
-                <div aria-hidden className="mt-2.5 h-1.5 bg-ink-black/8">
-                  <div
-                    className={`h-full ${TONE_RULE[tone]}`}
-                    style={{ width: `${Math.round(contribution.confidence * 100)}%` }}
-                  />
-                </div>
+                {assessed ? (
+                  <div aria-hidden className="mt-2.5 h-1.5 bg-ink-black/8">
+                    <div
+                      className={`h-full ${TONE_RULE[tone]}`}
+                      style={{ width: `${Math.round(contribution.confidence * 100)}%` }}
+                    />
+                  </div>
+                ) : null}
               </Link>
             </li>
           );
