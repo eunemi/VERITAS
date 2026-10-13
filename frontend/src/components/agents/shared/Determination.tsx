@@ -4,6 +4,7 @@ import {
   type Annotation,
   type Exhibit,
   type Verdict,
+  confidenceLabel,
 } from "@/lib/types/agents";
 
 const TITLE_TEXT: Record<Verdict["determination"], string> = {
@@ -101,7 +102,7 @@ export function Determination({
         </h2>
         
         <div className="font-body-md text-body-md font-bold text-ink-black">
-          Assessment confidence: {verdict.confidence}
+          Assessment confidence: {confidenceLabel(verdict.determination, verdict.confidence)}
           <span className="ml-2 font-normal text-sm text-ink-black/55">
             (not a truth probability)
           </span>
