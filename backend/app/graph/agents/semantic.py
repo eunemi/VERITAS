@@ -51,7 +51,7 @@ class SemanticJudge:
                 ruling=nothing_to_check(state),
                 trace=(AgentNote("judge", "No claims to check"),),
             )
-        semaphore = asyncio.Semaphore(3)
+        semaphore = asyncio.Semaphore(2)
 
         async def read(case: Case) -> ClaimRuling:
             async with semaphore:
@@ -88,8 +88,10 @@ class SemanticJudge:
                 if ruling.judgement is Judgement.SUPPORTED
                 else ruling.confidence,
                 rationale=ruling.rationale
-                + f" {len(capped)} further claim(s) were not researched. "
-                "Submit them separately.",
+                + (
+                    f"\n\n{len(capped)} further claim(s) were not researched. "
+                    "Submit them separately."
+                ),
             )
         return GraphState(
             ruling=ruling,
@@ -104,9 +106,6 @@ class SemanticJudge:
                 ref=case.claim.ref,
                 claim=case.claim.text,
                 judgement=Judgement.UNCERTAIN,
-                # An unresolved assessment still has confidence of its own: this
-                # describes how firmly the evidence failed to settle the claim,
-                # rather than claiming the claim is false.
                 confidence=(
                     SETTLED_UNCERTAINTY
                     if case.sources
@@ -125,72 +124,103 @@ class SemanticJudge:
                 "it could not be verified."
             )
         passages = {ref: _passages(source) for ref, source in sources.items()}
+        instruction = (
+            "Fact-check the exact claim using ONLY the supplied live search "
+            "passages. Shared words or numbers do not establish truth. Check "
+            "subject, date, place, quantities, negation, satire and whether a "
+            "page merely repeats an allegation. Use submission_context to "
+            "resolve which event the claim refers to; it is NOT evidence. "
+            "Explain in the language of the original quote (Devanagari input "
+            "requires Hindi). "
+            "Give a concise two-to-four sentence explanation of what is supported, "
+            "what conflicts and what remains unknown. "
+            "Do not verify a generic fragment using reports of different events. "
+            "Deaths in different cities or attacks on different dates cannot "
+            "corroborate each other. An explicitly different quantity for the "
+            "same population, event and time can refute an exact-number claim; "
+            "do not demand the false number appear verbatim. Return UNCERTAIN "
+            "for missing context, weak/irrelevant sources or insufficient "
+            "coverage. Confidence is confidence in the assessment, not the "
+            "probability of truth. "
+            "A decisive verdict needs at least "
+            f"{self.settings.JUDGE_MIN_SOURCES} independent sources directly "
+            "supporting that direction and referring to the same event."
+        )
+
+        def source_payload(passage_chars: int) -> list[dict[str, object]]:
+            return [
+                {
+                    "ref": ref,
+                    "url": source.url,
+                    "title": source.title,
+                    "published_at": str(source.published_at or "unknown"),
+                    "passages": [
+                        {"index": index, "text": text[:passage_chars]}
+                        for index, text in enumerate(passages[ref][:2])
+                    ],
+                }
+                for ref, source in sources.items()
+            ]
+
+        request = {
+            "checked_at": now,
+            "claim": case.claim.text,
+            "original_quote": case.claim.quote[:250],
+            "submission_context": (context or case.claim.quote)[:300],
+            "sources": source_payload(350),
+        }
         try:
             result = await ask(
                 self.settings,
-                "Fact-check the exact claim using ONLY the supplied live search "
-                "passages. Shared words or numbers do not establish truth. Check "
-                "subject, date, place, quantities, negation, satire and whether a "
-                "page merely repeats an allegation. Use submission_context to "
-                "resolve which event the claim refers to; it is NOT evidence. "
-                "Do not verify a generic fragment using reports of different events. "
-                "Deaths in different cities or attacks on different dates cannot "
-                "corroborate each other. Mark same_event for every citation; unrelated "
-                "reports may only be context. An explicitly different quantity for "
-                "the SAME population, event and time can refute an exact-number "
-                "claim; do not demand the false number appear verbatim. A total for "
-                "a different population (all injured vs Indian nationals) cannot. "
-                "Current claims need current "
-                "evidence. Sources are search excerpts, not full articles. Do not "
-                "use memory to fill evidence gaps. Cite source ref and the zero-based "
-                "passage index of the provided evidence, with stance. "
-                "Return UNCERTAIN for missing context, "
-                "weak/irrelevant sources or insufficient coverage. Explain in the "
-                "language of the original quote (Devanagari input requires Hindi). "
-                "Give a concise two-to-four sentence explanation of what is supported, "
-                "what conflicts and what remains unknown. Do not put reference markers "
-                "in the explanation; use citations. Confidence is confidence in the "
-                "assessment, not the probability of truth; UNCERTAIN need not be zero. "
-                "A decisive verdict needs at least "
-                f"{self.settings.JUDGE_MIN_SOURCES} independent sources directly "
-                "supporting that direction and referring to the same event.",
-                {
-                    "checked_at": now,
-                    "claim": case.claim.text,
-                    "original_quote": case.claim.quote,
-                    "submission_context": context or case.claim.quote,
-                    "sources": [
-                        {
-                            "ref": ref,
-                            "url": s.url,
-                            "title": s.title,
-                            "published_at": str(s.published_at or "unknown"),
-                            "passages": [
-                                {"index": n, "text": text}
-                                for n, text in enumerate(passages[ref])
-                            ],
-                        }
-                        for ref, s in sources.items()
-                    ],
-                },
+                instruction,
+                request,
                 Answer,
+                tokens=self.settings.REASONING_MAX_TOKENS,
             )
         except VeritasError as exc:
-            if exc.details and exc.details.get("status") == 429:
-                return unknown(
-                    "The evidence reader is rate-limited. Live sources are shown "
-                    "below; retry shortly to complete the verdict."
-                )
-            if exc.details and exc.details.get("status") in (401, 403):
+            status = (exc.details or {}).get("status")
+            if status == 429:
+                # Bounded backoff retry for rate limits
+                await asyncio.sleep(2.0)
+                try:
+                    result = await ask(
+                        self.settings,
+                        instruction,
+                        {**request, "sources": source_payload(250)},
+                        Answer,
+                        tokens=self.settings.REASONING_MAX_TOKENS,
+                    )
+                except VeritasError as retry_error:
+                    retry_status = (retry_error.details or {}).get("status")
+                    if retry_status in (401, 403):
+                        return unknown(
+                            "The verification model rejected its credentials. Live "
+                            "sources were found, but a true/false assessment could "
+                            "not run. Check the API key for the configured provider."
+                        )
+                    if retry_status == 429:
+                        return unknown(
+                            "The evidence reader is rate-limited. Live sources are "
+                            "shown below; retry shortly to complete the verdict."
+                        )
+                    return unknown(
+                        "Live sources were retrieved, but the evidence reader was "
+                        f"unavailable ({retry_error.code}). Retry after checking "
+                        "model configuration."
+                    )
+            elif status in (401, 403):
                 return unknown(
                     "The verification model rejected its credentials. Live sources "
                     "were found, but a true/false assessment could not run. "
                     "Check the API key for the configured provider."
                 )
-            return unknown(
-                "Live sources were retrieved, but the evidence reader was "
-                f"unavailable ({exc.code}). Retry after checking model configuration."
-            )
+            else:
+                return unknown(
+                    "Live sources were retrieved, but the evidence reader was "
+                    f"unavailable ({exc.code}). Retry after checking model "
+                    "configuration."
+                )
+
         # The model selects identifiers; the server supplies the verbatim quote.
         valid = [
             c
@@ -202,9 +232,20 @@ class SemanticJudge:
                 "The model's citations could not be matched to the retrieved sources."
             )
         judgement = Judgement(result.verdict)
-        direction = "supports" if judgement is Judgement.SUPPORTED else "refutes"
         relevant = [c for c in valid if c.same_event]
+
+        if judgement is Judgement.MIXED and not {
+            "supports",
+            "refutes",
+        }.issubset({c.stance for c in relevant}):
+            return unknown(
+                "The cited evidence does not establish both sides of the "
+                "reported disagreement."
+            )
+
+        direction = "supports" if judgement is Judgement.SUPPORTED else "refutes"
         directional = [c for c in relevant if c.stance == direction]
+
         independent: list[Source] = []
         for citation in directional:
             source = sources[citation.ref]
@@ -221,6 +262,7 @@ class SemanticJudge:
             ):
                 continue
             independent.append(source)
+
         if (
             judgement in (Judgement.SUPPORTED, Judgement.REFUTED)
             and len(independent) < self.settings.JUDGE_MIN_SOURCES
@@ -230,13 +272,7 @@ class SemanticJudge:
                 "refer to the same event to settle this claim. Reports about "
                 "other incidents and repeated copies do not corroborate it."
             )
-        if judgement is Judgement.MIXED and not {"supports", "refutes"}.issubset(
-            {c.stance for c in relevant}
-        ):
-            return unknown(
-                "The cited evidence does not establish both sides "
-                "of the reported disagreement."
-            )
+
         indications = tuple(
             Indication(
                 agent="semantic",
@@ -270,7 +306,6 @@ class SemanticJudge:
 
 def _passages(source: Source) -> list[str]:
     """Short, numbered, literal slices; quotation is never generated by a model."""
-    # Claim-relevant passages can be beyond the beginning of a long search snippet.
     excerpts = list(dict.fromkeys(p.quote for p in source.evidence if p.quote))[:3]
     for snippet in dict.fromkeys(r.snippet for r in source.retrievals if r.snippet):
         start = 0
