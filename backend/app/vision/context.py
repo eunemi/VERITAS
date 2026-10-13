@@ -17,6 +17,11 @@ from app.llm.openai import OpenAIClient
 from app.llm.structured import decode
 from app.providers.http import Http
 
+# Keep provider preprocessing bounded independently of the upload byte limit. The
+# original source remains owned by the desk; this cap only limits decoded work.
+MAX_PIXELS = 25_000_000
+THUMBNAIL_SIZE = (1800, 1800)
+
 
 class Scene(BaseModel):
     description: str = Field(max_length=3000)
@@ -34,36 +39,71 @@ class Prepared:
     metadata: tuple[LedgerEntry, ...]
 
 
-def prepare(data: bytes) -> Prepared:
-    from PIL import Image, ImageOps, UnidentifiedImageError
+def validate(data: bytes) -> tuple[int, int]:
+    """Validate an image header and compressed stream without creating a pixel copy."""
+    from PIL import Image, UnidentifiedImageError
 
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("error", Image.DecompressionBombWarning)
-            with Image.open(io.BytesIO(data)) as original:
-                if original.width * original.height > 25_000_000:
+            with io.BytesIO(data) as stream, Image.open(stream) as image:
+                width, height = image.size
+                if width * height > MAX_PIXELS:
                     raise ValidationError(
                         "Image exceeds 25 megapixels. Resize it before uploading."
                     )
-                metadata = [
-                    LedgerEntry("Format", original.format or "unknown"),
-                    LedgerEntry("File size", f"{len(data):,} bytes"),
-                ]
-                exif = original.getexif()
-                for tag, label in (
-                    (271, "Camera make"),
-                    (272, "Camera model"),
-                    (306, "Metadata date"),
-                    (305, "Editing software"),
-                ):
-                    if tag in exif:
-                        metadata.append(LedgerEntry(label, str(exif[tag])[:200]))
-                frame = ImageOps.exif_transpose(original).convert("RGB")
-                width, height = frame.size
-                frame.thumbnail((1800, 1800))
-                output = io.BytesIO()
-                frame.save(output, "JPEG", quality=90)
-                return Prepared(output.getvalue(), width, height, tuple(metadata))
+                image.verify()
+                return width, height
+    except ValidationError:
+        raise
+    except (
+        UnidentifiedImageError,
+        OSError,
+        Image.DecompressionBombError,
+        Image.DecompressionBombWarning,
+    ) as exc:
+        raise ValidationError(
+            "This file is not a readable image or is too large to decode."
+        ) from exc
+
+
+def prepare(data: bytes) -> Prepared:
+    from PIL import Image, ImageOps, UnidentifiedImageError
+
+    try:
+        validate(data)
+        with io.BytesIO(data) as stream, Image.open(stream) as original:
+            metadata = [
+                LedgerEntry("Format", original.format or "unknown"),
+                LedgerEntry("File size", f"{len(data):,} bytes"),
+            ]
+            exif = original.getexif()
+            for tag, label in (
+                (271, "Camera make"),
+                (272, "Camera model"),
+                (306, "Metadata date"),
+                (305, "Editing software"),
+            ):
+                if tag in exif:
+                    metadata.append(LedgerEntry(label, str(exif[tag])[:200]))
+
+            # Resize before EXIF transposition and RGB conversion. The only full-size
+            # object is then the decoder's own source frame, rather than several full
+            # copies kept alive by transpose -> convert -> thumbnail.
+            original.thumbnail(THUMBNAIL_SIZE)
+            frame = ImageOps.exif_transpose(original)
+            converted = frame.convert("RGB")
+            width, height = converted.size
+            try:
+                with io.BytesIO() as output:
+                    converted.save(output, "JPEG", quality=90)
+                    jpeg = output.getvalue()
+            finally:
+                converted.close()
+                if frame is not original:
+                    frame.close()
+
+            return Prepared(jpeg, width, height, tuple(metadata))
     except (
         UnidentifiedImageError,
         OSError,
@@ -85,7 +125,9 @@ async def describe(image: Prepared, settings: Settings) -> Scene:
     configured = settings.model_copy(
         update={
             "OPENAI_API_KEY": key,
-            "GROQ_API_KEY": key if urlsplit(base_url).hostname == "api.groq.com" else None,
+            "GROQ_API_KEY": (
+                key if urlsplit(base_url).hostname == "api.groq.com" else None
+            ),
             "OPENAI_MODEL": settings.VISION_MODEL,
             "OPENAI_BASE_URL": base_url,
         }
