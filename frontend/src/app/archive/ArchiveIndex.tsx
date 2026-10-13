@@ -7,7 +7,7 @@ import { ArchiveTabs } from "@/components/archive/ArchiveTabs";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ARCHIVE, facetsOf, filedOn, yearOf, type ArchiveRecord } from "@/lib/archive";
 import { DESK_ISSUE, DESKS } from "@/lib/desks";
-import { TONE_TEXT, toneOf } from "@/lib/types/agents";
+import { confidenceLabel, TONE_TEXT, toneOf } from "@/lib/types/agents";
 
 /**
  * The record index.
@@ -121,7 +121,10 @@ function IndexRow({ record }: { record: ArchiveRecord }) {
         <div className="lg:col-span-3">
           <Slug className={`block ${TONE_TEXT[tone]}`}>{record.determination}</Slug>
           <p className="font-body-sm text-body-sm mt-1.5 text-ink-black/70">
-            Confidence <span className="tabular text-ink-black">{record.confidence}</span>
+            Confidence{" "}
+            <span className="tabular text-ink-black">
+              {confidenceLabel(record.determination, record.confidence)}
+            </span>
           </p>
           {desk ? (
             <Link
