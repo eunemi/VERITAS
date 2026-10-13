@@ -65,6 +65,10 @@ class ContentLengthLimitMiddleware(BaseHTTPMiddleware):
     def __init__(self, app: ASGIApp, *, max_bytes: int) -> None:
         super().__init__(app)
         self.max_bytes = max_bytes
+        # Multipart bodies carry field names, MIME headers and closing boundaries
+        # around the file bytes. The route still enforces the exact file limit; this
+        # allowance only prevents a file just below that limit being rejected here.
+        self.multipart_overhead = 1024 * 1024
 
     async def dispatch(
         self,
@@ -72,7 +76,11 @@ class ContentLengthLimitMiddleware(BaseHTTPMiddleware):
         call_next: Callable[[Request], Awaitable[Response]],
     ) -> Response:
         declared = request.headers.get("content-length", "")
-        if declared.isdigit() and int(declared) > self.max_bytes:
+        content_type = request.headers.get("content-type", "").lower()
+        limit = self.max_bytes + (
+            self.multipart_overhead if content_type.startswith("multipart/") else 0
+        )
+        if declared.isdigit() and int(declared) > limit:
             return JSONResponse(
                 status_code=413,
                 content={
@@ -81,7 +89,7 @@ class ContentLengthLimitMiddleware(BaseHTTPMiddleware):
                         "message": (
                             "The request body exceeds the configured size limit."
                         ),
-                        "details": {"bytes": int(declared), "limit": self.max_bytes},
+                        "details": {"bytes": int(declared), "limit": limit},
                         "request_id": getattr(request.state, "request_id", None),
                     }
                 },
