@@ -154,8 +154,16 @@ def _ledger(filed: Sequence[DeskReport]) -> tuple[LedgerEntry, ...]:
         *(
             LedgerEntry(
                 _named(report.desk),
-                f"{report.verdict.determination.value} at "
-                f"{round(report.verdict.confidence * 100)}%",
+                (
+                    f"{report.verdict.determination.value} · Not assessed"
+                    if report.verdict.determination
+                    in {
+                        Determination.INSUFFICIENT,
+                        Determination.REQUIRES_VERIFICATION,
+                    }
+                    else f"{report.verdict.determination.value} at "
+                    f"{round(report.verdict.confidence * 100)}%"
+                ),
             )
             for report in filed
         ),
