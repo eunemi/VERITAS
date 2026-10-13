@@ -200,7 +200,7 @@ class Observation:
     weight: float
 
     def __post_init__(self) -> None:
-        """Reject a weight outside 0–1.
+        """Reject a weight outside 0-1.
 
         The same guard :class:`~app.domain.verification.Verdict` puts on
         ``confidence``, for the same reason: a frozen dataclass has no validators, and
@@ -230,7 +230,7 @@ class Reading:
     observations: tuple[Observation, ...] = ()
 
     def __post_init__(self) -> None:
-        """Reject a score outside 0–1, and a score with no observations behind it."""
+        """Reject a score outside 0-1, and a score with no observations behind it."""
         if self.score is not None and not 0.0 <= self.score <= 1.0:
             raise ValueError(f"score must be between 0 and 1, got {self.score!r}")
         if self.score is not None and not self.observations:
@@ -325,12 +325,23 @@ class Credibility:
     role: Role | None = None
 
     def __post_init__(self) -> None:
-        """Reject a record that does not report every axis exactly once."""
-        seen = tuple(reading.axis for reading in self.readings)
-        if seen != ORDER:
+        """Normalise legacy partial readings into the explicit six-axis shape."""
+        by_axis: dict[Axis, Reading] = {}
+        for reading in self.readings:
+            if reading.axis in by_axis:
+                raise ValueError(
+                    f"readings contain axis {reading.axis.value!r} more than once"
+                )
+            by_axis[reading.axis] = reading
+        if not by_axis:
             raise ValueError(
-                f"readings must hold every axis in order, got {[a.value for a in seen]}"
+                "readings must contain at least one assessed or unassessed axis"
             )
+        object.__setattr__(
+            self,
+            "readings",
+            tuple(by_axis.get(axis, Reading(axis=axis, score=None)) for axis in ORDER),
+        )
 
     def reading(self, axis: Axis) -> Reading:
         """The reading for ``axis``. Always present; see :attr:`readings`."""
