@@ -123,13 +123,15 @@ async def harvest(
             return_exceptions=True,
         )
 
-    return _assemble(
+    assembled = _assemble(
         gathered,
         tasks=tasks,
         clients=clients,
         skipped=outcomes,
         secrets=secrets,
     )
+
+    return assembled
 
 
 def _roster(settings: Settings) -> tuple[SearchProvider, ...]:
@@ -225,25 +227,25 @@ def _assemble(
         ran[name] = failed[name] = counts[name] = 0
         queries[name] = []
 
-    for job, outcome in gathered:
+    for job, result in gathered:
         queries[job.provider].append(job.query)
-        if isinstance(outcome, BaseException):
+        if isinstance(result, BaseException):
             failed[job.provider] += 1
-            errors.setdefault(job.provider, outcome)
+            errors.setdefault(job.provider, result)
             logger.warning(
                 "search query failed",
                 extra={
                     "provider": job.provider,
-                    "error": type(outcome).__name__,
-                    "detail": redact(str(outcome), *secrets),
+                    "error": type(result).__name__,
+                    "detail": redact(str(result), *secrets),
                 },
             )
             continue
         ran[job.provider] += 1
-        counts[job.provider] += len(outcome)
+        counts[job.provider] += len(result)
         retrievals[job.task].extend(
-            _retrieval(job, result, rank)
-            for rank, result in enumerate(outcome, start=1)
+            _retrieval(job, item, rank)
+            for rank, item in enumerate(result, start=1)
         )
 
     outcomes = list(skipped)
