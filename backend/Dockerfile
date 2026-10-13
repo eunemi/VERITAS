@@ -46,9 +46,9 @@ RUN python -m spacy download en_core_web_sm \
 # ============================================================ runtime ========
 FROM base AS runtime
 
-# Install system libraries required by opencv-python (pulled in by ultralytics)
+# Install the small native libraries used by headless OpenCV and Tesseract OCR.
 RUN apt-get update \
-    && apt-get install --no-install-recommends -y libgl1 libglib2.0-0 libxcb1 \
+    && apt-get install --no-install-recommends -y libgl1 libglib2.0-0 libxcb1 tesseract-ocr \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /opt/venv /opt/venv
@@ -57,7 +57,9 @@ COPY --from=builder /opt/nltk_data /opt/nltk_data
 # a read-only, root-owned data directory work for the unprivileged runtime user.
 ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONPATH=/app \
-    NLTK_DATA=/opt/nltk_data
+    NLTK_DATA=/opt/nltk_data \
+    IMAGE_DETECTION_ENABLED=false \
+    VECTOR_STORE_PROVIDER=memory
 
 WORKDIR /app
 
@@ -66,7 +68,7 @@ RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin veritas
 
 # Created here rather than left to the volume driver: a named volume inherits the
 # ownership of the image directory it shadows, so making it `veritas`-owned now is
-# what lets the process write Chroma's index at run time as a non-root user.
+# what lets the process write runtime state there as a non-root user.
 RUN mkdir -p /app/var && chown veritas:veritas /app/var
 
 COPY --chown=veritas:veritas app ./app
@@ -79,7 +81,7 @@ EXPOSE 8000
 # TLS stack it otherwise has no use for. Hits 127.0.0.1 directly — this is a
 # liveness check on the local process, not a trip through any proxy.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD ["python", "-c", "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4).status == 200 else 1)"]
+    CMD ["python", "-c", "import os, sys, urllib.request; port = os.environ.get('PORT', '8000'); sys.exit(0 if urllib.request.urlopen(f'http://127.0.0.1:{port}/health', timeout=4).status == 200 else 1)"]
 
 # One uvicorn process. Concurrency comes from running more replicas, which lets
 # the orchestrator handle restarts and rollout instead of a worker manager inside
