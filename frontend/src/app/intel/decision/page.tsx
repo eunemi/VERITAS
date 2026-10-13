@@ -52,7 +52,7 @@ export default function DecisionDesk() {
               : "The core does not read the artifact. It reads what the desks filed about it, takes the gravest determination among them, and signs that."
           }
           actionLines={["Convene", "desks"]}
-          onSubmit={() => open(async () => (await deliberate(copy)).decision)}
+          onSubmit={() => open(async (options) => (await deliberate(copy, options)).decision)}
           disabled={tooShort || working}
         >
           <CopyField
