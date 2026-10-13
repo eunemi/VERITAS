@@ -55,6 +55,7 @@ def test_the_package_is_where_this_thinks_it_is() -> None:
         "ocr.py",
         "prepare.py",
         "relevance.py",
+        "context.py",
     }
 
 
