@@ -51,6 +51,7 @@ export async function registerAccount(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
     signal: options.signal,
+    timeoutMs: options.timeoutMs,
   });
   return account;
 }
@@ -71,6 +72,7 @@ export async function login(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
     signal: options.signal,
+    timeoutMs: options.timeoutMs,
   });
   return token;
 }
@@ -88,6 +90,7 @@ export async function readCurrentAccount(
   const { body } = await request<AccountOut>("/auth/me", {
     method: "GET",
     signal: options.signal,
+    timeoutMs: options.timeoutMs,
   });
   return body;
 }
