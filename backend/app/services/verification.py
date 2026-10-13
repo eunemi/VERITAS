@@ -28,6 +28,7 @@ from app.domain import (
     Failure,
     Verification,
 )
+from app.media import fetch
 from app.repositories.base import VerificationRepository
 from app.services.limits import ensure_within_limit
 
@@ -304,6 +305,11 @@ class VerificationService:
     # ----------------------------------------------------------------- run ---
 
     async def run(self, verification_id: str) -> None:
+        """Run one verification with a request-scoped URL fetch cache."""
+        with fetch.text_cache():
+            await self._run_inner(verification_id)
+
+    async def _run_inner(self, verification_id: str) -> None:
         """Examine the artifact, adjudicate, and close the record.
 
         Every exception is caught and recorded as a failed verification. This is
