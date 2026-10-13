@@ -51,6 +51,10 @@ class LLMProvider(StrEnum):
 class SearchProvider(StrEnum):
     """Which web-search backend the ``search`` package should resolve."""
 
+    # Kept as a recognised legacy value so an older environment fails as a reported
+    # provider outcome instead of preventing the API from starting. It is not part
+    # of the default roster and has no scraper dependency in the production image.
+    DUCKDUCKGO = "duckduckgo"
     TAVILY = "tavily"
     SERPER = "serper"
     BRAVE = "brave"
@@ -204,10 +208,10 @@ class Settings(BaseSettings):
 
     # --------------------------------------------------------- examinations ----
     #: Active examination concurrency and queue limits.
-    VERIFICATION_MAX_CONCURRENT: int = Field(default=2, ge=1)
+    VERIFICATION_MAX_CONCURRENT: int = Field(default=1, ge=1)
     #: Accepted jobs waiting behind active work. Requests beyond this bound are
     #: rejected before persistence. In-process work does not survive a restart.
-    VERIFICATION_MAX_QUEUED: int = Field(default=10, ge=0)
+    VERIFICATION_MAX_QUEUED: int = Field(default=4, ge=0)
     #: Active examination budget, including provider and storage work. Queue wait
     #: is separate; failure persistence gets its own database command budget.
     VERIFICATION_TIMEOUT_SECONDS: float = Field(default=180.0, gt=0)
@@ -263,15 +267,8 @@ class Settings(BaseSettings):
     #: provider here that has a key; the ones without are reported as skipped
     #: rather than dropped silently.
     #:
-    #: Defaults to all three, because "multiple independent websites" is the
-    #: requirement and a single index cannot corroborate itself. Two of the three
-    #: are enough for that — see :mod:`app.search.serper`, whose API contract could
-    #: not be verified — and a deployment with one key configured still works,
-    #: with the narrowing recorded in every dossier it produces.
-    #:
-    #: ``NoDecode`` for the same reason ``CORS_ORIGINS`` has it: without it,
-    #: ``SEARCH_PROVIDERS=tavily,brave`` in a .env file is JSON-decoded before
-    #: validation and the process fails to start.
+    #: Defaults to the configured API-backed providers. Providers without a key are
+    #: reported as skipped rather than replaced with an unreliable web scraper.
     SEARCH_PROVIDERS: Annotated[list[SearchProvider], NoDecode] = Field(
         default_factory=lambda: [
             SearchProvider.TAVILY,
@@ -498,7 +495,10 @@ class Settings(BaseSettings):
 
     # ------------------------------------------------------ vector store ----
 
-    VECTOR_STORE_PROVIDER: VectorStoreProvider = VectorStoreProvider.CHROMA
+    # Evidence indexes are transient per verification, so the in-process store is
+    # the safe default for a small deployment. Chroma remains an explicit optional
+    # choice for installations that provide its separate dependency set.
+    VECTOR_STORE_PROVIDER: VectorStoreProvider = VectorStoreProvider.MEMORY
     #: On-disk location for Chroma. Ignored by FAISS, which uses INDEX_PATH.
     CHROMA_PERSIST_DIRECTORY: str = "./var/chroma"
     FAISS_INDEX_PATH: str = "./var/faiss/index.faiss"
@@ -609,6 +609,9 @@ class Settings(BaseSettings):
     #: Whether to run object detection at all. Independent of the relevance gate:
     #: this is the deployment saying it has the weights, the gate is the image
     #: saying its text is about objects.
+    #: The feature remains enabled for a fully provisioned local install; the
+    #: production Docker image explicitly disables it because ultralytics/torch is
+    #: intentionally absent there.
     IMAGE_DETECTION_ENABLED: bool = True
 
     #: YOLOv8 weights. A bare filename is resolved by ultralytics, which
