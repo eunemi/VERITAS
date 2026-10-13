@@ -68,9 +68,12 @@ class ImageDesk:
         self, artifact: Artifact, *, verification_id: str | None = None
     ) -> DeskReport:
         data = await self._fetch(artifact)
+        # A text-generation key alone must not switch every image into the much
+        # heavier multimodal path. Vision is opt-in through its own key/base URL;
+        # OCR remains the predictable default on small deployments.
         if (
-            self._settings.chat_api_key()
-            or self._settings.VISION_API_KEY
+            self._settings.VISION_API_KEY
+            or self._settings.VISION_BASE_URL
             or self._settings.GOOGLE_VISION_API_KEY
         ):
             return await self._inspect(data, artifact)
@@ -78,9 +81,13 @@ class ImageDesk:
             reading = await get_image_reader(self._settings).read(data)
         except ConfigurationError as exc:
             logger.warning("Image desk missing OCR dependencies: %s", exc)
+            if (caption := (artifact.content or "").strip()):
+                return await self._caption_fallback(caption)
             return self._ocr_unavailable()
 
         if len(reading.text.strip()) < self._settings.IMAGE_MIN_TEXT_CHARS:
+            if (caption := (artifact.content or "").strip()):
+                return await self._caption_fallback(caption, reading=reading)
             return self._unread(reading)
 
         outcome = await self._graph().run(
@@ -88,6 +95,44 @@ class ImageDesk:
         )
         detections = await self._look(data, reading)
         return self._filed(reading, outcome, detections)
+
+    async def _caption_fallback(
+        self, caption: str, *, reading: Reading | None = None
+    ) -> DeskReport:
+        """Check a supplied caption while keeping it separate from unreadable pixels."""
+        source = Reading(
+            text="",
+            lines=(),
+            width=reading.width if reading else 0,
+            height=reading.height if reading else 0,
+            confidence=0,
+            variant="caption",
+        )
+        outcome = await self._graph().run(
+            Artifact(kind=ArtifactKind.TEXT, content=caption)
+        )
+        report = self._filed(source, outcome, ())
+        detail = report.detail
+        if detail is not None:
+            detail = replace(
+                detail,
+                limitations=(
+                    *detail.limitations,
+                    "Image text was unreadable; verification used the supplied "
+                    "caption.",
+                ),
+            )
+        return replace(
+            report,
+            verdict=replace(
+                report.verdict,
+                rationale=(
+                    "Image text was unreadable; the supplied caption was checked. "
+                    + report.verdict.rationale
+                ),
+            ),
+            detail=detail,
+        )
 
     # ------------------------------------------------------------ steps ----
 
