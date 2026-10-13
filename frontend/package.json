@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "next typegen && tsc --noEmit --incremental false"
+    "typecheck": "next typegen && tsc --noEmit --incremental false",
+    "test": "tsc --target ES2022 --module commonjs --moduleResolution node --esModuleInterop --strict --skipLibCheck --outDir /tmp/veritas-frontend-tests tests/reliability.test.ts src/lib/types/agents.ts src/lib/api/retry.ts && node --test /tmp/veritas-frontend-tests/tests/*.test.js"
   },
   "dependencies": {
     "framer-motion": "^13.1.0",
