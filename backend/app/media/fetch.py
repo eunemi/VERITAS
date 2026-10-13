@@ -17,6 +17,8 @@ from __future__ import annotations
 import ipaddress
 import re
 import socket
+from contextlib import contextmanager
+from contextvars import ContextVar
 from html import unescape
 from html.parser import HTMLParser
 
@@ -33,12 +35,16 @@ from app.core.errors import (
 )
 
 _Address = ipaddress.IPv4Address | ipaddress.IPv6Address
+_TextCacheKey = tuple[str, float, int, int, bool]
 
 #: Redirects followed by hand, so the guard can run again on each hop.
 MAX_REDIRECTS = 3
 
 PROVIDER = "media-fetch"
 _UPLOAD_PATH = re.compile(r".*/api/v1/files/media/[0-9a-f]{32}\.[a-z0-9]{1,10}$")
+_TEXT_CACHE: ContextVar[dict[_TextCacheKey, str | Exception] | None] = ContextVar(
+    "veritas_url_text_cache", default=None
+)
 
 # A number of otherwise public article pages reject httpx's default client
 # signature before returning any HTML. Keep the request identifiable while sending
@@ -50,7 +56,7 @@ _REQUEST_HEADERS = {
 
 
 class _PageTextParser(HTMLParser):
-    """Collect readable page copy while ignoring executable and presentational markup."""
+    """Collect readable copy while ignoring executable/presentational markup."""
 
     _IGNORED = frozenset(
         {"nav", "script", "style", "title", "noscript", "template", "svg"}
@@ -178,7 +184,7 @@ def _readable_page_text(data: bytes) -> str:
 async def fetch_text(
     url: str,
     *,
-    timeout: float,
+    timeout: float,  # noqa: ASYNC109 - timeout is part of the public fetch contract
     limit: int,
     max_chars: int,
     allow_private: bool = False,
@@ -189,14 +195,45 @@ async def fetch_text(
     The character ceiling is applied after decoding so a very large HTML response
     cannot send an unbounded prompt to the claim and fact-check desks.
     """
-    data = await fetch(
-        url,
-        timeout=timeout,
-        limit=limit,
-        accept=("text/", "application/xhtml+xml", "application/json", "application/xml"),
-        allow_private=allow_private,
-    )
-    return _readable_page_text(data)[:max_chars]
+    key = (url, timeout, limit, max_chars, allow_private)
+    cache = _TEXT_CACHE.get()
+    if cache is not None and key in cache:
+        cached = cache[key]
+        if isinstance(cached, Exception):
+            raise cached
+        return cached
+
+    try:
+        data = await fetch(
+            url,
+            timeout=timeout,
+            limit=limit,
+            accept=(
+                "text/",
+                "application/xhtml+xml",
+                "application/json",
+                "application/xml",
+            ),
+            allow_private=allow_private,
+        )
+        text = _readable_page_text(data)[:max_chars]
+    except Exception as exc:
+        if cache is not None:
+            cache[key] = exc
+        raise
+    if cache is not None:
+        cache[key] = text
+    return text
+
+
+@contextmanager
+def text_cache():
+    """Share one URL fetch between the text and fact-check desks of one run."""
+    token = _TEXT_CACHE.set({})
+    try:
+        yield
+    finally:
+        _TEXT_CACHE.reset(token)
 
 
 def is_managed_upload_url(url: str, *, public_api_url: str) -> bool:
@@ -209,7 +246,7 @@ def is_managed_upload_url(url: str, *, public_api_url: str) -> bool:
 async def fetch(
     url: str,
     *,
-    timeout: float,
+    timeout: float,  # noqa: ASYNC109 - timeout is part of the public fetch contract
     limit: int,
     accept: tuple[str, ...] = (),
     allow_private: bool = False,
