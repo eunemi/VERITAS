@@ -18,6 +18,7 @@ import it directly.
 from __future__ import annotations
 
 from app.core.config import SearchProvider, Settings
+from app.core.errors import ConfigurationError
 from app.core.registry import ProviderRegistry
 from app.search.base import SearchClient, SearchResult
 from app.search.brave import BraveClient
@@ -32,6 +33,14 @@ search_clients: ProviderRegistry[SearchProvider, SearchClient] = ProviderRegistr
     "search"
 )
 
+def _legacy_duckduckgo(settings: Settings) -> SearchClient:
+    """Keep old env values reportable without shipping an unreliable scraper."""
+    raise ConfigurationError(
+        "DuckDuckGo search is no longer bundled; configure Tavily, Brave, or Serper."
+    )
+
+
+search_clients.register(SearchProvider.DUCKDUCKGO, _legacy_duckduckgo)
 search_clients.register(SearchProvider.TAVILY, _build_tavily)
 search_clients.register(SearchProvider.BRAVE, _build_brave)
 search_clients.register(SearchProvider.SERPER, _build_serper)
