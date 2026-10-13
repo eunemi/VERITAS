@@ -1078,7 +1078,7 @@ therefore rendered by reading the fields a view needs, not by narrowing a union 
 - **Media by upload.** Image, audio and video artifacts are submitted as URLs.
   Multipart upload is a separate path: it needs `MAX_UPLOAD_BYTES` enforced against a
   stream rather than a parsed body, and somewhere to put the bytes.
-- **Durable storage under `VERIFICATION_STORE=memory`.** The default is `database`,
+- **Durable storage under `VERIFICATION_STORE=database`.** The default is `memory`,
   and both stores are real. Left on `memory`, records live in an `OrderedDict` on
   `app.state`, bounded at `MAX_RECORDS` and evicting oldest-first, and accounts live in
   a second dict beside it — per-process, so two workers do not share either, and a
