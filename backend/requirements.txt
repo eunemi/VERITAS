@@ -73,18 +73,9 @@ httpx>=0.27
 langgraph>=0.2.60
 
 # ------------------------------------------------------- vector store ------
-# Evidence embeddings — see app/vectorstore. Imported inside
-# ChromaVectorStore.__init__, never at module scope, for the same reason as the NLP
-# block: the dependency tree is large, and a deployment that selects
-# VECTOR_STORE_PROVIDER=memory should not have to install it. A missing chromadb
-# under VECTOR_STORE_PROVIDER=chroma is a ConfigurationError naming the fix, not an
-# ImportError from four frames down.
-#
-# 0.5 is the floor: `PersistentClient` and the `hnsw:space` collection metadata that
-# app/vectorstore/chroma.py sets to cosine are both stable from there. Not pinned
-# tighter, because the protocol in app/vectorstore/base.py is the whole surface this
-# code depends on.
-chromadb>=0.5
+# Chroma is optional. The default Render image uses the in-process evidence store, so
+# it must not pull Chroma's onnxruntime/Kubernetes dependency tree into every deploy.
+# Install `requirements-chroma.txt` only for VECTOR_STORE_PROVIDER=chroma.
 
 # ---------------------------------------------------------------- nlp ------
 # Claim extraction. Every one of these is imported inside a function body, never at
@@ -143,12 +134,10 @@ pytesseract>=0.3.10
 # the GUI variant pulls in Qt and GTK to provide `imshow`, which a server never
 # calls, and installing both leaves two copies of cv2 fighting over one namespace.
 opencv-python-headless>=4.10
-# YOLOv8, and with it torch — several hundred megabytes. Only reached when an
-# image's own text names an object the model can detect; see
-# app/vision/relevance.py for why the gate is a fixed vocabulary rather than any
-# noun. Omit this line entirely for a deployment running with
-# IMAGE_DETECTION_ENABLED=false.
-ultralytics>=8.3
+# Ultralytics/torch is intentionally not installed in the default API image. It is
+# several hundred megabytes and object detection is disabled by default. A deployment
+# that explicitly enables IMAGE_DETECTION_ENABLED must add a compatible ultralytics
+# install and ship its YOLO weights separately.
 
 
 # -------------------------------------------------------- file upload ------
