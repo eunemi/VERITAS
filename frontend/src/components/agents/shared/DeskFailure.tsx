@@ -2,6 +2,7 @@
 
 import { API_BASE_URL, ApiError, POLL_TIMEOUT, UNREACHABLE } from "@/lib/api/client";
 import { ExaminationError } from "@/lib/services/agentServices";
+import { confidenceLabel, TONE_TEXT, toneOf } from "@/lib/types/agents";
 import { Slug } from "./layout";
 
 /**
@@ -116,12 +117,61 @@ export function describeError(error: unknown): Described {
   };
 }
 
+function PartialReports({ error }: { error: ExaminationError }) {
+  const examination = error.examination;
+  if (!examination) return null;
+
+  const reports = [
+    ...examination.filings.map((filing) => ({
+      desk: filing.desk,
+      record: filing.record,
+    })),
+    ...(examination.decision
+      ? [{ desk: "decision", record: examination.decision }]
+      : []),
+  ];
+  if (reports.length === 0) return null;
+
+  return (
+    <section className="border-t border-ink-black/20 pt-stack-md">
+      <Slug className="text-ink-black">Partial reports</Slug>
+      <p className="font-body-md text-body-md mt-2.5 max-w-measure text-ink-black/65">
+        These reports were filed before the examination stopped and remain available below.
+      </p>
+      <ul className="mt-stack-sm">
+        {reports.map(({ desk, record }, index) => (
+          <li
+            key={`${desk}-${index}`}
+            className="border-t border-ink-black/15 py-3.5 first:border-t-0"
+          >
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <Slug>{desk} desk</Slug>
+              <Slug className={TONE_TEXT[toneOf(record.verdict.determination)]}>
+                {record.verdict.determination}
+              </Slug>
+            </div>
+            <p className="font-body-md text-body-md mt-1.5 font-semibold text-ink-black">
+              {record.verdict.headline}
+            </p>
+            <p className="font-body-sm text-body-sm mt-1.5 max-w-measure text-ink-black/70">
+              {record.verdict.rationale}
+            </p>
+            <p className="font-body-sm text-body-sm mt-1.5 text-ink-black/55">
+              Assessment confidence: {confidenceLabel(record.verdict.determination, record.verdict.confidence)}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 /**
  * The page a desk shows when there is no record.
  *
- * Set in the same type as a record so it reads as part of the publication, but it
- * carries no ledger, no determination and no figures — there is nothing to report,
- * and a failure dressed as a finding is worse than a blank page.
+ * Set in the same type as a record so it reads as part of the publication. When an
+ * examination stopped after one or more desks filed, those reports are printed here
+ * without turning the stopped run into a completed determination.
  */
 export function DeskFailure({
   error,
@@ -170,6 +220,7 @@ export function DeskFailure({
         </button>
       ) : null}
 
+      {error instanceof ExaminationError ? <PartialReports error={error} /> : null}
       {children ? <div className="pt-stack-xl">{children}</div> : null}
     </section>
   );
