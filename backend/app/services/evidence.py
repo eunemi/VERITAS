@@ -21,6 +21,7 @@ filtering one.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from uuid import uuid4
 
 from app.core.logging import get_logger
 from app.domain.research import ClaimResearch
@@ -59,12 +60,18 @@ class EvidenceIndex:
         *,
         top_k: int = 8,
         min_similarity: float = 0.0,
+        namespace: str = "",
     ) -> None:
         self._store = store
         self._embedder = embedder
         self._top_k = top_k
         self._min_similarity = min_similarity
         self._collections: set[str] = set()
+        self._namespace = namespace
+
+    def _collection(self, claim: str) -> str:
+        value = f"{self._namespace}:{claim}" if self._namespace else claim
+        return passages.collection_for(value)
 
     async def index(self, research: ClaimResearch) -> int:
         """Store ``research``'s passages, returning how many distinct ones were written.
@@ -78,7 +85,7 @@ class EvidenceIndex:
         if not documents:
             return 0
         vectors = await self._embedder.embed([document.text for document in documents])
-        collection = passages.collection_for(research.claim)
+        collection = self._collection(research.claim)
         await self._store.upsert(collection, documents, vectors)
         self._collections.add(collection)
         return len(documents)
@@ -99,7 +106,7 @@ class EvidenceIndex:
             return ()
         probe = await self._embedder.embed([claim])
         found = await self._store.query(
-            passages.collection_for(claim), probe[0], top_k=limit * OVERFETCH
+            self._collection(claim), probe[0], top_k=limit * OVERFETCH
         )
         near = [
             passages.decode(match)
@@ -148,4 +155,7 @@ def build(settings: Settings) -> EvidenceIndex:
         get_embedder(settings),
         top_k=settings.EVIDENCE_TOP_K,
         min_similarity=settings.EVIDENCE_MIN_SIMILARITY,
+        # A transient run must never delete another run's collection for the same
+        # claim when both use the process-wide Chroma persistence directory.
+        namespace=uuid4().hex,
     )
