@@ -16,7 +16,12 @@ import {
 } from "@/lib/services/agentServices";
 import { DESK_ISSUE, DESKS } from "@/lib/desks";
 import { clock, day } from "@/lib/stamp";
-import { TONE_TEXT, toneOf } from "@/lib/types/agents";
+import {
+  confidenceIsAssessed,
+  confidenceLabel,
+  TONE_TEXT,
+  toneOf,
+} from "@/lib/types/agents";
 
 /**
  * The reader's own file.
@@ -55,7 +60,9 @@ function Finding({ record }: { record: FiledRecord }) {
         <Slug className={`block ${TONE_TEXT[tone]}`}>{record.verdict.determination}</Slug>
         <p className="font-body-sm text-body-sm mt-1.5 text-ink-black/70">
           Confidence{" "}
-          <span className="tabular text-ink-black">{record.verdict.confidence}</span>
+          <span className="tabular text-ink-black">
+            {confidenceLabel(record.verdict.determination, record.verdict.confidence)}
+          </span>
         </p>
       </>
     );
@@ -95,7 +102,9 @@ function RecordDossier({ examination }: { examination: Examination }) {
       {decision ? (
         <>
           <Slug className={TONE_TEXT[toneOf(decision.verdict.determination)]}>
-            {decision.verdict.determination} · {decision.verdict.confidence} confidence
+            {decision.verdict.determination} ·{" "}
+            {confidenceLabel(decision.verdict.determination, decision.verdict.confidence)}
+            {confidenceIsAssessed(decision.verdict.determination) ? " confidence" : ""}
           </Slug>
           <h4 className="font-headline-md mt-2 max-w-title text-[21px] leading-[1.3] font-semibold text-ink-black">
             {decision.verdict.headline}
@@ -142,7 +151,9 @@ function RecordDossier({ examination }: { examination: Examination }) {
                     <span className="text-ink-black/70">{verdict.headline}</span>
                   </span>
                   <Slug className={`shrink-0 ${TONE_TEXT[toneOf(verdict.determination)]}`}>
-                    {verdict.determination} · {verdict.confidence}
+                    {verdict.determination} ·{" "}
+                    {confidenceLabel(verdict.determination, verdict.confidence)}
+                    {confidenceIsAssessed(verdict.determination) ? " confidence" : ""}
                   </Slug>
                 </li>
               );
