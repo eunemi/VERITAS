@@ -13,6 +13,11 @@ import type {
   Relevance,
   Reliability,
 } from "@/lib/types/agents";
+import {
+  readRetryDelay,
+  shouldRetryRead,
+  shouldRetrySubmission,
+} from "@/lib/api/retry";
 
 /**
  * `NEXT_PUBLIC_*` is substituted at build time by matching the literal text
@@ -252,6 +257,7 @@ interface ErrorEnvelope {
 
 /** Codes this client raises itself, alongside whatever the API sends. */
 export const UNREACHABLE = "service_unreachable";
+export const REQUEST_TIMEOUT = "request_timeout";
 export const POLL_TIMEOUT = "poll_timeout";
 export const MALFORMED = "malformed_response";
 
@@ -316,8 +322,17 @@ export function setAuthToken(token: string | null): void {
 
 const REQUEST_ID_HEADER = "x-request-id";
 
+function isAbortSignalError(cause: unknown): cause is DOMException {
+  return (
+    cause instanceof DOMException &&
+    (cause.name === "AbortError" || cause.name === "TimeoutError")
+  );
+}
+
 export interface CallOptions {
   signal?: AbortSignal;
+  /** A caller's remaining budget for this individual request. */
+  timeoutMs?: number;
 }
 
 /**
@@ -332,26 +347,40 @@ export async function request<T>(
   init: RequestInit & CallOptions,
 ): Promise<{ body: T; response: Response }> {
   const apiBaseUrl = requireApiBaseUrl();
+  const { signal, timeoutMs, ...requestInit } = init;
+  const requestTimeoutMs =
+    timeoutMs === undefined ? 90_000 : Math.max(1, Math.ceil(timeoutMs));
+  const timeoutSignal = AbortSignal.timeout(requestTimeoutMs);
+  const requestTimeoutError = () =>
+    new ApiError(
+      REQUEST_TIMEOUT,
+      `The request did not complete within ${Math.round(requestTimeoutMs / 1000)}s.`,
+      0,
+      { path, timeoutMs: requestTimeoutMs },
+    );
   let response: Response;
   try {
     response = await fetch(`${apiBaseUrl}${path}`, {
-      ...init,
-      signal: init.signal
-        ? AbortSignal.any([init.signal, AbortSignal.timeout(90_000)])
-        : AbortSignal.timeout(90_000),
+      ...requestInit,
+      signal: signal
+        ? AbortSignal.any([signal, timeoutSignal])
+        : timeoutSignal,
       // Caller headers land last so an explicit one wins; the token is spread in
       // before them and never overwrites a header a call site set on purpose.
       headers: {
         Accept: "application/json",
         ...(bearer === null ? null : { Authorization: `Bearer ${bearer}` }),
-        ...init.headers,
+        ...requestInit.headers,
       },
     });
   } catch (cause) {
     // A rejected fetch carries no status and, for a cross-origin refusal, no
     // detail either — the browser withholds it. Everything actionable is on our
     // side of the wire, so name the address rather than guess at the reason.
-    if (cause instanceof DOMException && cause.name === "AbortError") throw cause;
+    if (signal?.aborted || (isAbortSignalError(cause) && !timeoutSignal.aborted)) {
+      throw cause;
+    }
+    if (timeoutSignal.aborted) throw requestTimeoutError();
     throw new ApiError(
       UNREACHABLE,
       `Could not reach the examination service at ${apiBaseUrl}.`,
@@ -361,7 +390,22 @@ export async function request<T>(
   }
 
   const requestId = response.headers.get(REQUEST_ID_HEADER);
-  const text = await response.text();
+  let text: string;
+  try {
+    text = await response.text();
+  } catch (cause) {
+    if (signal?.aborted || (isAbortSignalError(cause) && !timeoutSignal.aborted)) {
+      throw cause;
+    }
+    if (timeoutSignal.aborted) throw requestTimeoutError();
+    throw new ApiError(
+      UNREACHABLE,
+      `Could not read the examination service response from ${apiBaseUrl}.`,
+      0,
+      { cause: String(cause) },
+      requestId,
+    );
+  }
 
   let parsed: unknown = null;
   if (text) {
@@ -419,7 +463,6 @@ export async function submitVerification(
   submission: VerifyRequest,
   options: CallOptions = {},
 ): Promise<VerificationAccepted> {
-  const maxRetries = 3;
   for (let attempt = 0; ; attempt++) {
     try {
       const { body } = await request<VerificationAccepted>("/verify", {
@@ -427,13 +470,13 @@ export async function submitVerification(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submission),
         signal: options.signal,
+        timeoutMs: options.timeoutMs,
       });
       return body;
     } catch (cause) {
       if (
         cause instanceof ApiError &&
-        (cause.code === "service_busy" || cause.status === 503) &&
-        attempt < maxRetries
+        shouldRetrySubmission(cause, attempt)
       ) {
         await wait(1500 * (attempt + 1), options.signal);
         continue;
@@ -456,7 +499,7 @@ export async function readVerification(
 ): Promise<Read> {
   const { body, response } = await request<VerificationOut>(
     `/verification/${encodeURIComponent(id)}`,
-    { method: "GET", signal: options.signal },
+    { method: "GET", signal: options.signal, timeoutMs: options.timeoutMs },
   );
   const header = response.headers.get("retry-after");
   const seconds = header === null ? NaN : Number(header);
@@ -486,6 +529,7 @@ export async function readVerificationHistory(
   const { body } = await request<VerificationHistoryOut>(`/verifications${query}`, {
     method: "GET",
     signal: options.signal,
+    timeoutMs: options.timeoutMs,
   });
   return body;
 }
@@ -541,26 +585,60 @@ export async function pollVerification(
     );
 
   for (;;) {
-    let reading: Read;
-    try {
-      reading = await readVerification(id, { signal });
-      hasReadRecord = true;
-    } catch (cause) {
-      if (
-        cause instanceof ApiError &&
-        cause.code === "not_found" &&
-        !hasReadRecord &&
-        notFoundRetries < INITIAL_NOT_FOUND_RETRIES
-      ) {
-        notFoundRetries += 1;
-        const remaining = timeoutMs - (performance.now() - started);
-        if (remaining <= 0) throw timeoutError();
-        await wait(Math.min(1_200, 250 * notFoundRetries, remaining), signal);
-        if (performance.now() - started >= timeoutMs) throw timeoutError();
-        continue;
+    let reading: Read | null = null;
+    let readRetries = 0;
+    for (;;) {
+      const remaining = timeoutMs - (performance.now() - started);
+      if (remaining <= 0) throw timeoutError();
+
+      try {
+        reading = await readVerification(id, { signal, timeoutMs: remaining });
+        hasReadRecord = true;
+        break;
+      } catch (cause) {
+        if (cause instanceof ApiError && shouldRetryRead(cause, readRetries)) {
+          readRetries += 1;
+          const retryRemaining = timeoutMs - (performance.now() - started);
+          if (retryRemaining <= 0) throw timeoutError();
+          await wait(Math.min(readRetryDelay(readRetries), retryRemaining), signal);
+          continue;
+        }
+
+        if (
+          cause instanceof ApiError &&
+          cause.code === "not_found" &&
+          !hasReadRecord &&
+          notFoundRetries < INITIAL_NOT_FOUND_RETRIES
+        ) {
+          notFoundRetries += 1;
+          const notFoundRemaining = timeoutMs - (performance.now() - started);
+          if (notFoundRemaining <= 0) throw timeoutError();
+          await wait(Math.min(1_200, 250 * notFoundRetries, notFoundRemaining), signal);
+          if (performance.now() - started >= timeoutMs) throw timeoutError();
+          break;
+        }
+
+        if (
+          cause instanceof ApiError &&
+          cause.code === REQUEST_TIMEOUT &&
+          !signal?.aborted
+        ) {
+          throw timeoutError();
+        }
+
+        if (
+          isAbortSignalError(cause) &&
+          !signal?.aborted
+        ) {
+          throw timeoutError();
+        }
+        throw cause;
       }
-      throw cause;
     }
+
+    // A not-found retry has already waited; begin the next GET without treating
+    // that missing record as a reading.
+    if (reading === null) continue;
     const { record, retryAfter } = reading;
     onReading?.(record);
     if (record.terminal) return record;
@@ -570,7 +648,9 @@ export async function pollVerification(
     }
 
     const hinted = retryAfter === null ? 0 : retryAfter * 1000;
-    await wait(Math.min(MAX_POLL_MS, Math.max(hinted, backoff)), signal);
+    const remaining = timeoutMs - (performance.now() - started);
+    if (remaining <= 0) throw timeoutError();
+    await wait(Math.min(MAX_POLL_MS, Math.max(hinted, backoff), remaining), signal);
     backoff = Math.min(MAX_POLL_MS, Math.round(backoff * 1.4));
   }
 }
@@ -589,7 +669,7 @@ export async function extractTextFromFile(file: File, options: CallOptions = {})
   const formData = new FormData();
   formData.append("file", file);
   const { body } = await request<{ text: string }>("/files/extract-text", {
-    method: "POST", body: formData, signal: options.signal,
+    method: "POST", body: formData, signal: options.signal, timeoutMs: options.timeoutMs,
   });
   return body.text;
 }
@@ -599,7 +679,7 @@ export async function uploadMediaFile(file: File, options: CallOptions = {}): Pr
   const formData = new FormData();
   formData.append("file", file);
   const { body } = await request<{ url: string }>("/files/upload-media", {
-    method: "POST", body: formData, signal: options.signal,
+    method: "POST", body: formData, signal: options.signal, timeoutMs: options.timeoutMs,
   });
   return body.url;
 }
