@@ -46,7 +46,7 @@ export default function FactCheckDesk() {
               : "Every exhibit the desk finds is listed, including the ones that disagree."
           }
           actionLines={["Check", "claim"]}
-          onSubmit={() => open(() => examineClaim(claim))}
+          onSubmit={() => open((options) => examineClaim(claim, options))}
           disabled={tooShort || working}
         >
           <CopyField
