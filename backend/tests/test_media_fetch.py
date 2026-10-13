@@ -374,11 +374,14 @@ async def test_an_empty_body_is_a_fetch_error() -> None:
 
 
 def test_page_text_removes_markup_and_non_readable_blocks() -> None:
-    page = b"""
-    <html><head><title>Browser tab title</title><style>.hidden { display: none }</style></head>
-    <body><nav>Home - About - Contact</nav><main><h1>Bridge opened</h1><p>The bridge opened in March 2026.</p></main>
-    <script>do_not_submit_this()</script></body></html>
-    """
+    page = (
+        b"<html><head><title>Browser tab title</title>"
+        b"<style>.hidden { display: none }</style></head>"
+        b"<body><nav>Home - About - Contact</nav>"
+        b"<main><h1>Bridge opened</h1>"
+        b"<p>The bridge opened in March 2026.</p></main>"
+        b"<script>do_not_submit_this()</script></body></html>"
+    )
 
     assert _readable_page_text(page) == "Bridge opened The bridge opened in March 2026."
 
@@ -389,3 +392,37 @@ def test_page_text_keeps_inline_text_together_and_uses_noscript_as_fallback() ->
     assert _readable_page_text(b"<noscript><p>Fallback copy</p></noscript>") == (
         "Fallback copy"
     )
+
+
+async def test_text_cache_is_parameter_aware(
+    resolves: dict[str, list[str]], sent: list[str]
+) -> None:
+    responds(content_type="text/html", body=b"<p>abcdefgh</p>")
+    responds(content_type="text/html", body=b"<p>abcdefgh</p>")
+
+    with module.text_cache():
+        short = await module.fetch_text(
+            "https://example.test/page",
+            timeout=5.0,
+            limit=1024,
+            max_chars=3,
+        )
+        short_again = await module.fetch_text(
+            "https://example.test/page",
+            timeout=5.0,
+            limit=1024,
+            max_chars=3,
+        )
+        long = await module.fetch_text(
+            "https://example.test/page",
+            timeout=5.0,
+            limit=1024,
+            max_chars=100,
+        )
+
+    assert short == short_again == "abc"
+    assert long == "abcdefgh"
+    assert sent == [
+        "https://example.test/page",
+        "https://example.test/page",
+    ]
