@@ -1,0 +1,4 @@
+# Optional persistent vector-store support.
+# Install this after requirements.txt only when VECTOR_STORE_PROVIDER=chroma.
+-r requirements.txt
+chromadb>=0.5
