@@ -90,7 +90,7 @@ def test_every_determination_can_be_stated_to_a_reader() -> None:
     assert set(HEADLINES) == set(Determination)
 
 
-@pytest.mark.parametrize("adverse", [d for d in GRAVITY[:4]])
+@pytest.mark.parametrize("adverse", list(GRAVITY[:4]))
 async def test_one_adverse_finding_is_never_averaged_away(
     adverse: Determination,
 ) -> None:
@@ -226,6 +226,15 @@ async def test_every_report_gets_a_ledger_row_and_a_signal() -> None:
         ("Text desk", "CLEAR", 0.5),
         ("Fact-check desk", "SUPPORTED", 0.62),
     ]
+
+
+async def test_unassessed_report_does_not_render_its_sentinel_confidence() -> None:
+    signed = await DecisionDesk().adjudicate(
+        [filed(Desk.TEXT, Determination.INSUFFICIENT, confidence=0.5)]
+    )
+
+    ledger = {entry.key: entry.value for entry in signed.ledger}
+    assert ledger["Text desk"] == "INSUFFICIENT · Not assessed"
 
 
 async def test_it_merges_no_exhibits_or_annotations() -> None:
