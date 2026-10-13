@@ -56,7 +56,7 @@ export const ARCHIVE: ArchiveRecord[] = [
     source: "Social platform",
     region: "North America",
     determination: "INSUFFICIENT",
-    confidence: "41%",
+    confidence: "Not assessed",
   },
   {
     id: "VT–0109",
@@ -69,7 +69,7 @@ export const ARCHIVE: ArchiveRecord[] = [
     source: "Anonymous submission",
     region: "Baltic",
     determination: "INSUFFICIENT",
-    confidence: "41%",
+    confidence: "Not assessed",
   },
   {
     id: "VT–0106",
@@ -95,7 +95,7 @@ export const ARCHIVE: ArchiveRecord[] = [
     source: "Newsletter",
     region: "East Africa",
     determination: "REQUIRES VERIFICATION",
-    confidence: "88%",
+    confidence: "Not assessed",
   },
   {
     id: "VT–0101",
