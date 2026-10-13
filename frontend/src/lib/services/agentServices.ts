@@ -274,9 +274,6 @@ function filed<T extends AgentRecord>(
   desk: Desk,
   kind: T["kind"],
 ): T {
-  const filing = examination.filings.find((candidate) => candidate.desk === desk);
-  if (filing && filing.record.kind === kind) return filing.record as T;
-
   const failure = examination.failure;
   if (failure) {
     throw new ExaminationError(
@@ -286,6 +283,10 @@ function filed<T extends AgentRecord>(
       examination,
     );
   }
+
+  const filing = examination.filings.find((candidate) => candidate.desk === desk);
+  if (filing && filing.record.kind === kind) return filing.record as T;
+
   throw new ExaminationError(
     "no_report",
     `The examination closed without a report from the ${desk} desk.`,
@@ -372,7 +373,7 @@ export async function convene(
 ): Promise<Adjudication> {
   const examination = await commission(artifact, null, options);
 
-  if (!examination.decision) {
+  if (examination.failure || !examination.decision) {
     const failure = examination.failure;
     throw new ExaminationError(
       failure?.code ?? "no_report",
